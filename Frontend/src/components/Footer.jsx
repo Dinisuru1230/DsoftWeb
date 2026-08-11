@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 export default function Footer() {
   return (
     <footer className="bg-surface-container-low border-t border-outline-variant w-full">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-16 px-5 md:px-16 py-16 max-w-[1200px] mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-12 px-4 sm:px-8 md:px-12 py-16 max-w-[1400px] mx-auto">
         {/* Brand */}
         <div className="md:col-span-1 flex flex-col">
           <span className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-3">
@@ -42,7 +42,7 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-outline-variant/30 px-5 md:px-16 py-4 text-center max-w-[1200px] mx-auto">
+      <div className="border-t border-outline-variant/30 px-4 sm:px-8 md:px-12 py-4 text-center max-w-[1400px] mx-auto">
         <span className="font-label-sm text-label-sm text-secondary">
           © 2024 Malmalee Creations. Handcrafted with Magic.
         </span>

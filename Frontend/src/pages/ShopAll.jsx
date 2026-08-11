@@ -45,7 +45,7 @@ export default function ShopAll() {
   };
 
   return (
-    <main className="flex-grow flex flex-col md:flex-row w-full max-w-[1200px] mx-auto px-4 sm:px-8 md:px-16 py-8 md:py-12 gap-8">
+    <main className="flex-grow flex flex-col md:flex-row w-full max-w-[1400px] mx-auto px-4 sm:px-8 md:px-12 py-8 md:py-12 gap-8">
       {/* ── Sidebar Filters (Desktop) ── */}
       <aside className="hidden md:flex flex-col bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-ambient p-6 space-y-6 flex-shrink-0 w-64 self-start sticky top-24">
         <div>
