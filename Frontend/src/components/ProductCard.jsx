@@ -25,12 +25,12 @@ export default function ProductCard({ product }) {
           )}
           {/* Badges */}
           {isNew && (
-            <div className="absolute top-2 left-2 bg-primary-container text-on-background font-label-sm text-label-sm py-1 px-3 rounded-full">
+            <div className="absolute top-2 left-2 z-10 bg-primary-container text-on-background font-label-sm text-label-sm py-1 px-3 rounded-full shadow-sm">
               New
             </div>
           )}
           {badge && (
-            <div className="absolute top-2 left-2 bg-tertiary-container text-on-background font-label-sm text-label-sm py-1 px-3 rounded-full">
+            <div className="absolute top-2 left-2 z-10 bg-tertiary-container text-on-background font-label-sm text-label-sm py-1 px-3 rounded-full shadow-sm">
               {badge}
             </div>
           )}

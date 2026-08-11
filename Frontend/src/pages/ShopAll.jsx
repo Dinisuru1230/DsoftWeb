@@ -24,6 +24,7 @@ export default function ShopAll() {
   );
   const [priceRange, setPriceRange] = useState(200);
   const [sortBy, setSortBy] = useState('newest');
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const filtered = ALL_PRODUCTS
     .filter((p) => selectedCategory === 'All Products' || p.category === selectedCategory)
@@ -44,10 +45,10 @@ export default function ShopAll() {
   };
 
   return (
-    <main className="flex-grow flex flex-col md:flex-row w-full max-w-[1200px] mx-auto px-5 md:px-16 py-16 gap-6">
-      {/* ── Sidebar Filters ── */}
-      <aside className="hidden md:flex flex-col bg-surface-container-lowest border-r border-outline-variant rounded-xl shadow-sm p-6 space-y-4 flex-shrink-0 w-64 self-start sticky top-32">
-        <div className="mb-2">
+    <main className="flex-grow flex flex-col md:flex-row w-full max-w-[1200px] mx-auto px-4 sm:px-8 md:px-16 py-8 md:py-12 gap-8">
+      {/* ── Sidebar Filters (Desktop) ── */}
+      <aside className="hidden md:flex flex-col bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-ambient p-6 space-y-6 flex-shrink-0 w-64 self-start sticky top-24">
+        <div>
           <h2 className="font-title-sm text-title-sm text-primary mb-1">Categories</h2>
           <p className="font-label-sm text-label-sm text-on-surface-variant">Filter by style</p>
         </div>
@@ -56,7 +57,7 @@ export default function ShopAll() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`flex items-center gap-3 p-3 font-label-md text-label-md rounded-lg hover:translate-x-1 transition-transform duration-200 text-left ${
+              className={`flex items-center gap-3 p-3 font-label-md text-label-md rounded-lg hover:translate-x-1 transition-all duration-200 text-left ${
                 selectedCategory === cat
                   ? 'text-primary font-bold bg-primary-container'
                   : 'text-on-surface-variant hover:bg-surface-container'
@@ -69,7 +70,7 @@ export default function ShopAll() {
         </nav>
 
         {/* Price Range */}
-        <div className="mt-6 pt-6 border-t border-outline-variant">
+        <div className="pt-6 border-t border-outline-variant/40">
           <h3 className="font-label-md text-label-md text-primary mb-4 font-bold">Price Range</h3>
           <div className="flex justify-between text-sm text-on-surface-variant mb-2">
             <span>$0</span>
@@ -81,17 +82,17 @@ export default function ShopAll() {
             max="200"
             value={priceRange}
             onChange={(e) => setPriceRange(Number(e.target.value))}
-            className="w-full accent-primary"
+            className="w-full accent-primary cursor-pointer"
           />
         </div>
 
         {/* Sort */}
-        <div className="mt-4 pt-4 border-t border-outline-variant">
+        <div className="pt-4 border-t border-outline-variant/40">
           <h3 className="font-label-md text-label-md text-primary mb-3 font-bold">Sort By</h3>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="w-full border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md text-on-surface bg-surface-container-lowest"
+            className="w-full border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md text-on-surface bg-surface-container-lowest cursor-pointer outline-none focus:border-primary"
           >
             <option value="newest">Newest First</option>
             <option value="price-asc">Price: Low to High</option>
@@ -100,34 +101,118 @@ export default function ShopAll() {
         </div>
       </aside>
 
-      {/* ── Product Grid ── */}
+      {/* ── Mobile Filter Modal/Drawer ── */}
+      {mobileFilterOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-end md:hidden">
+          <div className="bg-background w-80 h-full p-6 overflow-y-auto space-y-6 flex flex-col justify-between shadow-2xl">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-outline-variant/40 pb-4">
+                <h2 className="font-title-sm text-title-sm text-primary">Filters</h2>
+                <button onClick={() => setMobileFilterOpen(false)} className="text-on-surface-variant p-1">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              {/* Categories */}
+              <div>
+                <h3 className="font-label-md text-label-md text-primary mb-2 font-bold">Category</h3>
+                <div className="flex flex-col gap-1">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => { setSelectedCategory(cat); setMobileFilterOpen(false); }}
+                      className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left ${
+                        selectedCategory === cat ? 'text-primary font-bold bg-primary-container' : 'text-on-surface-variant'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined">{categoryIcons[cat] || 'category'}</span>
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price */}
+              <div className="pt-4 border-t border-outline-variant/40">
+                <h3 className="font-label-md text-label-md text-primary mb-2 font-bold">Max Price: ${priceRange}</h3>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(Number(e.target.value))}
+                  className="w-full accent-primary"
+                />
+              </div>
+
+              {/* Sort */}
+              <div className="pt-4 border-t border-outline-variant/40">
+                <h3 className="font-label-md text-label-md text-primary mb-2 font-bold">Sort By</h3>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full border border-outline-variant rounded-lg p-2 font-body-md text-body-md"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                </select>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setMobileFilterOpen(false)}
+              className="w-full bg-primary-container text-on-background py-3 rounded-full font-label-md text-label-md"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Product Grid Content ── */}
       <section className="flex-grow">
-        {/* Mobile Filter Toggle */}
-        <div className="md:hidden flex justify-between items-center mb-6 pb-4 border-b border-outline-variant">
-          <h1 className="font-headline-md-mobile text-headline-md-mobile text-primary">Shop All</h1>
-          <button className="flex items-center gap-2 text-primary border border-primary px-4 py-2 rounded-md">
-            <span className="material-symbols-outlined">tune</span>
-            <span className="font-label-md text-label-md">Filters</span>
+        {/* Mobile Header + Filter Toggle */}
+        <div className="md:hidden flex justify-between items-center mb-6 pb-4 border-b border-outline-variant/40">
+          <div>
+            <h1 className="font-headline-md-mobile text-headline-md-mobile text-primary">Shop All</h1>
+            <p className="font-label-sm text-label-sm text-on-surface-variant">{filtered.length} items</p>
+          </div>
+          <button
+            onClick={() => setMobileFilterOpen(true)}
+            className="flex items-center gap-2 text-primary border border-primary px-4 py-2 rounded-full font-label-md text-label-md hover:bg-primary-container/30 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">tune</span>
+            Filters
           </button>
         </div>
 
         {/* Desktop Header */}
-        <div className="hidden md:flex justify-between items-end mb-8">
-          <h1 className="font-headline-md text-headline-md text-primary">Curated Collection</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">Showing {filtered.length} products</p>
+        <div className="hidden md:flex justify-between items-end mb-8 border-b border-outline-variant/30 pb-4">
+          <div>
+            <h1 className="font-headline-md text-headline-md text-primary">Curated Collection</h1>
+            <p className="font-body-md text-body-md text-on-surface-variant mt-1">Handcrafted accessories tailored to your style.</p>
+          </div>
+          <p className="font-body-md text-body-md text-on-surface-variant font-medium">Showing {filtered.length} products</p>
         </div>
 
         {/* Grid */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {filtered.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
+          <div className="text-center py-20 bg-surface-container-lowest rounded-xl shadow-ambient">
             <span className="material-symbols-outlined text-6xl text-outline mb-4 block">search_off</span>
-            <p className="font-body-lg text-body-lg text-on-surface-variant">No products found for your filters.</p>
+            <p className="font-body-lg text-body-lg text-on-surface-variant">No products found matching your filters.</p>
+            <button
+              onClick={() => { setSelectedCategory('All Products'); setPriceRange(200); }}
+              className="mt-4 font-label-md text-label-md text-primary underline underline-offset-4"
+            >
+              Reset Filters
+            </button>
           </div>
         )}
       </section>
