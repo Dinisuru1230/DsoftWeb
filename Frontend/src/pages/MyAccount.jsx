@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
+import AccountSidebar from '../components/AccountSidebar';
 
 const ORDERS = [
   { id: 'MC-8492', date: 'Oct 12, 2024', total: 145.00, items: 3, status: 'Pending', statusColor: 'bg-surface-container border border-outline-variant text-on-surface-variant' },
@@ -9,55 +8,10 @@ const ORDERS = [
 ];
 
 export default function MyAccount() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  function handleLogout() {
-    logout();
-    navigate('/');
-  }
-
   return (
     <main className="flex-grow flex flex-col md:flex-row w-full max-w-[1400px] mx-auto px-4 sm:px-8 md:px-12 py-12 gap-8">
-      {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 flex-shrink-0">
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-6 shadow-ambient space-y-4 sticky top-24">
-          <div className="mb-2">
-            <h2 className="font-title-sm text-title-sm text-primary">My Account</h2>
-            <p className="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Manage your details</p>
-          </div>
-          <nav className="flex flex-col gap-1">
-            <Link
-              to="/account/profile"
-              className="flex items-center gap-3 px-4 py-3 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container rounded-lg hover:translate-x-1 transition-transform duration-200"
-            >
-              <span className="material-symbols-outlined text-[20px]">person</span>
-              Profile Information
-            </Link>
-            <Link
-              to="/account"
-              className="flex items-center gap-3 px-4 py-3 font-label-md text-label-md text-primary font-bold bg-primary-container rounded-lg"
-            >
-              <span className="material-symbols-outlined text-[20px]">history</span>
-              Order History
-            </Link>
-            <Link
-              to="/account/track"
-              className="flex items-center gap-3 px-4 py-3 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container rounded-lg hover:translate-x-1 transition-transform duration-200"
-            >
-              <span className="material-symbols-outlined text-[20px]">local_shipping</span>
-              Track Order
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 font-label-md text-label-md text-error hover:bg-error-container/30 rounded-lg transition-colors text-left"
-            >
-              <span className="material-symbols-outlined text-[20px]">logout</span>
-              Sign Out
-            </button>
-          </nav>
-        </div>
-      </aside>
+      {/* Unified Account Sidebar */}
+      <AccountSidebar />
 
       {/* Main Content Area */}
       <section className="flex-grow">
