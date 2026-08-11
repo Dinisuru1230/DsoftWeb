@@ -1,0 +1,336 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Malmalee Creations - Admin Product Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#fbdbde",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#281719",
+                        "primary-fixed-dim": "#debfc2",
+                        "secondary-fixed-dim": "#cac99f",
+                        "on-primary-container": "#765e61",
+                        "secondary": "#60603e",
+                        "outline-variant": "#d2c3c4",
+                        "background": "#fbf9f8",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#303030",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-surface-variant": "#4f4445",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "on-tertiary-fixed": "#3a0915",
+                        "secondary-fixed": "#e6e5b9",
+                        "surface": "#fbf9f8",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb2bc",
+                        "inverse-primary": "#debfc2",
+                        "tertiary": "#8c4b55",
+                        "on-secondary-fixed-variant": "#484828",
+                        "surface-dim": "#dcd9d9",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-primary-fixed-variant": "#574144",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#1d1d03",
+                        "on-background": "#1b1c1c",
+                        "secondary-container": "#e6e5b9",
+                        "surface-variant": "#e4e2e1",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#ffd9dd",
+                        "surface-tint": "#70585b",
+                        "on-tertiary-container": "#93505b",
+                        "primary-container": "#fadadd",
+                        "outline": "#807475",
+                        "primary": "#70585b",
+                        "tertiary-container": "#ffd8dc",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed-variant": "#70343e",
+                        "on-secondary-container": "#666643",
+                        "surface-bright": "#fbf9f8",
+                        "surface-container-high": "#eae8e7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "section-gap": "80px",
+                        "margin-desktop": "64px",
+                        "container-max": "1200px",
+                        "unit": "8px",
+                        "stack-lg": "32px",
+                        "margin-mobile": "20px",
+                        "stack-sm": "8px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Playfair Display"],
+                        "headline-md-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-sm": ["Be Vietnam Pro"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "body-md": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-md-mobile": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-md": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            color: #B76E79; /* Rose Gold accent */
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            background-color: #FFFDD0; /* Soft Cream */
+        }
+        .ambient-shadow {
+            box-shadow: 0px 4px 20px rgba(183, 110, 121, 0.15);
+        }
+        .ambient-shadow:hover {
+            box-shadow: 0px 8px 30px rgba(183, 110, 121, 0.25);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col md:flex-row">
+<!-- SideNavBar (Desktop Only) -->
+<nav class="hidden md:flex bg-surface-container-lowest border-r border-outline-variant h-screen sticky top-0 w-64 flex-col p-6 z-40">
+<div class="mb-stack-lg"><h1 class="font-title-sm text-title-sm text-primary">Malmalee Admin</h1><p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Dashboard</p></div>
+<ul class="flex flex-col space-y-stack-sm flex-grow"><li class=""><a class="flex items-center gap-3 px-3 py-2 text-primary font-bold bg-primary-container rounded-lg transition-all duration-200" href="#"><span class="material-symbols-outlined">inventory_2</span><span class="font-label-md">Products</span></a></li><li class=""><a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container hover:text-primary transition-all duration-200 rounded-lg" href="#"><span class="material-symbols-outlined">shopping_cart</span><span class="font-label-md">Orders</span></a></li><li class=""><a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container hover:text-primary transition-all duration-200 rounded-lg" href="#"><span class="material-symbols-outlined">group</span><span class="font-label-md">Customers</span></a></li><li class=""><a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container hover:text-primary transition-all duration-200 rounded-lg" href="#"><span class="material-symbols-outlined">settings</span><span class="font-label-md">Settings</span></a></li></ul>
+<div class="mt-auto"><button class="w-full py-3 px-6 bg-surface-container-low border border-outline-variant text-on-surface font-label-md rounded-lg hover:bg-surface-container transition-colors duration-300 flex items-center justify-center gap-2"><span class="material-symbols-outlined">logout</span>Log Out</button></div>
+</nav>
+<!-- Top Navigation (Mobile Only) -->
+<header class="md:hidden flex justify-between items-center w-full px-margin-mobile py-stack-md bg-background border-b border-outline-variant z-40 sticky top-0">
+<h1 class="font-title-sm text-title-sm text-primary">Malmalee Admin</h1>
+<button class="p-2 text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex-grow p-margin-mobile md:p-margin-desktop w-full max-w-[1400px] mx-auto overflow-x-hidden">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-section-gap gap-stack-md">
+<div>
+<h2 class="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background mb-unit">Product Management</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">View, edit, and manage your artisanal inventory.</p>
+</div>
+<button class="bg-primary-container text-on-primary-container font-label-md text-label-md py-3 px-8 rounded-DEFAULT hover:opacity-90 transition-opacity duration-300 flex items-center gap-unit shrink-0 shadow-[0px_4px_20px_rgba(183,110,121,0.15)]">
+<span class="material-symbols-outlined text-on-primary-container" style="font-size: 18px;">add</span>
+                Add New Product
+            </button>
+</div>
+<!-- Search and Filter Bar -->
+<div class="bg-surface-container-lowest rounded-lg p-stack-md mb-stack-lg flex flex-col md:flex-row gap-stack-md items-center justify-between ambient-shadow transition-all duration-300">
+<div class="relative w-full md:w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface border-b-2 border-outline-variant focus:border-primary border-t-0 border-x-0 pl-10 pr-4 py-2 font-body-md text-body-md text-on-surface focus:ring-0 transition-colors duration-300 rounded-t-DEFAULT" placeholder="Search products..." type="text">
+</div>
+<div class="flex gap-unit w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+<button class="px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm whitespace-nowrap">All Products</button>
+<button class="px-4 py-1.5 rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-container transition-colors">Ribbons</button>
+<button class="px-4 py-1.5 rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-container transition-colors">Satin Wraps</button>
+<button class="px-4 py-1.5 rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-container transition-colors">Bridal</button>
+</div>
+</div>
+<!-- Data Table (Desktop) / Cards (Mobile) -->
+<div class="bg-surface-container-lowest rounded-xl ambient-shadow transition-all duration-300 overflow-hidden">
+<!-- Desktop Table -->
+<div class="hidden md:block overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-low">
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold">Product</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold">Category</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold">Price</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold">Stock</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-200 group">
+<td class="p-stack-md">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-DEFAULT overflow-hidden shrink-0 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A delicate spool of blush pink silk ribbon resting on a pristine white marble surface, bathed in soft, natural morning light. The aesthetic is clean, minimalist, and romantic, emphasizing the artisanal texture of the fabric against the smooth stone." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrNTA7-gOQRYRWOFKl4tzhheu9rPhVqwiTGGSwMqQvu1RJrgPj373JRMajk9gmj3ZkNAl23yRnBsvCCjznzFKO1ogW-SgmTNasbjUVbciaVuBpu7PzUhMOfwH2ZSO89d9XfbG_IpDFx8G4VzmGTCOZQ1zJ2MQhma0G7vL5GnoTM_XS9eIg5os-Lvg2hIcw3dPjl78e5zYwUutWMCQkKxftrzD1bXHHuo8ba5piG6yNsxugQSidOtVXKg">
+</div>
+<div>
+<p class="font-title-sm text-title-sm text-on-surface group-hover:text-primary transition-colors">Blush Silk Ribbon</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">SKU: RB-001</p>
+</div>
+</div>
+</td>
+<td class="p-stack-md">
+<span class="px-3 py-1 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm">Ribbons</span>
+</td>
+<td class="p-stack-md font-body-md text-body-md text-on-surface">$24.00</td>
+<td class="p-stack-md">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="font-body-md text-body-md text-on-surface">45 in stock</span>
+</div>
+</td>
+<td class="p-stack-md text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+<button class="p-2 text-error hover:bg-error-container transition-colors rounded-full"><span class="material-symbols-outlined text-[20px] text-error">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-200 group">
+<td class="p-stack-md">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-DEFAULT overflow-hidden shrink-0 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A beautifully crafted ivory satin wrap draped elegantly over a soft cream velvet display cushion. The lighting is diffused and warm, creating gentle shadows that highlight the smooth, luxurious sheen of the material in a high-end boutique setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKi2KCRR0mrPRzrKPEGlOSzUMcv8osNPWadukQXrVDJAhHJPN3H3UaMipwNDb4FfcVTHnNaslbeLIwSKEksbRnVkJm3q2TR_A0WRzvV-gKz7eq0ngXyD7fIbgFuFMbgZnqhHDGd1xM8SyKI9TXjDjT3PcAVI49uUMR-ARJjQaGVvKyCQsm_aBeREEZOQYxhIS_L1Jy2H9jrs_Fuw_mnPeiH3_EgxFVLKCgOzWeMORjSn29TXiSYOcFGA">
+</div>
+<div>
+<p class="font-title-sm text-title-sm text-on-surface group-hover:text-primary transition-colors">Ivory Satin Wrap</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">SKU: SW-042</p>
+</div>
+</div>
+</td>
+<td class="p-stack-md">
+<span class="px-3 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">Satin Wraps</span>
+</td>
+<td class="p-stack-md font-body-md text-body-md text-on-surface">$45.00</td>
+<td class="p-stack-md">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="font-body-md text-body-md text-error">2 in stock</span>
+</div>
+</td>
+<td class="p-stack-md text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+<button class="p-2 text-error hover:bg-error-container transition-colors rounded-full"><span class="material-symbols-outlined text-[20px] text-error">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-200 group">
+<td class="p-stack-md">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-DEFAULT overflow-hidden shrink-0 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A collection of delicate vintage-style lace trimming arranged neatly on a distressed wooden table. A soft, warm rose-gold ambient light filters in from an unseen window, giving the scene a nostalgic, romantic, and handcrafted aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMQeQnU0dUjgLQrPng7nmYnn3lWBvEQAzL5TjiMsOcVPSGGU-NKx0MdKzV8_W4Y5729cNpk4r00VQ_H2C416AlvP5kNmLBzh7kTCOgxcS0ZY5vTM2QqzZaUP9VdD4COw57kBqy2oC3EaQx8FblhhZAi2mLBNqSkfJwtRBrQhbMn2UVhilfzQ9uFT8tjttaeg4K3H0aBJZcZmzBK_-fE0IjZJMZnWiUZmIIOasm_2N1CC9sXSpKODPxHw">
+</div>
+<div>
+<p class="font-title-sm text-title-sm text-on-surface group-hover:text-primary transition-colors">Vintage Lace Trim</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">SKU: BD-011</p>
+</div>
+</div>
+</td>
+<td class="p-stack-md">
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Bridal</span>
+</td>
+<td class="p-stack-md font-body-md text-body-md text-on-surface">$18.50</td>
+<td class="p-stack-md">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="font-body-md text-body-md text-on-surface">120 in stock</span>
+</div>
+</td>
+<td class="p-stack-md text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+<button class="p-2 text-error hover:bg-error-container transition-colors rounded-full"><span class="material-symbols-outlined text-[20px] text-error">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Mobile Cards View -->
+<div class="md:hidden flex flex-col divide-y divide-outline-variant">
+<!-- Card 1 -->
+<div class="p-stack-md flex flex-col gap-unit relative">
+<div class="flex items-start gap-stack-md">
+<div class="w-16 h-16 rounded-DEFAULT overflow-hidden shrink-0 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A delicate spool of blush pink silk ribbon resting on a pristine white marble surface, bathed in soft, natural morning light. The aesthetic is clean, minimalist, and romantic, emphasizing the artisanal texture of the fabric against the smooth stone." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaDgeZ9zLF0FQ0unb43lZ9sGm8IO17_nu-bXudZEPA8vkzXLDCnM5_FQxAmBmzVpUhRqlljC0LxTxwVxROuwt1FEQ0aw5Y4RGu90ZHv3OYRRB_3NQG_4qmFCGaRT22p6KEjC29DFVbC9MIrIKt6TXnBtltPY0LLbpgyoG1Cme1jiIrWGONWXhGXuID4lk6GAfKU2gSwOhhmeq1ZmmzPf2j8nDZlE7KPgHrq61jxLS1GtqdrzR23hLUdA">
+</div>
+<div class="flex-grow">
+<p class="font-title-sm text-title-sm text-on-surface">Blush Silk Ribbon</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-1">SKU: RB-001</p>
+<span class="inline-block px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm text-[10px]">Ribbons</span>
+</div>
+</div>
+<div class="flex justify-between items-center mt-2 pt-2 border-t border-outline-variant border-dashed">
+<div>
+<p class="font-body-md text-body-md text-on-surface font-semibold">$24.00</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">45 in stock</p>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-on-surface-variant bg-surface-container rounded-full"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-stack-md flex flex-col gap-unit relative">
+<div class="flex items-start gap-stack-md">
+<div class="w-16 h-16 rounded-DEFAULT overflow-hidden shrink-0 bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A beautifully crafted ivory satin wrap draped elegantly over a soft cream velvet display cushion. The lighting is diffused and warm, creating gentle shadows that highlight the smooth, luxurious sheen of the material in a high-end boutique setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6HIyu8FIKgOtHaq_K2YsFjR-3ycZapzY-WYq6ZbE6UTKRJO2O5RNIDBWwofi_aaIOPLDOIeSBPIvDmzjWqWHiTMnbpc-usCry9AwM3ysI1MzvpNB4xbao5OviyBYcDDRkXDJ-DO-S8s6c07MRmQqkhUGJEEOZDq0fKAiPRaj7sUjWllXh8ut95UlWxLVBUwLpzxUG2LUOQJzuGN4W8JDH0VG1JupYl4u2C1J4F_7fpInmTSacda_HUg">
+</div>
+<div class="flex-grow">
+<p class="font-title-sm text-title-sm text-on-surface">Ivory Satin Wrap</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-1">SKU: SW-042</p>
+<span class="inline-block px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm text-[10px]">Satin Wraps</span>
+</div>
+</div>
+<div class="flex justify-between items-center mt-2 pt-2 border-t border-outline-variant border-dashed">
+<div>
+<p class="font-body-md text-body-md text-on-surface font-semibold">$45.00</p>
+<p class="font-label-sm text-label-sm text-error">2 in stock</p>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-on-surface-variant bg-surface-container rounded-full"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="p-stack-md border-t border-outline-variant bg-surface-container-lowest flex justify-between items-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Showing 1 to 3 of 45 results</p>
+<div class="flex gap-1">
+<button class="p-1 rounded text-outline hover:text-primary hover:bg-surface-container transition-colors disabled:opacity-50"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="w-8 h-8 rounded bg-primary-container text-on-primary-container font-label-md text-label-md flex items-center justify-center">1</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container text-on-surface-variant font-label-md text-label-md flex items-center justify-center transition-colors">2</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container text-on-surface-variant font-label-md text-label-md flex items-center justify-center transition-colors">3</button>
+<button class="p-1 rounded text-outline hover:text-primary hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+</div>
+</main>
+
+
+</body></html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shop - Malmalee Creations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#1b1c1c",
+                    "primary-container": "#fadadd",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#e6e5b9",
+                    "secondary-fixed": "#e6e5b9",
+                    "surface-container-low": "#f6f3f2",
+                    "surface-container": "#f0eded",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#debfc2",
+                    "outline": "#807475",
+                    "surface-container-highest": "#e4e2e1",
+                    "on-surface-variant": "#4f4445",
+                    "on-secondary-fixed": "#1d1d03",
+                    "on-tertiary-fixed-variant": "#70343e",
+                    "tertiary-fixed": "#ffd9dd",
+                    "on-secondary-container": "#666643",
+                    "inverse-surface": "#303030",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-container": "#93505b",
+                    "surface-variant": "#e4e2e1",
+                    "surface-container-high": "#eae8e7",
+                    "secondary": "#60603e",
+                    "on-primary-fixed": "#281719",
+                    "background": "#fbf9f8",
+                    "inverse-on-surface": "#f3f0f0",
+                    "surface-bright": "#fbf9f8",
+                    "primary-fixed": "#fbdbde",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#484828",
+                    "on-primary-container": "#765e61",
+                    "on-primary-fixed-variant": "#574144",
+                    "on-primary": "#ffffff",
+                    "on-surface": "#1b1c1c",
+                    "outline-variant": "#d2c3c4",
+                    "on-error": "#ffffff",
+                    "tertiary-container": "#ffd8dc",
+                    "on-error-container": "#93000a",
+                    "tertiary": "#8c4b55",
+                    "surface-tint": "#70585b",
+                    "primary": "#70585b",
+                    "surface": "#fbf9f8",
+                    "on-tertiary-fixed": "#3a0915",
+                    "tertiary-fixed-dim": "#ffb2bc",
+                    "secondary-fixed-dim": "#cac99f",
+                    "surface-dim": "#dcd9d9",
+                    "inverse-primary": "#debfc2",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "container-max": "1200px",
+                    "gutter": "24px",
+                    "margin-mobile": "20px",
+                    "section-gap": "80px",
+                    "unit": "8px",
+                    "margin-desktop": "64px",
+                    "stack-md": "16px",
+                    "stack-lg": "32px"
+            },
+            "fontFamily": {
+                    "label-sm": [
+                            "Be Vietnam Pro"
+                    ],
+                    "body-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "headline-md-mobile": [
+                            "Playfair Display"
+                    ],
+                    "body-lg": [
+                            "Be Vietnam Pro"
+                    ],
+                    "label-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "display-lg-mobile": [
+                            "Playfair Display"
+                    ],
+                    "display-lg": [
+                            "Playfair Display"
+                    ],
+                    "title-sm": [
+                            "Playfair Display"
+                    ],
+                    "headline-md": [
+                            "Playfair Display"
+                    ]
+            },
+            "fontSize": {
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "display-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "title-sm": [
+                            "20px",
+                            {
+                                    "lineHeight": "1.4",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .product-card-shadow {
+            box-shadow: 0px 4px 20px rgba(183, 110, 121, 0.15);
+        }
+        .product-card-hover:hover {
+            box-shadow: 0px 8px 30px rgba(183, 110, 121, 0.25);
+            transform: translateY(-4px);
+        }
+        .chip {
+            border-radius: 9999px;
+            background-color: #FADADD;
+            color: #1b1c1c;
+            padding: 4px 12px;
+        }
+        .btn-primary {
+            background-color: #FADADD;
+            color: #1b1c1c;
+            padding: 12px 32px;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #fbdbde;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md text-body-md">
+<!-- TopNavBar -->
+<header class="bg-background dark:bg-on-background docked full-width top-0 shadow-[0px_4px_20px_rgba(183,110,121,0.15)] z-50 sticky">
+<div class="flex justify-between items-center w-full px-margin-desktop py-stack-md max-w-container-max mx-auto">
+<div class="flex-1 hidden md:flex items-center gap-6">
+<nav class="flex items-center gap-6">
+<a class="font-label-md text-label-md text-primary dark:text-primary-fixed-dim border-b-2 border-primary dark:border-primary-fixed-dim pb-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-300" href="#">Shop</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant pb-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-300" href="#">Collections</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant pb-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-300" href="#">Our Story</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant pb-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-300" href="#">Journal</a>
+</nav>
+</div>
+<div class="flex-1 text-center md:text-left lg:text-center">
+<a class="font-display-lg text-display-lg text-primary dark:text-primary-fixed-dim tracking-tight hidden md:block" href="#">Malmalee Creations</a>
+<a class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed-dim tracking-tight md:hidden" href="#">Malmalee Creations</a>
+</div>
+<div class="flex-1 flex justify-end items-center gap-4">
+<button class="text-primary hover:opacity-80 scale-95 transition-all hidden md:flex">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="text-primary hover:opacity-80 scale-95 transition-all">
+<span class="material-symbols-outlined">shopping_bag</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col md:flex-row w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-section-gap gap-gutter">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col bg-surface-container-lowest dark:bg-surface-dim border-r border-outline-variant h-full w-64 rounded-r-xl shadow-sm p-gutter space-y-stack-md flex-shrink-0 sticky top-32">
+<div class="mb-4">
+<h2 class="font-title-sm text-title-sm text-primary mb-1">Categories</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Filter by style</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 font-label-md text-label-md text-primary dark:text-primary-fixed-dim font-bold bg-primary-container dark:bg-primary-fixed-variant rounded-lg hover:translate-x-1 transition-transform duration-200 Active: scale-98" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+                    All Products
+                </a>
+<a class="flex items-center gap-3 p-3 font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container rounded-lg hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+                    Ribbons
+                </a>
+<a class="flex items-center gap-3 p-3 font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container rounded-lg hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">layers</span>
+                    Satin Wraps
+                </a>
+<a class="flex items-center gap-3 p-3 font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container rounded-lg hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">favorite</span>
+                    Bridal
+                </a>
+<a class="flex items-center gap-3 p-3 font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container rounded-lg hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">checkroom</span>
+                    Apparel
+                </a>
+</nav>
+<div class="mt-8 pt-6 border-t border-outline-variant">
+<h3 class="font-label-md text-label-md text-primary mb-4 font-bold">Price Range</h3>
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center bg-surface-bright rounded-md px-3 py-2 border-b-2 border-primary-container">
+<span class="text-on-surface-variant text-sm">$0</span>
+<span class="text-on-surface-variant text-sm">$200+</span>
+</div>
+<input class="w-full accent-primary" max="200" min="0" type="range" value="100"/>
+</div>
+</div>
+<div class="mt-auto pt-8">
+<button class="btn-primary w-full font-label-md text-label-md flex justify-center items-center gap-2">
+                    Filter Results
+                </button>
+</div>
+</aside>
+<!-- Product Grid Content -->
+<section class="flex-grow">
+<!-- Mobile Filter Toggle (Visible only on mobile) -->
+<div class="md:hidden flex justify-between items-center mb-6 pb-4 border-b border-outline-variant">
+<h1 class="font-headline-md-mobile text-headline-md-mobile text-primary">Shop All</h1>
+<button class="flex items-center gap-2 text-primary border border-primary px-4 py-2 rounded-md">
+<span class="material-symbols-outlined">tune</span>
+<span class="font-label-md text-label-md">Filters</span>
+</button>
+</div>
+<!-- Desktop Header -->
+<div class="hidden md:flex justify-between items-end mb-8">
+<h1 class="font-headline-md text-headline-md text-primary">Curated Collection</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Showing 24 products</p>
+</div>
+<!-- Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Product 1 -->
+<div class="group relative flex flex-col bg-surface-container-lowest rounded-lg product-card-hover transition-all duration-300">
+<div class="relative w-full aspect-[4/5] overflow-hidden rounded-t-lg bg-surface-container">
+<img class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0" data-alt="A delicate, handmade silk hair bow in a soft, dusty rose color, resting on a clean, light cream surface. The lighting is soft and natural, casting gentle, diffused shadows that highlight the smooth texture of the silk and the meticulous craftsmanship. The overall aesthetic is romantic, minimalist, and luxurious, fitting a high-end boutique style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY8tqboIoZWKOwEXWbsbcGD8BkYC9OEWZgYxgRfi7uuTdETs_fwuO59menoetfE-16sypu6CcjWFA64iOBmfgIeCiioiEbS11PvyF6EYpuLaNDZEYkuaXyQh32BOl4c4GU2xj33F3bIYArzyOoe7bb6WfvplsOoanLMfHnmzeI5_ve_6kQ9Q92nYuRDnITEXmwpDjhj0Ka2Q1090RcBxjeYfoWcy0YqG_6DXFLdFT5tBsA9akcGHRmzw"/>
+<img class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" data-alt="A model wearing the dusty rose silk hair bow in a loose, romantic updo. The lighting is bright and airy, with a soft focus background emphasizing the elegance of the accessory. The aesthetic is modern, feminine, and sophisticated, reflecting a premium handcrafted brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7_0hLMGdQcvk_gyXGicU5nFbQFlYdcgWXLBqOWLMDrbGPDe_TYBo77DSE4jIE8mNInYMEbxCiGnQSIXTe348aKc4TEp4TGgMt_k0z3XxmUSYPurgaRqprt4o1cSLYJttvzZjkcinat1UlTJM7ge9GLjyQypXCq_J3Lc8meYt7bGF8j1Rym6cOXI4XpX0Pq7Y2H4ICrQ9EgUdHkkjhG5xXivtgrxQd2_8Go3oxufb1BqBx99PNvXRIkA"/>
+<div class="absolute bottom-4 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+<button class="bg-surface-container-lowest/90 backdrop-blur-sm text-primary border border-primary/20 px-6 py-2 rounded-full font-label-md text-label-md hover:bg-primary-container transition-colors">
+                                Quick View
+                            </button>
+</div>
+</div>
+<div class="p-4 flex flex-col items-center text-center">
+<div class="flex gap-2 mb-2">
+<span class="chip font-label-sm text-label-sm">Bows</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-primary mb-1">Silk Hair Bow</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">$45.00</p>
+</div>
+</div>
+<!-- Product 2 -->
+<div class="group relative flex flex-col bg-surface-container-lowest rounded-lg product-card-hover transition-all duration-300">
+<div class="relative w-full aspect-[4/5] overflow-hidden rounded-t-lg bg-surface-container">
+<img class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0" data-alt="A beautifully crafted satin wrap skirt in a rich, muted terracotta shade, draped elegantly on a simple wooden hanger against a soft cream wall. The natural light highlights the subtle sheen of the satin and the clean lines of the garment. The mood is calm, artisanal, and subtly luxurious, perfectly aligning with a handcrafted boutique aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBojw7ND8adPCr5vCSZGIEubXmmTLSRCPt6PrpTxwh7AOAnOCiiB1ZHCt1svb1-6khmiwFk9mAN5c3maW4-4_jHDeNZTRKNbDnvq8K-GUjIoT0xT2Tur-KMsMjt-Kb_Hwi2aorvbFNN8eoHpZl33H8aVdgUGy2DKPnTy2vlWMD4b0Zxrt1NhkgAKwH_DeNy9rXzgP8vQNq7sHaaNylZC0d2_VXlp5tCX1R8HKBAh8OOaDt79uDOI58MqA"/>
+<img class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" data-alt="Close-up detail of the satin wrap skirt showing the fine stitching and the delicate tie mechanism. The lighting is intimate and warm, focusing on the texture and quality of the handmade piece. The visual style is soft minimalism, emphasizing craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn9IUAMjs_Wr1iSLF5A-VWzBnHgPcyjE-nW9lD05Rz4ItPmLoRefdN7pc0vJSNcGaJtA0IY087K28z6pO01K_wk1Y3GLf0GDrY_r4gLOrHCGGlUxGY0yEH6On5oyanq39IvH6QG53rlAG0zRzW2AbjcvFif56fUUIaluuI1CYovg5PR0ZhsAtA1ZoCoHp5WnC-xDVw1qdySlpEt506H8MzEA2az6EXXPyxecDNz_SlJKpyIUrm1mRKBg"/>
+<div class="absolute bottom-4 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+<button class="bg-surface-container-lowest/90 backdrop-blur-sm text-primary border border-primary/20 px-6 py-2 rounded-full font-label-md text-label-md hover:bg-primary-container transition-colors">
+                                Quick View
+                            </button>
+</div>
+</div>
+<div class="p-4 flex flex-col items-center text-center">
+<div class="flex gap-2 mb-2">
+<span class="chip font-label-sm text-label-sm">Apparel</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-primary mb-1">Satin Wrap Skirt</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">$120.00</p>
+</div>
+</div>
+<!-- Product 3 -->
+<div class="group relative flex flex-col bg-surface-container-lowest rounded-lg product-card-hover transition-all duration-300">
+<div class="relative w-full aspect-[4/5] overflow-hidden rounded-t-lg bg-surface-container">
+<img class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0" data-alt="A set of handcrafted, hand-painted wooden pencils arranged neatly on a textured cream paper surface. The pencils feature delicate floral patterns in soft pastel pinks and muted greens. The lighting is bright and even, highlighting the artisanal details. The overall aesthetic is charming, creative, and refined." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCorNzchFJKd8WYX19O6DBS92yH0TRtQoMt7ThIvGHOpr6b7I5gmf8kRv3mfbgFzqE-ibOii2zn_mJmUJrkz7lHvMwjajTeSSDQLZGCWKlJUi3OoJLraZ1ar-SKfA82aCfE4-mMM4PAU6Qm1_iKwYnKc0c4g7M3VeNb_jQ6Db1cNtK_kxN54gu2g73ZdGe4XYi14xEiERbEl4Dm1cGMDv1WwthUqS4myt27Knm-_h5NHzhHsOCucrsfZw"/>
+<img class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" data-alt="A close-up view of one of the hand-painted pencils resting on an open journal with textured pages. The lighting is warm and inviting, suggesting a moment of creative inspiration. The style is softly romantic and focuses on everyday magic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuEUvbyk8r_IEHZmuzLdIPgT0uwRU-U7rsEr5mDVw2vKMxnE9ApiSq9jTZCWBiORNTwIQjBRNmGMGYarsvilkTSKKurtYr33hEe2PFgch3YotYZEu88J2y53KA6QnIg4LbTA5EMsQMTfijztpJ3Pbk4oYgnFIw94eiubdXE8Vb_ld4ak65hW9JLPsAuBcTPVnsDnqKx-p9MWx7oR_QTAL-msSlI-Y88qX-QRnPPH77kGvuXuSEd0mZbA"/>
+<div class="absolute bottom-4 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+<button class="bg-surface-container-lowest/90 backdrop-blur-sm text-primary border border-primary/20 px-6 py-2 rounded-full font-label-md text-label-md hover:bg-primary-container transition-colors">
+                                Quick View
+                            </button>
+</div>
+</div>
+<div class="p-4 flex flex-col items-center text-center">
+<div class="flex gap-2 mb-2">
+<span class="chip font-label-sm text-label-sm">Accessories</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-primary mb-1">Hand-painted Pencils</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">$25.00</p>
+</div>
+</div>
+<!-- Product 4 -->
+<div class="group relative flex flex-col bg-surface-container-lowest rounded-lg product-card-hover transition-all duration-300">
+<div class="relative w-full aspect-[4/5] overflow-hidden rounded-t-lg bg-surface-container">
+<img class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0" data-alt="An elegant, wide satin headband in a deep, moody charcoal color, displayed on a smooth, rounded stand against a soft cream background. The lighting is diffused, casting a gentle, luxurious glow on the satin fabric. The mood is sophisticated and minimal, fitting a high-end artisanal brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCC0LIZKfT6t4EbxpZUiz-lrAV7h3nvSRXHtRnblKSJX6NYMXuFf5EyQE_RO3Exm6VC4kZNLv4x2wV_-J-hes4ipfDsWTXkyDo9SDiVmUvObI7bzQ0GPpCF8_7Ezeaj80SrS4O9QrLFBE0f_LqYGGDtWeLuL_c65UZWl1W77E5V1w8cirmNmStwzE4V4BTrDpoRzL0ETxMHDf6pFTpqickli96RidwCzClQl5U1022oIZQImtgF_JNMMA"/>
+<img class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" data-alt="A detail shot showing the textured underside of the charcoal satin headband, emphasizing the quality and careful construction. The lighting is soft and focused on the material. The aesthetic is clean, modern, and quietly luxurious." src="https://lh3.googleusercontent.com/aida-public/AB6AXuClAEaNRb7oOjDjlKlbuD5baLLNemhLSIcst3qUyiACBWRaBnqu1pq4AZgy7CD0gyzZP0hZqtcviW4p9DPv0ZsS96CYmYs1fiWRWyuZxX_ZDItCJH59SBnnUIApkrpI0RWbDA8paIhUBYxRRiIWbyy0Pxmf4urrDFecguGsV6fOleGuS9Qnoit79iB3YjNu2m_tt74nNp39g4Td973vPDKAbF3XspmeTLI0b2u6UmnI15KWJzRXVlo4Mg"/>
+<div class="absolute bottom-4 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+<button class="bg-surface-container-lowest/90 backdrop-blur-sm text-primary border border-primary/20 px-6 py-2 rounded-full font-label-md text-label-md hover:bg-primary-container transition-colors">
+                                Quick View
+                            </button>
+</div>
+</div>
+<div class="p-4 flex flex-col items-center text-center">
+<div class="flex gap-2 mb-2">
+<span class="chip font-label-sm text-label-sm">Headbands</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-primary mb-1">Midnight Satin Band</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">$38.00</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-dim full-width border-t border-outline-variant mt-auto">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-section-gap px-margin-desktop py-section-gap max-w-container-max mx-auto Transition-all duration-300 ease-in-out">
+<div class="md:col-span-1">
+<h2 class="font-display-lg text-display-lg text-primary dark:text-primary-fixed-dim mb-4 hidden md:block">Malmalee Creations</h2>
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed-dim mb-4 md:hidden">Malmalee Creations</h2>
+<p class="font-body-md text-body-md text-secondary dark:text-secondary-fixed-dim">© 2024 Malmalee Creations. Handcrafted with Magic.</p>
+</div>
+<div class="flex flex-col gap-2">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim underline underline-offset-4 transition-colors" href="#">Instagram</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim underline underline-offset-4 transition-colors" href="#">Pinterest</a>
+</div>
+<div class="flex flex-col gap-2">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim underline underline-offset-4 transition-colors" href="#">Shipping</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim underline underline-offset-4 transition-colors" href="#">Returns</a>
+</div>
+<div class="flex flex-col gap-2">
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim underline underline-offset-4 transition-colors" href="#">Contact Us</a>
+</div>
+</div>
+</footer>
+</body></html>

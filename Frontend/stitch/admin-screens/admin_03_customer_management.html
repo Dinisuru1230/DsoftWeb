@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin - Customer Management | Malmalee Creations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed": "#3a0915",
+                      "surface": "#fbf9f8",
+                      "outline": "#807475",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed-variant": "#574144",
+                      "error": "#ba1a1a",
+                      "surface-dim": "#dcd9d9",
+                      "surface-bright": "#fbf9f8",
+                      "on-error": "#ffffff",
+                      "on-background": "#1b1c1c",
+                      "secondary-fixed": "#e6e5b9",
+                      "tertiary-fixed": "#ffd9dd",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-primary-container": "#765e61",
+                      "surface-variant": "#e4e2e1",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#1b1c1c",
+                      "on-secondary-fixed-variant": "#484828",
+                      "tertiary-container": "#ffd8dc",
+                      "error-container": "#ffdad6",
+                      "primary": "#70585b",
+                      "inverse-surface": "#303030",
+                      "tertiary-fixed-dim": "#ffb2bc",
+                      "on-primary-fixed": "#281719",
+                      "surface-container-low": "#f6f3f2",
+                      "surface-container": "#f0eded",
+                      "on-tertiary-fixed-variant": "#70343e",
+                      "on-tertiary-container": "#93505b",
+                      "secondary-fixed-dim": "#cac99f",
+                      "primary-container": "#fadadd",
+                      "on-secondary-container": "#666643",
+                      "surface-tint": "#70585b",
+                      "tertiary": "#8c4b55",
+                      "secondary-container": "#e6e5b9",
+                      "inverse-primary": "#debfc2",
+                      "secondary": "#60603e",
+                      "background": "#fbf9f8",
+                      "surface-container-high": "#eae8e7",
+                      "inverse-on-surface": "#f3f0f0",
+                      "primary-fixed-dim": "#debfc2",
+                      "on-secondary": "#ffffff",
+                      "on-surface-variant": "#4f4445",
+                      "outline-variant": "#d2c3c4",
+                      "on-secondary-fixed": "#1d1d03",
+                      "on-error-container": "#93000a",
+                      "primary-fixed": "#fbdbde"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "section-gap": "80px",
+                      "margin-mobile": "20px",
+                      "stack-lg": "32px",
+                      "unit": "8px",
+                      "stack-md": "16px",
+                      "container-max": "1200px",
+                      "stack-sm": "8px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-md-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "title-sm": [
+                              "Playfair Display"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "title-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .ambient-shadow {
+            box-shadow: 0px 4px 20px rgba(183, 110, 121, 0.15);
+        }
+        .ambient-shadow-hover:hover {
+            box-shadow: 0px 8px 40px rgba(183, 110, 121, 0.25);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar (Admin Variation) -->
+<nav class="hidden md:flex flex-col p-gutter space-y-stack-md bg-surface-container-lowest border-r border-outline-variant shadow-sm h-full w-64 rounded-r-xl flex-shrink-0 z-10">
+<div class="mb-stack-lg">
+<h1 class="font-title-sm text-title-sm text-primary mb-1">Admin Panel</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Malmalee Creations</p>
+</div>
+<div class="flex-grow space-y-unit">
+<a class="flex items-center space-x-unit px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="color: #B76E79; font-variation-settings: 'wght' 300;">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center space-x-unit px-4 py-3 rounded-lg text-primary font-bold bg-primary-container scale-98 transition-all" href="#">
+<span class="material-symbols-outlined" style="color: #B76E79; font-variation-settings: 'wght' 300; font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+<a class="flex items-center space-x-unit px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="color: #B76E79; font-variation-settings: 'wght' 300;">inventory_2</span>
+<span class="font-label-md text-label-md">Inventory</span>
+</a>
+<a class="flex items-center space-x-unit px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="color: #B76E79; font-variation-settings: 'wght' 300;">receipt_long</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+</div>
+<div class="mt-auto">
+<button class="w-full flex items-center justify-center space-x-unit py-3 border border-[#B76E79] rounded text-primary hover:bg-surface-container transition-colors duration-300">
+<span class="material-symbols-outlined" style="color: #B76E79;">logout</span>
+<span class="font-label-md text-label-md">Sign Out</span>
+</button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto bg-background p-margin-mobile md:p-margin-desktop relative">
+<!-- Header -->
+<header class="flex flex-col md:flex-row md:items-center justify-between mb-section-gap gap-stack-md">
+<div>
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight">Customer Management</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-unit">View and manage registered users.</p>
+</div>
+<div class="flex items-center gap-stack-md">
+<!-- Search Bar -->
+<div class="relative w-full md:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant">search</span>
+<input class="w-full bg-surface-container-lowest border-b-2 border-outline-variant focus:border-[#B76E79] focus:ring-0 pl-10 pr-4 py-2 font-body-md text-body-md text-on-surface placeholder:text-outline outline-none transition-colors duration-300 rounded-t-DEFAULT" placeholder="Search customers..." type="text"/>
+</div>
+<!-- Filter Button -->
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-[#B76E79] rounded text-primary hover:bg-surface-container transition-colors duration-300">
+<span class="material-symbols-outlined">filter_list</span>
+<span class="font-label-md text-label-md">Filter</span>
+</button>
+</div>
+</header>
+<!-- Customer Data Table (Glassmorphism Card) -->
+<div class="bg-surface-container-lowest rounded-xl ambient-shadow overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<th class="py-4 px-6 font-medium">Customer Name</th>
+<th class="py-4 px-6 font-medium">Email Address</th>
+<th class="py-4 px-6 font-medium text-right">Total Orders</th>
+<th class="py-4 px-6 font-medium text-right">Total Spend</th>
+<th class="py-4 px-6 font-medium">Joined Date</th>
+<th class="py-4 px-6 font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-200 group">
+<td class="py-4 px-6 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-label-sm">
+                                    EA
+                                </div>
+<span class="font-medium">Eleanor Aurelia</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant">eleanor.a@example.com</td>
+<td class="py-4 px-6 text-right">12</td>
+<td class="py-4 px-6 text-right font-medium">$450.00</td>
+<td class="py-4 px-6 text-on-surface-variant">Jan 15, 2023</td>
+<td class="py-4 px-6 text-right space-x-2">
+<button class="p-1 rounded text-outline hover:text-primary transition-colors" title="View History">
+<span class="material-symbols-outlined" style="font-size: 20px;">history</span>
+</button>
+<button class="p-1 rounded text-outline hover:text-primary transition-colors" title="Edit Customer">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-200 group">
+<td class="py-4 px-6 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-secondary flex items-center justify-center font-bold text-label-sm">
+                                    JB
+                                </div>
+<span class="font-medium">Julian Barnes</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant">j.barnes@mail.com</td>
+<td class="py-4 px-6 text-right">3</td>
+<td class="py-4 px-6 text-right font-medium">$85.50</td>
+<td class="py-4 px-6 text-on-surface-variant">Mar 02, 2024</td>
+<td class="py-4 px-6 text-right space-x-2">
+<button class="p-1 rounded text-outline hover:text-primary transition-colors" title="View History">
+<span class="material-symbols-outlined" style="font-size: 20px;">history</span>
+</button>
+<button class="p-1 rounded text-outline hover:text-primary transition-colors" title="Edit Customer">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-200 group">
+<td class="py-4 px-6 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-container text-tertiary flex items-center justify-center font-bold text-label-sm">
+                                    SW
+                                </div>
+<span class="font-medium">Sophia Winters</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant">sophia.w@studio.com</td>
+<td class="py-4 px-6 text-right">24</td>
+<td class="py-4 px-6 text-right font-medium">$1,240.00</td>
+<td class="py-4 px-6 text-on-surface-variant">Nov 11, 2022</td>
+<td class="py-4 px-6 text-right space-x-2">
+<button class="p-1 rounded text-outline hover:text-primary transition-colors" title="View History">
+<span class="material-symbols-outlined" style="font-size: 20px;">history</span>
+</button>
+<button class="p-1 rounded text-outline hover:text-primary transition-colors" title="Edit Customer">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors duration-200 group">
+<td class="py-4 px-6 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-label-sm">
+                                    MR
+                                </div>
+<span class="font-medium">Marcus Reed</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant">m.reed.design@web.com</td>
+<td class="py-4 px-6 text-right">1</td>
+<td class="py-4 px-6 text-right font-medium">$25.00</td>
+<td class="py-4 px-6 text-on-surface-variant">Oct 05, 2024</td>
+<td class="py-4 px-6 text-right space-x-2">
+<button class="p-1 rounded text-outline hover:text-primary transition-colors" title="View History">
+<span class="material-symbols-outlined" style="font-size: 20px;">history</span>
+</button>
+<button class="p-1 rounded text-outline hover:text-primary transition-colors" title="Edit Customer">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="border-t border-outline-variant p-4 flex items-center justify-between bg-surface-container-lowest">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Showing 1 to 4 of 42 entries</span>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-outline-variant hover:text-primary hover:border-primary transition-colors" disabled="">
+<span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary-container text-primary font-label-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary transition-colors font-label-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary transition-colors font-label-sm">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-outline hover:text-primary hover:border-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

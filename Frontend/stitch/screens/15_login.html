@@ -1,0 +1,189 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Login - Malmalee Creations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#fbdbde",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#281719",
+                        "primary-fixed-dim": "#debfc2",
+                        "secondary-fixed-dim": "#cac99f",
+                        "on-primary-container": "#765e61",
+                        "secondary": "#60603e",
+                        "outline-variant": "#d2c3c4",
+                        "background": "#fbf9f8",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#303030",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-surface-variant": "#4f4445",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "on-tertiary-fixed": "#3a0915",
+                        "secondary-fixed": "#e6e5b9",
+                        "surface": "#fbf9f8",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb2bc",
+                        "inverse-primary": "#debfc2",
+                        "tertiary": "#8c4b55",
+                        "on-secondary-fixed-variant": "#484828",
+                        "surface-dim": "#dcd9d9",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-primary-fixed-variant": "#574144",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#1d1d03",
+                        "on-background": "#1b1c1c",
+                        "secondary-container": "#e6e5b9",
+                        "surface-variant": "#e4e2e1",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#ffd9dd",
+                        "surface-tint": "#70585b",
+                        "on-tertiary-container": "#93505b",
+                        "primary-container": "#fadadd",
+                        "outline": "#807475",
+                        "primary": "#70585b",
+                        "tertiary-container": "#ffd8dc",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed-variant": "#70343e",
+                        "on-secondary-container": "#666643",
+                        "surface-bright": "#fbf9f8",
+                        "surface-container-high": "#eae8e7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "section-gap": "80px",
+                        "margin-desktop": "64px",
+                        "container-max": "1200px",
+                        "unit": "8px",
+                        "stack-lg": "32px",
+                        "margin-mobile": "20px",
+                        "stack-sm": "8px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Playfair Display"],
+                        "headline-md-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-sm": ["Be Vietnam Pro"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "body-md": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-md-mobile": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-md": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .custom-input {
+            background-color: theme('colors.surface-container-lowest');
+            border: none;
+            border-bottom: 2px solid theme('colors.outline-variant');
+            transition: border-color 0.3s ease;
+        }
+        .custom-input:focus {
+            outline: none;
+            box-shadow: none;
+            border-bottom-color: theme('colors.primary');
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex items-center justify-center font-body-md text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<main class="w-full h-screen flex flex-col md:flex-row">
+<!-- Left Side: Image Canvas -->
+<!-- Right Side: Authentication Form -->
+<section class="w-full md:w-1/2 h-full flex flex-col justify-center items-center px-margin-mobile md:px-margin-desktop bg-surface-container-lowest relative">
+<div class="w-full max-w-md space-y-stack-lg">
+<!-- Header -->
+<div class="text-center space-y-stack-sm">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight">Malmalee Creations</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Welcome back. Please enter your details.</p>
+</div>
+<!-- Form -->
+<form class="space-y-stack-md" onsubmit="event.preventDefault();">
+<div class="space-y-unit">
+<label class="font-label-md text-label-md text-on-surface" for="email">Email</label>
+<input class="custom-input w-full px-0 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent" id="email" placeholder="Enter your email" required="" type="email">
+</div>
+<div class="space-y-unit relative">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-on-surface" for="password">Password</label>
+<a class="font-label-sm text-label-sm text-primary hover:text-on-primary-container transition-colors duration-200" href="#">Forgot Password?</a>
+</div>
+<div class="relative">
+<input class="custom-input w-full px-0 py-3 pr-10 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent" id="password" placeholder="••••••••" required="" type="password">
+<button class="absolute right-0 top-1/2 -translate-y-1/2 text-primary hover:text-on-primary-container" type="button">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 0;">visibility_off</span>
+</button>
+</div>
+</div>
+<div class="pt-stack-sm">
+<button class="w-full py-[12px] px-[32px] bg-primary-container text-on-primary-fixed font-label-md text-label-md rounded-lg shadow-[0px_4px_20px_rgba(183,110,121,0.15)] hover:shadow-[0px_6px_24px_rgba(183,110,121,0.25)] hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center gap-2" type="submit">
+                            Sign In
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+<div class="relative py-stack-md flex items-center">
+<div class="flex-grow border-t border-outline-variant"></div>
+<span class="flex-shrink-0 mx-4 text-on-surface-variant font-label-sm text-label-sm">or</span>
+<div class="flex-grow border-t border-outline-variant"></div>
+</div>
+<div>
+<button class="w-full py-[12px] px-[32px] bg-transparent border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container transition-colors duration-300 flex justify-center items-center gap-2" type="button">
+                            Continue as Guest
+                        </button>
+</div>
+</form>
+<!-- Footer text -->
+<div class="text-center pt-stack-lg">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Don't have an account? 
+                        <a class="font-label-md text-label-md text-primary underline underline-offset-4 hover:text-on-primary-container transition-colors duration-200" href="#">Sign up</a>
+</p>
+</div>
+</div>
+<!-- Floating Decorative Element (Abstract Ribbon vibe) -->
+<div class="absolute -top-20 -right-20 w-64 h-64 bg-primary-container/30 rounded-full blur-[60px] pointer-events-none"></div>
+</section><section class="hidden md:flex md:w-1/2 h-full relative overflow-hidden">
+<img alt="Handmade boutique artisanal textures" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVOd2CWmD0i7k9aTT5GPPRL9oZ1TFt-yCLH-7zPjoQRqVuZSzUweDPfgvKU0YlZsYDMNt2yc-aKsWocvcN_gn6iehBnelRBWud-iBuZEwQvmcZs9TMW7g3aXp8ybRZcIShrVywXjCyevKFdLLgUYaI3Sc_Oodtrj4SynMo5msdyICMJeJzCEuFpw7lTm2tnkRfRCOkvZ6DvKCwEdKxjnB8BgWgeKlfimRyhDNuhcFhSnsoxp5cKGUwfA">
+<div class="absolute inset-0 bg-primary/10 backdrop-blur-[2px] flex items-center justify-center p-margin-desktop">
+<div class="text-center space-y-stack-sm"><h2 class="font-display-lg text-white text-display-lg-mobile md:text-headline-md drop-shadow-md">Artisanal Elegance</h2><p class="font-body-md text-white text-body-md drop-shadow-sm">Crafted with love, for your home.</p></div>
+</div>
+</section>
+</main>
+
+
+
+
+</body></html>
