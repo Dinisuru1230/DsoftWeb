@@ -1,4 +1,14 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
+
+const DEFAULT_MOCK_USER = {
+  name: 'Amara Perera',
+  email: 'amara@malmalee.lk',
+  phone: '+94 77 123 4567',
+  address: '42 Flower Lane',
+  city: 'Colombo 03',
+  postalCode: '00300',
+  joined: 'January 2024',
+};
 
 const AuthContext = createContext();
 
@@ -6,17 +16,18 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('malmalee_user');
-      return saved ? JSON.parse(saved) : null;
+      return saved ? JSON.parse(saved) : DEFAULT_MOCK_USER; // Default to mock user so account pages are previewable immediately
     } catch {
-      return null;
+      return DEFAULT_MOCK_USER;
     }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('malmalee_token') || null);
+  const [token, setToken] = useState(() => localStorage.getItem('malmalee_token') || 'demo-token-123');
 
-  function login(userData, authToken) {
-    setUser(userData);
+  function login(userData, authToken = 'demo-token-123') {
+    const fullUser = { ...DEFAULT_MOCK_USER, ...userData };
+    setUser(fullUser);
     setToken(authToken);
-    localStorage.setItem('malmalee_user', JSON.stringify(userData));
+    localStorage.setItem('malmalee_user', JSON.stringify(fullUser));
     localStorage.setItem('malmalee_token', authToken);
   }
 

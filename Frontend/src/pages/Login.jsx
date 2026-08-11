@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: 'amara@malmalee.lk', password: 'password123' });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
@@ -16,12 +16,8 @@ export default function Login() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (form.email && form.password.length >= 6) {
-      login({ name: 'Malmalee User', email: form.email }, 'demo-token-123');
-      navigate('/account');
-    } else {
-      setError('Please check your email and password (min 6 characters).');
-    }
+    login({ email: form.email || 'amara@malmalee.lk', name: 'Amara Perera' }, 'demo-token-123');
+    navigate('/account');
   }
 
   return (
@@ -105,7 +101,7 @@ export default function Login() {
                 type="submit"
                 className="w-full py-3 px-8 bg-primary-container text-on-primary-fixed font-label-md text-label-md rounded-lg shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center gap-2"
               >
-                Sign In
+                Sign In & Preview Account
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </button>
             </div>
