@@ -29,88 +29,167 @@ export default function Register() {
   }
 
   return (
-    <main className="flex-grow flex min-h-[calc(100vh-80px)]">
-      {/* Left — Form */}
-      <section className="flex-1 flex items-center justify-center px-5 md:px-16 py-16">
-        <div className="w-full max-w-md relative">
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary-container/30 rounded-full blur-[60px] pointer-events-none" />
-          <div className="relative z-10">
-            <Link to="/" className="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight block mb-6">
-              Malmalee Creations
-            </Link>
-            <h1 className="font-headline-md-mobile text-headline-md-mobile text-on-surface mb-1">Join the Magic</h1>
-            <p className="font-body-md text-body-md text-on-surface-variant mb-8">
-              Create your account and enjoy exclusive access to our collections.
+    <main className="w-full min-h-screen flex flex-col lg:flex-row bg-background">
+      {/* Left Side: Dreamy Image Canvas (Hidden on mobile) */}
+      <section className="hidden lg:flex lg:w-1/2 min-h-screen relative overflow-hidden bg-surface-container">
+        <img
+          src="/10_airy_artisanal_studio.jpg"
+          alt="Airy artisanal studio"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-[10s] ease-in-out hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/20" />
+        <div className="absolute inset-0 bg-primary/10 backdrop-blur-[2px] flex items-center justify-center p-12">
+          <div className="text-center space-y-3">
+            <h2 className="font-display-lg text-white text-headline-md drop-shadow-md">
+              Your Everyday Magic Awaits
+            </h2>
+            <p className="font-body-md text-white text-body-md drop-shadow-sm">
+              Handcrafted for the moments that matter.
             </p>
-
-            {error && (
-              <div className="mb-4 p-3 bg-error-container rounded-lg">
-                <p className="font-body-md text-body-md text-error">{error}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {[
-                { name: 'name', label: 'Full Name', type: 'text', placeholder: 'Your full name' },
-                { name: 'email', label: 'Email', type: 'email', placeholder: 'your@email.com' },
-              ].map(({ name, label, type, placeholder }) => (
-                <div key={name}>
-                  <label className="font-label-md text-label-md text-on-surface mb-1 block">{label}</label>
-                  <input
-                    type={type} name={name} value={form[name]} onChange={handleChange}
-                    placeholder={placeholder} required
-                    className="custom-input w-full py-3 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent"
-                  />
-                </div>
-              ))}
-              <div>
-                <label className="font-label-md text-label-md text-on-surface mb-1 block">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPass ? 'text' : 'password'} name="password" value={form.password} onChange={handleChange}
-                    placeholder="Create a password" required
-                    className="custom-input w-full py-3 pr-10 font-body-md text-body-md text-on-surface bg-transparent"
-                  />
-                  <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-0 top-1/2 -translate-y-1/2 text-primary">
-                    <span className="material-symbols-outlined">{showPass ? 'visibility' : 'visibility_off'}</span>
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="font-label-md text-label-md text-on-surface mb-1 block">Confirm Password</label>
-                <input
-                  type="password" name="confirm" value={form.confirm} onChange={handleChange}
-                  placeholder="Repeat your password" required
-                  className="custom-input w-full py-3 font-body-md text-body-md text-on-surface bg-transparent"
-                />
-              </div>
-              <div className="pt-2">
-                <button type="submit" className="w-full py-3 px-8 bg-primary-container text-on-primary-fixed font-label-md text-label-md rounded-lg shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center gap-2">
-                  Create Account
-                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-                </button>
-              </div>
-            </form>
-
-            <div className="text-center pt-8">
-              <p className="font-body-md text-body-md text-on-surface-variant">
-                Already have an account?{' '}
-                <Link to="/login" className="font-label-md text-label-md text-primary underline underline-offset-4 hover:text-on-primary-container transition-colors">
-                  Sign in
-                </Link>
-              </p>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Right — Image */}
-      <section className="hidden md:flex md:w-1/2 relative overflow-hidden">
-        <img src="/10_airy_artisanal_studio.jpg" alt="Airy artisanal studio" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-primary/10 backdrop-blur-[2px] flex items-center justify-center p-16">
-          <div className="text-center space-y-3">
-            <h2 className="font-display-lg text-white text-headline-md drop-shadow-md">Your Everyday Magic Awaits</h2>
-            <p className="font-body-md text-white text-body-md drop-shadow-sm">Handcrafted for the moments that matter.</p>
+      {/* Right Side: Registration Form */}
+      <section className="w-full lg:w-1/2 min-h-screen flex items-center justify-center p-6 md:p-16 bg-surface-container-lowest">
+        <div className="w-full max-w-md flex flex-col gap-6">
+          {/* Header */}
+          <div className="text-center md:text-left flex flex-col gap-2">
+            <Link to="/" className="inline-block mb-2">
+              <span className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight">
+                Malmalee Creations
+              </span>
+            </Link>
+            <h1 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background">
+              Create an Account
+            </h1>
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Step into a world of everyday magic and handmade elegance.
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-3 bg-error-container rounded-lg">
+              <p className="font-body-md text-body-md text-error">{error}</p>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* Full Name */}
+            <div className="flex flex-col gap-1">
+              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                Full Name
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">
+                  person
+                </span>
+                <input
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Jane Doe"
+                  required
+                  className="w-full bg-surface-container-low border-b-2 border-outline-variant text-on-background focus:outline-none focus:border-primary py-3 pl-10 pr-2 font-body-md text-body-md transition-colors placeholder:text-outline/50 bg-transparent rounded-t-sm"
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="flex flex-col gap-1">
+              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                Email Address
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">
+                  mail
+                </span>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="jane@example.com"
+                  required
+                  className="w-full bg-surface-container-low border-b-2 border-outline-variant text-on-background focus:outline-none focus:border-primary py-3 pl-10 pr-2 font-body-md text-body-md transition-colors placeholder:text-outline/50 bg-transparent rounded-t-sm"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="flex flex-col gap-1">
+              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                Password
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">
+                  lock
+                </span>
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                  className="w-full bg-surface-container-low border-b-2 border-outline-variant text-on-background focus:outline-none focus:border-primary py-3 pl-10 pr-10 font-body-md text-body-md transition-colors placeholder:text-outline/50 bg-transparent rounded-t-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-primary"
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showPass ? 'visibility' : 'visibility_off'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div className="flex flex-col gap-1">
+              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline-variant text-[20px]">
+                  lock_reset
+                </span>
+                <input
+                  type="password"
+                  name="confirm"
+                  value={form.confirm}
+                  onChange={handleChange}
+                  placeholder="Repeat your password"
+                  required
+                  className="w-full bg-surface-container-low border-b-2 border-outline-variant text-on-background focus:outline-none focus:border-primary py-3 pl-10 pr-2 font-body-md text-body-md transition-colors placeholder:text-outline/50 bg-transparent rounded-t-sm"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="mt-2 w-full bg-primary-container text-on-primary-container font-label-md text-label-md py-3 px-8 rounded-lg hover:shadow-ambient hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <span>Create Account</span>
+              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          </form>
+
+          {/* Footer / Login Link */}
+          <div className="text-center mt-2 pt-4 border-t border-outline-variant/30">
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Already a member?{' '}
+              <Link
+                to="/login"
+                className="text-primary font-medium hover:text-tertiary transition-colors underline underline-offset-4"
+              >
+                Log in here
+              </Link>
+            </p>
           </div>
         </div>
       </section>

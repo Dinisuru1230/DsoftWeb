@@ -15,106 +15,152 @@ export default function ContactUs() {
   }
 
   return (
-    <main className="flex-grow w-full max-w-[1200px] mx-auto px-5 md:px-16 py-16">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-        {/* Left — Info */}
-        <div>
-          <p className="font-label-md text-label-md text-primary uppercase tracking-widest mb-3">Get in Touch</p>
-          <h1 className="font-display-lg-mobile md:font-headline-md text-display-lg-mobile md:text-headline-md text-on-surface mb-6">
-            We'd Love to Hear From You
-          </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 leading-relaxed">
-            Have a question about an order, a custom request, or just want to say hello? We're here and happy to help.
-          </p>
+    <main className="flex-grow flex flex-col md:flex-row w-full min-h-[calc(100vh-140px)]">
+      {/* Left Side: 50% High-Res Image Canvas */}
+      <div className="w-full md:w-1/2 min-h-[400px] md:min-h-full relative overflow-hidden bg-surface-container">
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105"
+          style={{ backgroundImage: `url('/20_flat_lay_ribbon_jasmine.jpg')` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
+      </div>
 
-          {/* Contact Info Cards */}
-          <div className="space-y-4 mb-10">
-            {[
-              { icon: 'mail', title: 'Email Us', info: 'hello@malmalee.lk', sub: 'We reply within 24 hours' },
-              { icon: 'phone', title: 'Call Us', info: '+94 77 123 4567', sub: 'Mon–Sat, 9am–6pm' },
-              { icon: 'location_on', title: 'Find Us', info: 'Colombo, Sri Lanka', sub: 'By appointment only' },
-            ].map((c) => (
-              <div key={c.icon} className="flex items-start gap-4 p-4 bg-surface-container-lowest rounded-xl shadow-ambient">
-                <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-primary text-[20px]">{c.icon}</span>
-                </div>
-                <div>
-                  <p className="font-label-md text-label-md text-primary">{c.title}</p>
-                  <p className="font-body-md text-body-md text-on-surface">{c.info}</p>
-                  <p className="font-label-sm text-label-sm text-on-surface-variant">{c.sub}</p>
-                </div>
-              </div>
-            ))}
+      {/* Right Side: Contact Form & Details */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-16 bg-surface-container-lowest">
+        <div className="max-w-md w-full space-y-8">
+          {/* Header */}
+          <div className="space-y-2 text-center md:text-left">
+            <h1 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-surface">
+              Get in Touch
+            </h1>
+            <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              We'd love to hear from you. Whether you have a question about our handmade collections or just want to say hello.
+            </p>
           </div>
 
-          {/* Feature image */}
-          <div className="rounded-2xl overflow-hidden shadow-ambient">
-            <img
-              src="/08_flat_lay_fabrics_ribbon.jpg"
-              alt="Malmalee Creations artisanal textures"
-              className="w-full h-64 object-cover"
-            />
-          </div>
-        </div>
-
-        {/* Right — Form */}
-        <div className="bg-surface-container-lowest rounded-2xl p-8 shadow-ambient">
           {submitted ? (
-            <div className="text-center py-16">
-              <span className="material-symbols-outlined text-6xl text-primary mb-4 block">check_circle</span>
-              <h2 className="font-headline-md-mobile text-headline-md-mobile text-primary mb-3">Message Sent!</h2>
+            <div className="text-center py-12 bg-surface-container-low rounded-xl p-8 space-y-3 shadow-ambient">
+              <span className="material-symbols-outlined text-5xl text-primary block">check_circle</span>
+              <h2 className="font-title-sm text-title-sm text-primary">Message Sent!</h2>
               <p className="font-body-md text-body-md text-on-surface-variant">
-                Thank you for reaching out. We'll get back to you within 24 hours.
+                Thank you for reaching out. We will respond within 24 hours.
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="mt-6 font-label-md text-label-md text-primary underline underline-offset-4 hover:text-on-primary-container transition-colors"
+                className="mt-4 font-label-md text-label-md text-primary underline underline-offset-4"
               >
                 Send Another Message
               </button>
             </div>
           ) : (
+            /* Form */
             <form onSubmit={handleSubmit} className="space-y-6">
-              <h2 className="font-title-sm text-title-sm text-primary mb-6">Send a Message</h2>
-              {[
-                { name: 'name', label: 'Full Name', type: 'text', placeholder: 'Your name' },
-                { name: 'email', label: 'Email Address', type: 'email', placeholder: 'your@email.com' },
-                { name: 'subject', label: 'Subject', type: 'text', placeholder: 'What is this about?' },
-              ].map(({ name, label, type, placeholder }) => (
-                <div key={name}>
-                  <label className="font-label-md text-label-md text-on-surface mb-1 block">{label}</label>
-                  <input
-                    type={type}
-                    name={name}
-                    value={form[name]}
-                    onChange={handleChange}
-                    placeholder={placeholder}
-                    required
-                    className="custom-input w-full py-3 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent"
-                  />
-                </div>
-              ))}
-              <div>
-                <label className="font-label-md text-label-md text-on-surface mb-1 block">Message</label>
+              <div className="space-y-1">
+                <label className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider" htmlFor="name">
+                  Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Your beautiful name"
+                  required
+                  className="custom-input w-full px-0 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider" htmlFor="email">
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="Where can we reach you?"
+                  required
+                  className="custom-input w-full px-0 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider" htmlFor="subject">
+                  Subject
+                </label>
+                <input
+                  id="subject"
+                  type="text"
+                  name="subject"
+                  value={form.subject}
+                  onChange={handleChange}
+                  placeholder="What is this regarding?"
+                  required
+                  className="custom-input w-full px-0 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider" htmlFor="message">
+                  Message
+                </label>
                 <textarea
+                  id="message"
                   name="message"
                   value={form.message}
                   onChange={handleChange}
                   placeholder="Write your message here..."
                   required
-                  rows={5}
-                  className="w-full border-b-2 border-outline-variant focus:border-primary outline-none px-0 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent transition-colors resize-none"
+                  rows={4}
+                  className="custom-input w-full px-0 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent resize-none"
                 />
               </div>
+
               <button
                 type="submit"
-                className="w-full py-4 px-8 bg-primary-container text-on-background font-label-md text-label-md rounded-full hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
+                className="w-full bg-primary-container text-on-primary-fixed font-label-md text-label-md py-3 px-8 rounded-lg shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center space-x-2"
               >
-                Send Message
+                <span>Send Message</span>
                 <span className="material-symbols-outlined text-[18px]">send</span>
               </button>
             </form>
           )}
+
+          {/* Contact Details Footer Grid */}
+          <div className="pt-8 border-t border-outline-variant/30 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-start space-x-3">
+              <span className="material-symbols-outlined text-primary mt-0.5">mail</span>
+              <div>
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Email</p>
+                <a href="mailto:hello@malmalee.lk" className="font-body-md text-body-md text-primary hover:underline">
+                  hello@malmalee.lk
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3">
+              <span className="material-symbols-outlined text-primary mt-0.5">call</span>
+              <div>
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Phone</p>
+                <a href="tel:+94771234567" className="font-body-md text-body-md text-primary hover:underline">
+                  +94 77 123 4567
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3 sm:col-span-2">
+              <span className="material-symbols-outlined text-primary mt-0.5">photo_camera</span>
+              <div>
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Instagram</p>
+                <a href="#" className="font-body-md text-body-md text-primary hover:underline">
+                  @malmaleecreations
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>

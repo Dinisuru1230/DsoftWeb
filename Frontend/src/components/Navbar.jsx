@@ -14,7 +14,7 @@ export default function Navbar() {
     { label: 'Shop', to: '/shop' },
     { label: 'Collections', to: '/collections' },
     { label: 'Our Story', to: '/our-story' },
-    { label: 'Journal', to: '/journal' },
+    { label: 'Contact Us', to: '/contact' },
   ];
 
   const isActive = (path) => location.pathname === path;
