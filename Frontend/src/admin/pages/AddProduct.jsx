@@ -528,17 +528,24 @@ export default function AddProduct() {
               <label className="block font-label-md text-label-md text-on-surface mb-2" htmlFor="category">
                 Category
               </label>
-              <select
-                id="category"
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-                className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-3 font-body-md text-body-md text-on-surface"
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="category"
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c} className="bg-surface-container-lowest text-on-surface py-2">
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
+                  unfold_more
+                </span>
+              </div>
             </div>
           </section>
 
