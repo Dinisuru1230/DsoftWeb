@@ -456,7 +456,7 @@ export default function AddProduct() {
             </div>
           </section>
 
-          {/* Pricing & Inventory (Conditional layout based on whether colors exist) */}
+          {/* Pricing & Inventory */}
           <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-5">
             <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2 border-b border-outline-variant/30 pb-3">
               <span className="material-symbols-outlined">sell</span>
@@ -464,51 +464,14 @@ export default function AddProduct() {
             </h2>
 
             {hasColors ? (
-              /* When Colors Exist: Informative banner + SKU & Compare Price */
-              <div className="space-y-4">
-                <div className="p-4 bg-primary-container/30 rounded-lg border border-primary/20 flex items-start gap-3">
-                  <span className="material-symbols-outlined text-primary mt-0.5">info</span>
-                  <div className="text-sm">
-                    <p className="font-bold text-primary mb-0.5">Color Variants Active</p>
-                    <p className="text-on-surface-variant">
-                      Prices and Stock Quantities are configured for each color variant above. (Total Variant Stock: <span className="font-bold text-primary">{totalVariantStock} units</span>).
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="sku">
-                      SKU (Stock Keeping Unit) <span className="text-error">*</span>
-                    </label>
-                    <input
-                      id="sku"
-                      name="sku"
-                      type="text"
-                      value={form.sku}
-                      onChange={handleChange}
-                      placeholder="e.g. RB-001"
-                      required
-                      className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-label-md text-label-md text-on-surface-variant mb-1" htmlFor="comparePrice">
-                      Compare at Price ($ USD)
-                    </label>
-                    <input
-                      id="comparePrice"
-                      name="comparePrice"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={form.comparePrice}
-                      onChange={handleChange}
-                      placeholder="18.00"
-                      className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
-                    />
-                  </div>
+              /* When Colors Exist: Informative banner showing per-color pricing & stock */
+              <div className="p-4 bg-primary-container/30 rounded-lg border border-primary/20 flex items-start gap-3">
+                <span className="material-symbols-outlined text-primary mt-0.5">info</span>
+                <div className="text-sm">
+                  <p className="font-bold text-primary mb-0.5">Color Variants Active</p>
+                  <p className="text-on-surface-variant">
+                    Price and Stock Quantity are configured for each color variant above (Total Color Variant Stock: <span className="font-bold text-primary">{totalVariantStock} units</span>).
+                  </p>
                 </div>
               </div>
             ) : (
@@ -529,39 +492,6 @@ export default function AddProduct() {
                     placeholder="12.00"
                     required
                     className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface font-bold text-primary"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface-variant mb-1" htmlFor="comparePrice">
-                    Compare at Price ($ USD)
-                  </label>
-                  <input
-                    id="comparePrice"
-                    name="comparePrice"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form.comparePrice}
-                    onChange={handleChange}
-                    placeholder="18.00"
-                    className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="sku">
-                    SKU (Stock Keeping Unit) <span className="text-error">*</span>
-                  </label>
-                  <input
-                    id="sku"
-                    name="sku"
-                    type="text"
-                    value={form.sku}
-                    onChange={handleChange}
-                    placeholder="e.g. RB-001"
-                    required
-                    className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
                   />
                 </div>
 
