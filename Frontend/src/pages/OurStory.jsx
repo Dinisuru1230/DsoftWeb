@@ -101,7 +101,7 @@ export default function OurStory() {
         </p>
         <Link
           to="/shop"
-          className="inline-flex items-center gap-2 bg-primary text-white font-label-md text-label-md py-3 px-8 rounded-full hover:opacity-90 transition-all duration-300"
+          className="inline-flex items-center gap-2 bg-primary-container text-on-background font-label-md text-label-md py-3 px-8 rounded-full shadow-ambient hover:bg-primary hover:text-white hover:-translate-y-0.5 transition-all duration-300"
         >
           Shop the Collection
           <span className="material-symbols-outlined text-[18px]">arrow_forward</span>

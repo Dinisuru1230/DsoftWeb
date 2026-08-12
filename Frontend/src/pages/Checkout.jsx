@@ -23,7 +23,7 @@ export default function Checkout() {
       clearCart();
       navigate('/checkout/success');
     } else {
-      navigate('/checkout/payment');
+      navigate('/checkout/payment', { state: { total: cartSubtotal + DELIVERY_FEE } });
     }
   }
 
