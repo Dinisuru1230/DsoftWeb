@@ -67,8 +67,8 @@ export default function ShopAll() {
       </div>
 
       <div className="flex gap-8 lg:gap-12">
-        {/* ── Desktop Sidebar Filters ── */}
-        <aside className="hidden md:block w-64 flex-shrink-0 space-y-8">
+        {/* ── Desktop Sidebar Filters (Sticky Fixed on Scroll) ── */}
+        <aside className="hidden md:block w-64 flex-shrink-0 space-y-8 sticky top-[100px] self-start max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
           {/* Categories */}
           <div>
             <h3 className="font-label-md text-label-md text-primary mb-3 font-bold">Category</h3>
