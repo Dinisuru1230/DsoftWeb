@@ -33,6 +33,8 @@ import CategoryManagement from './admin/pages/CategoryManagement';
 import OrderManagement from './admin/pages/OrderManagement';
 import OrderDetails from './admin/pages/OrderDetails';
 import CustomerManagement from './admin/pages/CustomerManagement';
+import AdminManagement from './admin/pages/AdminManagement';
+import AdminProfile from './admin/pages/AdminProfile';
 
 // Customer Layout (Navbar + Content + Footer)
 function CustomerLayout({ children }) {
@@ -101,6 +103,8 @@ export default function App() {
             <Route path="/admin/orders" element={<AdminLayout><OrderManagement /></AdminLayout>} />
             <Route path="/admin/orders/:id" element={<AdminLayout><OrderDetails /></AdminLayout>} />
             <Route path="/admin/customers" element={<AdminLayout><CustomerManagement /></AdminLayout>} />
+            <Route path="/admin/admins" element={<AdminLayout><AdminManagement /></AdminLayout>} />
+            <Route path="/admin/profile" element={<AdminLayout><AdminProfile /></AdminLayout>} />
 
             {/* ── 404 Not Found ── */}
             <Route path="*" element={<CustomerLayout><NotFound /></CustomerLayout>} />
