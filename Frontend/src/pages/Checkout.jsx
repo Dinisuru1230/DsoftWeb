@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import {
   SRI_LANKA_PROVINCES,
   SRI_LANKA_CITIES_BY_PROVINCE,
@@ -9,25 +10,28 @@ import {
 
 const DEFAULT_CHECKOUT_ITEMS = [
   { id: 'blush-ribbon-bow', name: 'Blush Silk Ribbon Bow', price: 12.00, quantity: 1, image: '/14_blush_silk_ribbon_bow.jpg' },
-  { id: 'pearl-scrunchie', name: 'Pearl Satin Scrunchie', price: 15.00, quantity: 2, image: '/18_silk_scrunchie.jpg' },
 ];
 
 export default function Checkout() {
   const { cartItems, cartSubtotal, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const items = cartItems && cartItems.length > 0 ? cartItems : DEFAULT_CHECKOUT_ITEMS;
-  const totalPrice = cartSubtotal && cartSubtotal > 0 ? cartSubtotal : 42.00;
+  const totalPrice = cartSubtotal && cartSubtotal > 0 ? cartSubtotal : 12.00;
+
+  // Toggle between default profile address vs new custom delivery address
+  const [isCustomAddress, setIsCustomAddress] = useState(false);
 
   const [form, setForm] = useState({
-    firstName: 'Amara',
-    lastName: 'Perera',
-    email: 'amara@malmalee.lk',
-    phone: '+94 77 123 4567',
-    address: '42 Flower Lane, Suite 4',
-    city: 'Colombo 03',
-    district: 'Western Province',
-    postalCode: '00300',
+    firstName: user?.firstName || 'Amara',
+    lastName: user?.lastName || 'Perera',
+    email: user?.email || 'amara@malmalee.lk',
+    phone: user?.phone || '+94 77 123 4567',
+    address: user?.address || '42 Flower Lane, Suite 4',
+    city: user?.city || 'Colombo 03',
+    district: user?.state || 'Western Province',
+    postalCode: user?.postalCode || '00300',
     cardNumber: '4532 8901 2345 6789',
     cardExp: '08/28',
     cardCvc: '888',
@@ -81,7 +85,7 @@ export default function Checkout() {
 
   return (
     <main className="flex-grow w-full max-w-[1400px] mx-auto px-5 md:px-16 py-12">
-      {/* Header matching Stitch Checkout design */}
+      {/* Header */}
       <header className="mb-10 text-center md:text-left border-b border-outline-variant/30 pb-6">
         <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight mb-2">
           Malmalee Creations
@@ -94,130 +98,176 @@ export default function Checkout() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         {/* Left Column (7 Cols): Forms */}
         <div className="lg:col-span-7 space-y-10">
-          {/* Delivery Details */}
+          {/* Delivery Details Section */}
           <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-ambient border border-outline-variant/30 space-y-6">
-            <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background border-b border-outline-variant/30 pb-3">
-              Delivery Details
-            </h2>
+            <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
+              <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background">
+                Delivery Details
+              </h2>
+              {isCustomAddress && (
+                <button
+                  type="button"
+                  onClick={() => setIsCustomAddress(false)}
+                  className="font-label-sm text-label-sm text-primary font-bold hover:underline flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                  Use Default Saved Address
+                </button>
+              )}
+            </div>
 
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="font-label-md text-label-md text-on-surface-variant block mb-1">First Name *</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={form.firstName}
-                    onChange={handleChange}
-                    required
-                    placeholder="Amara"
-                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Last Name *</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={form.lastName}
-                    onChange={handleChange}
-                    required
-                    placeholder="Perera"
-                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Street Address *</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={form.address}
-                  onChange={handleChange}
-                  required
-                  placeholder="42 Flower Lane, Suite 4"
-                  className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* State / Province Dropdown */}
-                <div>
-                  <label className="font-label-md text-label-md text-on-surface-variant block mb-1">State / Province *</label>
-                  <div className="relative">
-                    <select
-                      name="district"
-                      value={form.district}
-                      onChange={handleDistrictChange}
-                      required
-                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
-                    >
-                      <option value="" disabled>Select Province...</option>
-                      {SRI_LANKA_PROVINCES.map((p) => (
-                        <option key={p} value={p} className="bg-surface-container-lowest text-on-surface py-1">
-                          {p}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                      unfold_more
-                    </span>
+            {!isCustomAddress ? (
+              /* Saved Default Profile Address Card */
+              <div className="space-y-4">
+                <div className="bg-surface-container-low p-5 rounded-xl border-2 border-primary/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-title-sm text-title-sm text-primary font-bold">
+                        {user?.name || `${form.firstName} ${form.lastName}`}
+                      </span>
+                      <span className="bg-primary-container text-on-background px-2.5 py-0.5 rounded-full font-label-sm text-[11px] font-bold">
+                        Default Address
+                      </span>
+                    </div>
+                    <p className="font-body-md text-body-md text-on-surface">{user?.address || form.address}</p>
+                    <p className="font-body-md text-body-md text-on-surface-variant">
+                      {user?.city || form.city}, {user?.state || form.district} {user?.postalCode || form.postalCode}
+                    </p>
+                    <p className="font-body-md text-body-md text-on-surface-variant font-medium pt-1">
+                      📞 {user?.phone || form.phone}
+                    </p>
                   </div>
-                </div>
 
-                {/* City Dropdown */}
-                <div>
-                  <label className="font-label-md text-label-md text-on-surface-variant block mb-1">City *</label>
-                  <div className="relative">
-                    <select
-                      name="city"
-                      value={form.city}
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomAddress(true)}
+                    className="px-4 py-2.5 border border-primary text-primary font-label-md text-label-md rounded-xl hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap self-start sm:self-center shadow-sm cursor-pointer"
+                  >
+                    + Change to New Address
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Editable New Delivery Address Form */
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">First Name *</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={form.firstName}
                       onChange={handleChange}
                       required
-                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
-                    >
-                      <option value="" disabled>Select City...</option>
-                      {availableCities.map((c) => (
-                        <option key={c} value={c} className="bg-surface-container-lowest text-on-surface py-1">
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                      unfold_more
-                    </span>
+                      placeholder="Amara"
+                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Last Name *</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={form.lastName}
+                      onChange={handleChange}
+                      required
+                      placeholder="Perera"
+                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Street Address *</label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={form.address}
+                    onChange={handleChange}
+                    required
+                    placeholder="42 Flower Lane, Suite 4"
+                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* State / Province Dropdown */}
+                  <div>
+                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">State / Province *</label>
+                    <div className="relative">
+                      <select
+                        name="district"
+                        value={form.district}
+                        onChange={handleDistrictChange}
+                        required
+                        className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
+                      >
+                        <option value="" disabled>Select Province...</option>
+                        {SRI_LANKA_PROVINCES.map((p) => (
+                          <option key={p} value={p} className="bg-surface-container-lowest text-on-surface py-1">
+                            {p}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
+                        unfold_more
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* City Dropdown */}
+                  <div>
+                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">City *</label>
+                    <div className="relative">
+                      <select
+                        name="city"
+                        value={form.city}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
+                      >
+                        <option value="" disabled>Select City...</option>
+                        {availableCities.map((c) => (
+                          <option key={c} value={c} className="bg-surface-container-lowest text-on-surface py-1">
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
+                        unfold_more
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Postal Code *</label>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      value={form.postalCode}
+                      onChange={handleChange}
+                      required
+                      placeholder="00300"
+                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Contact Number *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      required
+                      placeholder="+94 77 123 4567"
+                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                    />
                   </div>
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Postal Code *</label>
-                  <input
-                    type="text"
-                    name="postalCode"
-                    value={form.postalCode}
-                    onChange={handleChange}
-                    required
-                    placeholder="00300"
-                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Contact Number *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    required
-                    placeholder="+94 77 123 4567"
-                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                  />
-                </div>
-              </div>
-            </div>
+            )}
           </section>
 
           {/* Shipping Method */}
