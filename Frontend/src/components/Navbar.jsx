@@ -21,7 +21,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-background shadow-ambient w-full">
-      <nav className="flex justify-between items-center w-full px-4 sm:px-8 md:px-12 py-4 max-w-[1400px] mx-auto">
+      <nav className="flex justify-between items-center w-full px-4 sm:px-8 md:px-12 py-4 max-w-[1600px] mx-auto">
         {/* Brand Logo */}
         <Link
           to="/"

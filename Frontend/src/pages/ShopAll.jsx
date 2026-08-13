@@ -47,7 +47,7 @@ export default function ShopAll() {
   if (sortBy === 'price-desc') filtered.sort((a, b) => b.price - a.price);
 
   return (
-    <main className="flex-grow w-full max-w-[1200px] mx-auto px-5 md:px-16 py-12">
+<main className="flex-grow w-full max-w-[1600px] mx-auto px-4 sm:px-8 md:px-12 py-12">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
         <div>
@@ -66,7 +66,7 @@ export default function ShopAll() {
         </button>
       </div>
 
-      <div className="flex gap-10">
+      <div className="flex gap-8 lg:gap-12">
         {/* ── Desktop Sidebar Filters ── */}
         <aside className="hidden md:block w-64 flex-shrink-0 space-y-8">
           {/* Categories */}
@@ -221,7 +221,7 @@ export default function ShopAll() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
               {filtered.map((item) => (
                 <ProductCard key={item.id} product={item} />
               ))}
