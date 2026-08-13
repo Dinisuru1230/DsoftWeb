@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AccountSidebar from '../components/AccountSidebar';
+import {
+  SRI_LANKA_PROVINCES,
+  SRI_LANKA_CITIES_BY_PROVINCE,
+  ALL_SRI_LANKA_CITIES,
+} from '../data/sriLankaLocationData';
 
 export default function MyProfile() {
   const { user, updateUser } = useAuth();
@@ -19,8 +24,22 @@ export default function MyProfile() {
 
   const [saved, setSaved] = useState(false);
 
+  const availableCities = SRI_LANKA_CITIES_BY_PROVINCE[form.state] || ALL_SRI_LANKA_CITIES;
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setSaved(false);
+  }
+
+  function handleStateChange(e) {
+    const newState = e.target.value;
+    const citiesForState = SRI_LANKA_CITIES_BY_PROVINCE[newState] || ALL_SRI_LANKA_CITIES;
+    const newCity = citiesForState.includes(form.city) ? form.city : citiesForState[0];
+    setForm({
+      ...form,
+      state: newState,
+      city: newCity,
+    });
     setSaved(false);
   }
 
@@ -113,7 +132,7 @@ export default function MyProfile() {
             </div>
           </div>
 
-          {/* Delivery Address */}
+          {/* Delivery Address (Sri Lanka Province & City Dropdowns) */}
           <div className="flex flex-col gap-4">
             <div className="border-b border-outline-variant/40 pb-2">
               <h3 className="font-title-sm text-title-sm text-primary">Delivery Address</h3>
@@ -132,32 +151,59 @@ export default function MyProfile() {
                   className="custom-input w-full py-2 font-body-md text-body-md text-on-surface bg-transparent"
                 />
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
-                  City
-                </label>
-                <input
-                  type="text"
-                  name="city"
-                  value={form.city}
-                  onChange={handleChange}
-                  required
-                  className="custom-input w-full py-2 font-body-md text-body-md text-on-surface bg-transparent"
-                />
-              </div>
+
+              {/* State / Province Select Dropdown */}
               <div className="flex flex-col gap-1">
                 <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
                   State / Province
                 </label>
-                <input
-                  type="text"
-                  name="state"
-                  value={form.state}
-                  onChange={handleChange}
-                  required
-                  className="custom-input w-full py-2 font-body-md text-body-md text-on-surface bg-transparent"
-                />
+                <div className="relative">
+                  <select
+                    name="state"
+                    value={form.state}
+                    onChange={handleStateChange}
+                    required
+                    className="custom-input w-full py-2 pr-8 font-body-md text-body-md text-on-surface bg-transparent appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled>Select Province...</option>
+                    {SRI_LANKA_PROVINCES.map((p) => (
+                      <option key={p} value={p} className="bg-surface-container-lowest text-on-surface py-1">
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
+                    unfold_more
+                  </span>
+                </div>
               </div>
+
+              {/* City Select Dropdown */}
+              <div className="flex flex-col gap-1">
+                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
+                  City
+                </label>
+                <div className="relative">
+                  <select
+                    name="city"
+                    value={form.city}
+                    onChange={handleChange}
+                    required
+                    className="custom-input w-full py-2 pr-8 font-body-md text-body-md text-on-surface bg-transparent appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled>Select City...</option>
+                    {availableCities.map((c) => (
+                      <option key={c} value={c} className="bg-surface-container-lowest text-on-surface py-1">
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
+                    unfold_more
+                  </span>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-1">
                 <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
                   Postal Code
@@ -171,6 +217,7 @@ export default function MyProfile() {
                   className="custom-input w-full py-2 font-body-md text-body-md text-on-surface bg-transparent"
                 />
               </div>
+
               <div className="flex flex-col gap-1">
                 <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
                   Country
@@ -178,10 +225,9 @@ export default function MyProfile() {
                 <input
                   type="text"
                   name="country"
-                  value={form.country}
-                  onChange={handleChange}
-                  required
-                  className="custom-input w-full py-2 font-body-md text-body-md text-on-surface bg-transparent"
+                  value="Sri Lanka"
+                  readOnly
+                  className="custom-input w-full py-2 font-body-md text-body-md text-primary font-bold bg-transparent cursor-not-allowed"
                 />
               </div>
             </div>
