@@ -32,14 +32,10 @@ export default function Checkout() {
     city: user?.city || 'Colombo 03',
     district: user?.state || 'Western Province',
     postalCode: user?.postalCode || '00300',
-    cardNumber: '4532 8901 2345 6789',
-    cardExp: '08/28',
-    cardCvc: '888',
   });
 
   const [shippingMethod, setShippingMethod] = useState('standard');
   const [paymentMethod, setPaymentMethod] = useState('card');
-  const [ordered, setOrdered] = useState(false);
 
   const availableCities = SRI_LANKA_CITIES_BY_PROVINCE[form.district] || ALL_SRI_LANKA_CITIES;
 
@@ -58,29 +54,32 @@ export default function Checkout() {
     });
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    setOrdered(true);
-    clearCart();
-    setTimeout(() => navigate('/account'), 2500);
-  }
+  // Calculate custom per-product shipping rates dynamically from items in cart
+  const maxProductStandardShipping = Math.max(
+    ...items.map((i) => (i.standardShipping !== undefined ? Number(i.standardShipping) : 5.00)),
+    5.00
+  );
+  const maxProductExpressShipping = Math.max(
+    ...items.map((i) => (i.expressShipping !== undefined ? Number(i.expressShipping) : 15.00)),
+    15.00
+  );
 
-  const shippingCost = shippingMethod === 'express' ? 15.00 : (totalPrice > 50 ? 0 : 5.00);
+  const standardFee = totalPrice > 50 ? 0 : maxProductStandardShipping;
+  const expressFee = maxProductExpressShipping;
+
+  const shippingCost = shippingMethod === 'express' ? expressFee : standardFee;
   const finalTotal = totalPrice + shippingCost;
 
-  if (ordered) {
-    return (
-      <main className="flex-grow flex items-center justify-center py-24 px-5">
-        <div className="text-center bg-surface-container-lowest p-10 rounded-2xl shadow-ambient max-w-md w-full border border-outline-variant/30">
-          <span className="material-symbols-outlined text-6xl text-primary mb-4 block">check_circle</span>
-          <h1 className="font-headline-md text-headline-md text-on-surface mb-2">Order Confirmed!</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mb-6">
-            Thank you for your order, {form.firstName} {form.lastName}. We're preparing your handcrafted items with magic!
-          </p>
-          <p className="font-label-sm text-label-sm text-outline">Redirecting to My Account...</p>
-        </div>
-      </main>
-    );
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (paymentMethod === 'card') {
+      // Navigate to dedicated Card Payment page with final amount
+      navigate('/checkout/payment', { state: { total: finalTotal } });
+    } else {
+      // COD selected: Clear cart and navigate directly to order confirmation page
+      clearCart();
+      navigate('/checkout/success');
+    }
   }
 
   return (
@@ -108,7 +107,7 @@ export default function Checkout() {
                 <button
                   type="button"
                   onClick={() => setIsCustomAddress(false)}
-                  className="font-label-sm text-label-sm text-primary font-bold hover:underline flex items-center gap-1"
+                  className="font-label-sm text-label-sm text-primary font-bold hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">check_circle</span>
                   Use Default Saved Address
@@ -270,7 +269,7 @@ export default function Checkout() {
             )}
           </section>
 
-          {/* Shipping Method */}
+          {/* Shipping Method Section */}
           <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-ambient border border-outline-variant/30 space-y-4">
             <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background border-b border-outline-variant/30 pb-3">
               Shipping Method
@@ -296,7 +295,7 @@ export default function Checkout() {
                   <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">3-5 Business Days</span>
                 </span>
                 <span className="font-label-md text-label-md text-primary font-bold">
-                  {totalPrice > 50 ? 'FREE' : '$5.00'}
+                  {totalPrice > 50 ? 'FREE' : `$${maxProductStandardShipping.toFixed(2)}`}
                 </span>
               </label>
 
@@ -319,15 +318,17 @@ export default function Checkout() {
                   <span className="block font-label-md text-label-md text-on-background">Express Delivery</span>
                   <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">1-2 Business Days</span>
                 </span>
-                <span className="font-label-md text-label-md text-primary font-bold">$15.00</span>
+                <span className="font-label-md text-label-md text-primary font-bold">
+                  ${maxProductExpressShipping.toFixed(2)}
+                </span>
               </label>
             </div>
           </section>
 
-          {/* Payment Method Section */}
+          {/* Payment Method Selection (Clean Radio Options ONLY, no inline card fields) */}
           <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-ambient border border-outline-variant/30 space-y-4">
             <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background border-b border-outline-variant/30 pb-3">
-              Payment
+              Payment Method
             </h2>
 
             <div className="space-y-4">
@@ -349,51 +350,12 @@ export default function Checkout() {
                 />
                 <span className="ml-4 flex-grow">
                   <span className="block font-label-md text-label-md text-on-background">Credit / Debit Card</span>
-                  <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">Secure online card payment</span>
+                  <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">
+                    Pay securely online via SSL Payment Gateway
+                  </span>
                 </span>
                 <span className="material-symbols-outlined text-primary">credit_card</span>
               </label>
-
-              {/* Credit Card Details Sub-form */}
-              {paymentMethod === 'card' && (
-                <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant/30 space-y-4 ml-8">
-                  <div>
-                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Card Number</label>
-                    <input
-                      type="text"
-                      name="cardNumber"
-                      value={form.cardNumber}
-                      onChange={handleChange}
-                      placeholder="0000 0000 0000 0000"
-                      className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 font-body-md text-body-md text-on-surface focus:border-primary outline-none"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Expiry Date</label>
-                      <input
-                        type="text"
-                        name="cardExp"
-                        value={form.cardExp}
-                        onChange={handleChange}
-                        placeholder="MM/YY"
-                        className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 font-body-md text-body-md text-on-surface focus:border-primary outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-label-md text-label-md text-on-surface-variant block mb-1">CVC</label>
-                      <input
-                        type="text"
-                        name="cardCvc"
-                        value={form.cardCvc}
-                        onChange={handleChange}
-                        placeholder="123"
-                        className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 font-body-md text-body-md text-on-surface focus:border-primary outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Cash on Delivery (COD) Option */}
               <label
@@ -413,7 +375,9 @@ export default function Checkout() {
                 />
                 <span className="ml-4 flex-grow">
                   <span className="block font-label-md text-label-md text-on-background">Cash on Delivery (COD)</span>
-                  <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">Pay when you receive your order</span>
+                  <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">
+                    Pay with cash when you receive your package
+                  </span>
                 </span>
                 <span className="material-symbols-outlined text-primary">payments</span>
               </label>
@@ -465,12 +429,17 @@ export default function Checkout() {
               <span className="font-title-sm text-title-sm text-primary font-bold">${finalTotal.toFixed(2)}</span>
             </div>
 
+            {/* Dynamic CTA button based on selected payment method */}
             <button
               type="submit"
-              className="w-full bg-primary-container text-on-background font-label-md text-label-md py-4 px-8 rounded-full hover:bg-primary hover:text-white transition-all duration-300 shadow-ambient flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full bg-primary-container text-on-background font-label-md text-label-md py-4 px-8 rounded-full hover:bg-primary hover:text-white transition-all duration-300 shadow-ambient flex items-center justify-center gap-2 cursor-pointer font-bold"
             >
-              <span className="material-symbols-outlined text-sm">lock</span>
-              Place Order Securely (${finalTotal.toFixed(2)})
+              <span className="material-symbols-outlined text-sm">
+                {paymentMethod === 'card' ? 'credit_card' : 'check_circle'}
+              </span>
+              {paymentMethod === 'card'
+                ? `Proceed to Card Payment ($${finalTotal.toFixed(2)})`
+                : `Confirm Order with COD ($${finalTotal.toFixed(2)})`}
             </button>
 
             <p className="text-center font-body-md text-body-md text-on-surface-variant text-xs pt-1">

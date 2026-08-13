@@ -514,6 +514,54 @@ export default function AddProduct() {
               </div>
             )}
           </section>
+
+          {/* Shipping & Delivery Fees ($ USD) */}
+          <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-5">
+            <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2 border-b border-outline-variant/30 pb-3">
+              <span className="material-symbols-outlined">local_shipping</span>
+              Product Delivery & Shipping Fees ($ USD)
+            </h2>
+            <p className="font-body-md text-body-md text-on-surface-variant text-sm">
+              Set custom delivery rates for this specific product. These fees will be dynamically applied on the Checkout page when a customer orders this item.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="standardShipping">
+                  Standard Delivery Fee ($ USD) <span className="text-error">*</span>
+                </label>
+                <input
+                  id="standardShipping"
+                  name="standardShipping"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.standardShipping || '5.00'}
+                  onChange={handleChange}
+                  placeholder="5.00"
+                  required
+                  className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface font-bold text-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="expressShipping">
+                  Express Delivery Fee ($ USD) <span className="text-error">*</span>
+                </label>
+                <input
+                  id="expressShipping"
+                  name="expressShipping"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.expressShipping || '15.00'}
+                  onChange={handleChange}
+                  placeholder="15.00"
+                  required
+                  className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface font-bold text-primary"
+                />
+              </div>
+            </div>
+          </section>
         </div>
 
         {/* Right Column: Organization & Settings */}
