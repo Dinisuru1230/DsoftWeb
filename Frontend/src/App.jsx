@@ -11,6 +11,7 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import SecurePayment from './pages/SecurePayment';
+import BankSlipUpload from './pages/BankSlipUpload';
 import OrderConfirmed from './pages/OrderConfirmed';
 import PaymentUnsuccessful from './pages/PaymentUnsuccessful';
 import OurStory from './pages/OurStory';
@@ -85,6 +86,7 @@ export default function App() {
             <Route path="/cart" element={<CustomerLayout><Cart /></CustomerLayout>} />
             <Route path="/checkout" element={<CustomerLayout><Checkout /></CustomerLayout>} />
             <Route path="/checkout/payment" element={<CustomerLayout><SecurePayment /></CustomerLayout>} />
+            <Route path="/checkout/bank-slip" element={<CustomerLayout><BankSlipUpload /></CustomerLayout>} />
             <Route path="/checkout/success" element={<CustomerLayout><OrderConfirmed /></CustomerLayout>} />
             <Route path="/checkout/failed" element={<CustomerLayout><PaymentUnsuccessful /></CustomerLayout>} />
             <Route path="/our-story" element={<CustomerLayout><OurStory /></CustomerLayout>} />

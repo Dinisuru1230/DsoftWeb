@@ -70,16 +70,25 @@ export default function Checkout() {
   const shippingCost = shippingMethod === 'express' ? expressFee : standardFee;
   const finalTotal = totalPrice + shippingCost;
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  const activeAddress = isCustomAddress
+    ? `${form.address}, ${form.city}, ${form.district} ${form.postalCode}`
+    : user?.address || '42 Flower Lane, Suite 4, Colombo 03';
+
+  function handleButtonClick(e) {
+    if (e) e.preventDefault();
     if (paymentMethod === 'card') {
-      // Navigate to dedicated Card Payment page with final amount
       navigate('/checkout/payment', { state: { total: finalTotal } });
+    } else if (paymentMethod === 'bank_transfer') {
+      navigate('/checkout/bank-slip', { state: { total: finalTotal, items, shippingCost, savedAddress: activeAddress } });
     } else {
-      // COD selected: Clear cart and navigate directly to order confirmation page
       clearCart();
-      navigate('/checkout/success');
+      navigate('/checkout/success', { state: { paymentMethod: 'cod' } });
     }
+  }
+
+  function handleSubmit(e) {
+    if (e) e.preventDefault();
+    handleButtonClick(e);
   }
 
   return (
@@ -357,6 +366,31 @@ export default function Checkout() {
                 <span className="material-symbols-outlined text-primary">credit_card</span>
               </label>
 
+              {/* Direct Bank Transfer / Bank Slip Upload Option */}
+              <label
+                className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  paymentMethod === 'bank_transfer'
+                    ? 'border-primary bg-primary-container/20 shadow-sm'
+                    : 'border-outline-variant/50 hover:border-primary/40'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  value="bank_transfer"
+                  checked={paymentMethod === 'bank_transfer'}
+                  onChange={() => setPaymentMethod('bank_transfer')}
+                  className="accent-primary h-4 w-4"
+                />
+                <span className="ml-4 flex-grow">
+                  <span className="block font-label-md text-label-md text-on-background">Direct Bank Transfer / Bank Slip Upload</span>
+                  <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">
+                    Transfer directly to our bank account and upload your deposit slip
+                  </span>
+                </span>
+                <span className="material-symbols-outlined text-primary">upload_file</span>
+              </label>
+
               {/* Cash on Delivery (COD) Option */}
               <label
                 className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
@@ -431,14 +465,17 @@ export default function Checkout() {
 
             {/* Dynamic CTA button based on selected payment method */}
             <button
-              type="submit"
+              type="button"
+              onClick={handleButtonClick}
               className="w-full bg-primary-container text-on-background font-label-md text-label-md py-4 px-8 rounded-full hover:bg-primary hover:text-white transition-all duration-300 shadow-ambient flex items-center justify-center gap-2 cursor-pointer font-bold"
             >
               <span className="material-symbols-outlined text-sm">
-                {paymentMethod === 'card' ? 'credit_card' : 'check_circle'}
+                {paymentMethod === 'card' ? 'credit_card' : paymentMethod === 'bank_transfer' ? 'upload_file' : 'check_circle'}
               </span>
               {paymentMethod === 'card'
                 ? `Proceed to Card Payment ($${finalTotal.toFixed(2)})`
+                : paymentMethod === 'bank_transfer'
+                ? `Proceed to Upload Bank Slip ($${finalTotal.toFixed(2)})`
                 : `Confirm Order with COD ($${finalTotal.toFixed(2)})`}
             </button>
 
