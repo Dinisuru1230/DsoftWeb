@@ -1,18 +1,16 @@
 import { useState } from 'react';
 
 const INITIAL_ADMINS = [
-  { id: 1, name: 'Pramod Wijenayake', email: 'pramod@malmalee.lk', phone: '+94 77 123 4567', role: 'Super Admin', joined: '2024-01-01', active: true },
-  { id: 2, name: 'Amara Perera', email: 'amara@malmalee.lk', phone: '+94 71 234 5678', role: 'Store Admin', joined: '2024-02-15', active: true },
-  { id: 3, name: 'Kavindi Silva', email: 'kavindi@malmalee.lk', phone: '+94 76 345 6789', role: 'Inventory Manager', joined: '2024-04-10', active: true },
-  { id: 4, name: 'Nimal Fernando', email: 'nimal@malmalee.lk', phone: '+94 70 456 7890', role: 'Customer Support', joined: '2024-06-01', active: false },
+  { id: 1, name: 'Pramod Wijenayake', email: 'pramod@malmalee.lk', phone: '+94 77 123 4567', role: 'Admin', joined: '2024-01-01', active: true },
+  { id: 2, name: 'Amara Perera', email: 'amara@malmalee.lk', phone: '+94 71 234 5678', role: 'Admin', joined: '2024-02-15', active: true },
+  { id: 3, name: 'Kavindi Silva', email: 'kavindi@malmalee.lk', phone: '+94 76 345 6789', role: 'Admin', joined: '2024-04-10', active: true },
+  { id: 4, name: 'Nimal Fernando', email: 'nimal@malmalee.lk', phone: '+94 70 456 7890', role: 'Admin', joined: '2024-06-01', active: false },
 ];
-
-const ROLES = ['Super Admin', 'Store Admin', 'Inventory Manager', 'Customer Support'];
 
 export default function AdminManagement() {
   const [admins, setAdmins] = useState(INITIAL_ADMINS);
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
 
   // Modal / Form States
   const [isAdding, setIsAdding] = useState(false);
@@ -23,7 +21,8 @@ export default function AdminManagement() {
     name: '',
     email: '',
     phone: '',
-    role: 'Store Admin',
+    password: '',
+    role: 'Admin',
     active: true,
   });
 
@@ -32,12 +31,17 @@ export default function AdminManagement() {
       a.name.toLowerCase().includes(search.toLowerCase()) ||
       a.email.toLowerCase().includes(search.toLowerCase()) ||
       a.phone.includes(search);
-    const matchesRole = roleFilter === 'All' || a.role === roleFilter;
-    return matchesSearch && matchesRole;
+
+    const matchesStatus =
+      statusFilter === 'All' ||
+      (statusFilter === 'Active' && a.active) ||
+      (statusFilter === 'Inactive' && !a.active);
+
+    return matchesSearch && matchesStatus;
   });
 
   const activeCount = admins.filter((a) => a.active).length;
-  const superAdminCount = admins.filter((a) => a.role === 'Super Admin').length;
+  const inactiveCount = admins.filter((a) => !a.active).length;
 
   function handleFormChange(e) {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -45,7 +49,7 @@ export default function AdminManagement() {
   }
 
   function resetForm() {
-    setFormData({ name: '', email: '', phone: '', role: 'Store Admin', active: true });
+    setFormData({ name: '', email: '', phone: '', password: '', role: 'Admin', active: true });
   }
 
   // --- CRUD: CREATE ---
@@ -58,7 +62,7 @@ export default function AdminManagement() {
       name: formData.name,
       email: formData.email,
       phone: formData.phone || '+94 77 000 0000',
-      role: formData.role,
+      role: 'Admin',
       joined: new Date().toISOString().split('T')[0],
       active: formData.active,
     };
@@ -75,7 +79,8 @@ export default function AdminManagement() {
       name: admin.name,
       email: admin.email,
       phone: admin.phone,
-      role: admin.role,
+      password: '',
+      role: 'Admin',
       active: admin.active,
     });
   }
@@ -90,7 +95,7 @@ export default function AdminManagement() {
               name: formData.name,
               email: formData.email,
               phone: formData.phone,
-              role: formData.role,
+              role: 'Admin',
               active: formData.active,
             }
           : a
@@ -120,7 +125,7 @@ export default function AdminManagement() {
         <div>
           <h1 className="font-headline-md text-headline-md text-primary mb-1">Admin Management</h1>
           <p className="font-body-md text-body-md text-on-surface-variant">
-            Full CRUD management for admin accounts, roles, and system permissions.
+            Manage admin accounts, access permissions, and credentials.
           </p>
         </div>
         <button
@@ -159,11 +164,11 @@ export default function AdminManagement() {
 
         <div className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 flex items-center justify-between">
           <div>
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Super Admins</p>
-            <h2 className="font-headline-md text-primary font-bold">{superAdminCount}</h2>
+            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Inactive Admins</p>
+            <h2 className="font-headline-md text-primary font-bold">{inactiveCount}</h2>
           </div>
           <div className="w-12 h-12 rounded-full bg-tertiary-container/50 flex items-center justify-center">
-            <span className="material-symbols-outlined text-tertiary">shield</span>
+            <span className="material-symbols-outlined text-tertiary">person_off</span>
           </div>
         </div>
       </div>
@@ -182,17 +187,17 @@ export default function AdminManagement() {
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
-          {['All', ...ROLES].map((role) => (
+          {['All', 'Active', 'Inactive'].map((status) => (
             <button
-              key={role}
-              onClick={() => setRoleFilter(role)}
+              key={status}
+              onClick={() => setStatusFilter(status)}
               className={`px-3.5 py-1.5 rounded-full font-label-md text-label-md transition-colors cursor-pointer whitespace-nowrap ${
-                roleFilter === role
+                statusFilter === status
                   ? 'bg-primary text-white font-bold'
                   : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
               }`}
             >
-              {role}
+              {status}
             </button>
           ))}
         </div>
@@ -228,14 +233,8 @@ export default function AdminManagement() {
                   </td>
                   <td className="p-4 text-on-surface-variant text-sm font-body-md">{adm.phone}</td>
                   <td className="p-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full font-label-sm text-[11px] font-bold ${
-                      adm.role === 'Super Admin'
-                        ? 'bg-primary-container text-on-background'
-                        : adm.role === 'Store Admin'
-                        ? 'bg-secondary-container text-on-secondary-container'
-                        : 'bg-surface-container text-on-surface-variant'
-                    }`}>
-                      {adm.role}
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full font-label-sm text-[11px] font-bold bg-primary-container text-on-background">
+                      Admin
                     </span>
                   </td>
                   <td className="p-4 text-on-surface-variant text-sm">{adm.joined}</td>
@@ -352,23 +351,10 @@ export default function AdminManagement() {
               </div>
 
               <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">Admin Role *</label>
-                <div className="relative">
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleFormChange}
-                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
-                  >
-                    {ROLES.map((r) => (
-                      <option key={r} value={r} className="bg-surface-container-lowest text-on-surface py-2">
-                        {r}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                    unfold_more
-                  </span>
+                <label className="font-label-md text-label-md text-on-surface block mb-1">System Role</label>
+                <div className="py-2 px-3 bg-surface-container rounded-lg font-label-md text-label-md text-primary font-bold flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                  Admin
                 </div>
               </div>
 
@@ -470,23 +456,10 @@ export default function AdminManagement() {
               </div>
 
               <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">Admin Role *</label>
-                <div className="relative">
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleFormChange}
-                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
-                  >
-                    {ROLES.map((r) => (
-                      <option key={r} value={r} className="bg-surface-container-lowest text-on-surface py-2">
-                        {r}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                    unfold_more
-                  </span>
+                <label className="font-label-md text-label-md text-on-surface block mb-1">System Role</label>
+                <div className="py-2 px-3 bg-surface-container rounded-lg font-label-md text-label-md text-primary font-bold flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                  Admin
                 </div>
               </div>
 
@@ -524,55 +497,58 @@ export default function AdminManagement() {
         </div>
       )}
 
-      {/* --- VIEW ADMIN DETAILS MODAL --- */}
+      {/* --- VIEW ADMIN MODAL --- */}
       {viewingAdmin && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-surface-container-lowest rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-outline-variant/30 space-y-6">
             <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
               <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2">
-                <span className="material-symbols-outlined">admin_panel_settings</span> Admin Account Profile
+                <span className="material-symbols-outlined">account_circle</span> Admin Profile Details
               </h2>
               <button onClick={() => setViewingAdmin(null)} className="text-on-surface-variant hover:text-primary">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
 
-            <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl">
+            <div className="flex items-center gap-4 border-b border-outline-variant/20 pb-4">
               <div className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold text-2xl">
                 {viewingAdmin.name.charAt(0)}
               </div>
               <div>
-                <h3 className="font-title-sm text-title-sm text-primary">{viewingAdmin.name}</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant text-sm">{viewingAdmin.email}</p>
-                <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full font-label-sm text-[11px] bg-primary-container text-on-background font-bold">
-                  {viewingAdmin.role}
+                <h3 className="font-title-sm text-lg text-primary">{viewingAdmin.name}</h3>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-sm text-[11px] font-bold bg-primary-container text-on-background mt-1">
+                  Admin
                 </span>
               </div>
             </div>
 
-            <div className="space-y-3 font-body-md text-body-md">
-              <div className="flex justify-between border-b border-outline-variant/20 pb-2">
-                <span className="text-on-surface-variant">Phone:</span>
-                <span className="font-medium text-on-surface">{viewingAdmin.phone}</span>
+            <div className="space-y-3 font-body-md text-sm">
+              <div className="flex justify-between py-1 border-b border-outline-variant/20">
+                <span className="text-on-surface-variant">Email Address</span>
+                <span className="font-bold text-on-surface">{viewingAdmin.email}</span>
               </div>
-              <div className="flex justify-between border-b border-outline-variant/20 pb-2">
-                <span className="text-on-surface-variant">Account Status:</span>
-                <span className={`font-bold ${viewingAdmin.active ? 'text-secondary' : 'text-outline'}`}>
+              <div className="flex justify-between py-1 border-b border-outline-variant/20">
+                <span className="text-on-surface-variant">Phone Number</span>
+                <span className="font-bold text-on-surface">{viewingAdmin.phone}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-outline-variant/20">
+                <span className="text-on-surface-variant">Joined Date</span>
+                <span className="font-bold text-on-surface">{viewingAdmin.joined}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-on-surface-variant">Account Status</span>
+                <span className={`font-bold ${viewingAdmin.active ? 'text-secondary' : 'text-error'}`}>
                   {viewingAdmin.active ? 'Active' : 'Inactive'}
                 </span>
-              </div>
-              <div className="flex justify-between pb-2">
-                <span className="text-on-surface-variant">Joined Date:</span>
-                <span className="text-on-surface-variant">{viewingAdmin.joined}</span>
               </div>
             </div>
 
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setViewingAdmin(null)}
-                className="w-full py-3 bg-primary-container text-on-background font-label-md text-label-md rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm"
+                className="px-6 py-2.5 bg-primary-container text-on-background font-label-md text-label-md rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm"
               >
-                Close Admin Profile
+                Close
               </button>
             </div>
           </div>
