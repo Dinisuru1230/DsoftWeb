@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: 'dashboard', end: true },
@@ -13,6 +14,12 @@ const navItems = [
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  function handleLogout() {
+    logout();
+    navigate('/login', { replace: true });
+  }
 
   return (
     <aside className="hidden md:flex flex-col h-screen w-64 bg-surface-container-lowest border-r border-outline-variant shadow-sm p-6 space-y-4 flex-shrink-0 sticky top-0">
@@ -48,8 +55,8 @@ export default function AdminSidebar() {
       {/* Logout */}
       <div className="pt-4 border-t border-outline-variant">
         <button
-          onClick={() => navigate('/login')}
-          className="w-full py-3 px-4 bg-surface-container-low border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container transition-colors flex items-center justify-center gap-2"
+          onClick={handleLogout}
+          className="w-full py-3 px-4 bg-error-container/20 border border-error/30 text-error font-label-md text-label-md rounded-lg hover:bg-error-container/40 transition-colors flex items-center justify-center gap-2 font-bold cursor-pointer"
         >
           <span className="material-symbols-outlined">logout</span>
           Log Out

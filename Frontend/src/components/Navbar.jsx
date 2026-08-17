@@ -111,13 +111,25 @@ export default function Navbar() {
 
           {/* User Profile */}
           {user ? (
-            <button
-              onClick={() => navigate('/account/profile')}
-              className="hidden md:flex text-primary hover:opacity-80 transition-all p-1"
-              aria-label="Account"
-            >
-              <span className="material-symbols-outlined">person</span>
-            </button>
+            user.role === 'ADMIN' ? (
+              // Admin user — go to admin dashboard, not customer profile
+              <button
+                onClick={() => navigate('/admin')}
+                className="hidden md:flex text-primary hover:opacity-80 transition-all p-1 cursor-pointer"
+                aria-label="Admin Dashboard"
+              >
+                <span className="material-symbols-outlined">admin_panel_settings</span>
+              </button>
+            ) : (
+              // Customer user — go to customer profile
+              <button
+                onClick={() => navigate('/account/profile')}
+                className="hidden md:flex text-primary hover:opacity-80 transition-all p-1 cursor-pointer"
+                aria-label="Account"
+              >
+                <span className="material-symbols-outlined">person</span>
+              </button>
+            )
           ) : (
             <Link
               to="/login"

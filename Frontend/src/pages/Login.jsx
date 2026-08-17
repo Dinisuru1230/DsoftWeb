@@ -1,23 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const [form, setForm] = useState({ email: 'amara@malmalee.lk', password: 'password123' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, login } = useAuth();
   const navigate = useNavigate();
+
+  // If already logged in when visiting /login directly, redirect on mount
+  useEffect(() => {
+    if (user) {
+      const targetRoute = user.role === 'ADMIN' ? '/admin' : '/';
+      navigate(targetRoute, { replace: true });
+    }
+  }, []); // Empty dependency array prevents double-navigation during form submission!
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    login({ email: form.email || 'amara@malmalee.lk', name: 'Amara Perera' }, 'demo-token-123');
-    navigate('/account');
+    if (!form.email || !form.password) {
+      setError('Please enter both email and password.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    const result = await login(form.email, form.password);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      const targetRoute = result.user.role === 'ADMIN' ? '/admin' : '/';
+      navigate(targetRoute, { replace: true });
+    } else {
+      setError(result.error || 'Invalid credentials. Please try again.');
+    }
   }
 
   return (
@@ -33,13 +57,13 @@ export default function Login() {
               </h1>
             </Link>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Welcome back. Please enter your details.
+              Welcome back. Sign in to your account.
             </p>
           </div>
 
           {error && (
-            <div className="p-3 bg-error-container rounded-lg">
-              <p className="font-body-md text-body-md text-error text-center">{error}</p>
+            <div className="p-3.5 bg-error-container text-on-error-container rounded-lg border border-error/30 text-center text-sm font-label-md">
+              {error}
             </div>
           )}
 
@@ -47,7 +71,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="font-label-md text-label-md text-on-surface block" htmlFor="email">
-                Email
+                Email Address
               </label>
               <input
                 id="email"
@@ -55,9 +79,9 @@ export default function Login() {
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder="e.g. customer@example.com or admin@malmalee.lk"
                 required
-                className="custom-input w-full px-0 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent"
+                className="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none py-3 font-body-md text-on-surface transition-colors"
               />
             </div>
 
@@ -66,12 +90,6 @@ export default function Login() {
                 <label className="font-label-md text-label-md text-on-surface" htmlFor="password">
                   Password
                 </label>
-                <Link
-                  to="/forgot-password"
-                  className="font-label-sm text-label-sm text-primary hover:text-on-primary-container transition-colors"
-                >
-                  Forgot Password?
-                </Link>
               </div>
               <div className="relative">
                 <input
@@ -82,12 +100,12 @@ export default function Login() {
                   onChange={handleChange}
                   placeholder="••••••••"
                   required
-                  className="custom-input w-full px-0 py-3 pr-10 font-body-md text-body-md text-on-surface placeholder:text-outline bg-transparent"
+                  className="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none py-3 pr-10 font-body-md text-on-surface transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 text-primary hover:text-on-primary-container p-1"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 text-primary hover:text-on-primary-container p-1 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[20px]">
                     {showPass ? 'visibility' : 'visibility_off'}
@@ -99,10 +117,20 @@ export default function Login() {
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full py-3 px-8 bg-primary-container text-on-primary-fixed font-label-md text-label-md rounded-lg shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center gap-2"
+                disabled={isSubmitting}
+                className="w-full py-4 px-8 bg-primary-container text-on-background font-label-md text-label-md rounded-full shadow-ambient hover:bg-primary hover:text-white transition-all duration-300 flex justify-center items-center gap-2 font-bold cursor-pointer disabled:opacity-50"
               >
-                Sign In & Preview Account
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                {isSubmitting ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -116,7 +144,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => navigate('/')}
-                className="w-full py-3 px-8 bg-transparent border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container transition-colors duration-300 flex justify-center items-center gap-2"
+                className="w-full py-3 px-8 bg-transparent border border-outline-variant text-on-surface font-label-md text-label-md rounded-full hover:bg-surface-container transition-colors duration-300 flex justify-center items-center gap-2 cursor-pointer"
               >
                 Continue as Guest
               </button>
@@ -129,9 +157,9 @@ export default function Login() {
               Don't have an account?{' '}
               <Link
                 to="/register"
-                className="font-label-md text-label-md text-primary underline underline-offset-4 hover:text-on-primary-container transition-colors"
+                className="font-label-md text-label-md text-primary font-bold hover:underline transition-colors"
               >
-                Sign up
+                Create Account (Sign Up)
               </Link>
             </p>
           </div>

@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function AdminProfile() {
+  const { user, updateUser } = useAuth();
+
   const [profile, setProfile] = useState({
-    name: 'Pramod Wijenayake',
-    email: 'pramod@malmalee.lk',
-    phone: '+94 77 123 4567',
-    role: 'Super Admin',
+    name: user?.name || 'Pramod Wijenayake',
+    email: user?.email || 'admin@malmalee.lk',
+    phone: user?.phone || '+94 77 123 4567',
+    role: user?.role === 'ADMIN' ? 'System Administrator' : 'Admin',
     avatar: '',
   });
 

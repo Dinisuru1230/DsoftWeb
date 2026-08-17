@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AccountSidebar from '../components/AccountSidebar';
 import {
@@ -11,16 +11,32 @@ export default function MyProfile() {
   const { user, updateUser } = useAuth();
 
   const [form, setForm] = useState({
-    firstName: user?.firstName || 'Amara',
-    lastName: user?.lastName || 'Perera',
-    email: user?.email || 'amara@malmalee.lk',
-    phone: user?.phone || '+94 77 123 4567',
-    address: user?.address || '42 Flower Lane',
+    firstName: user?.name ? user.name.split(' ')[0] : '',
+    lastName: user?.name && user.name.split(' ').length > 1 ? user.name.split(' ').slice(1).join(' ') : '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
     city: user?.city || 'Colombo 03',
-    state: user?.state || 'Western Province',
-    postalCode: user?.postalCode || '00300',
-    country: user?.country || 'Sri Lanka',
+    state: user?.district || 'Western Province',
+    postalCode: user?.postalCode || '',
+    country: 'Sri Lanka',
   });
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        firstName: user.name ? user.name.split(' ')[0] : '',
+        lastName: user.name && user.name.split(' ').length > 1 ? user.name.split(' ').slice(1).join(' ') : '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || 'Colombo 03',
+        state: user.district || 'Western Province',
+        postalCode: user.postalCode || '',
+        country: 'Sri Lanka',
+      });
+    }
+  }, [user]);
 
   const [saved, setSaved] = useState(false);
 
@@ -43,9 +59,16 @@ export default function MyProfile() {
     setSaved(false);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    updateUser({ ...form, name: `${form.firstName} ${form.lastName}` });
+    await updateUser({
+      name: `${form.firstName} ${form.lastName}`.trim(),
+      phone: form.phone,
+      address: form.address,
+      city: form.city,
+      district: form.state,
+      postalCode: form.postalCode,
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   }
