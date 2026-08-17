@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Customer Dashboard - Malmalee Creations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#fbdbde",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#281719",
+                        "primary-fixed-dim": "#debfc2",
+                        "secondary-fixed-dim": "#cac99f",
+                        "on-primary-container": "#765e61",
+                        "secondary": "#60603e",
+                        "outline-variant": "#d2c3c4",
+                        "background": "#fbf9f8",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#303030",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-surface-variant": "#4f4445",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "on-tertiary-fixed": "#3a0915",
+                        "secondary-fixed": "#e6e5b9",
+                        "surface": "#fbf9f8",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb2bc",
+                        "inverse-primary": "#debfc2",
+                        "tertiary": "#8c4b55",
+                        "on-secondary-fixed-variant": "#484828",
+                        "surface-dim": "#dcd9d9",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-primary-fixed-variant": "#574144",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#1d1d03",
+                        "on-background": "#1b1c1c",
+                        "secondary-container": "#e6e5b9",
+                        "surface-variant": "#e4e2e1",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#ffd9dd",
+                        "surface-tint": "#70585b",
+                        "on-tertiary-container": "#93505b",
+                        "primary-container": "#fadadd",
+                        "outline": "#807475",
+                        "primary": "#70585b",
+                        "tertiary-container": "#ffd8dc",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed-variant": "#70343e",
+                        "on-secondary-container": "#666643",
+                        "surface-bright": "#fbf9f8",
+                        "surface-container-high": "#eae8e7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "section-gap": "80px",
+                        "margin-desktop": "64px",
+                        "container-max": "1200px",
+                        "unit": "8px",
+                        "stack-lg": "32px",
+                        "margin-mobile": "20px",
+                        "stack-sm": "8px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Playfair Display"],
+                        "headline-md-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-sm": ["Be Vietnam Pro"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "body-md": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-md-mobile": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-md": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .shadow-ambient {
+            box-shadow: 0px 4px 20px rgba(183, 110, 121, 0.15);
+        }
+        .shadow-ambient-hover:hover {
+            box-shadow: 0px 8px 30px rgba(183, 110, 121, 0.25);
+            transform: translateY(-2px);
+        }
+        .icon-gold {
+            color: #B76E79;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar (Rendered on Web, hidden on Mobile as per typical app logic, though shell rules dictate responsive handling) -->
+<header class="hidden md:flex bg-background dark:bg-on-background docked full-width top-0 shadow-[0px_4px_20px_rgba(183,110,121,0.15)] z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop py-stack-md max-w-container-max mx-auto">
+<div class="font-display-lg text-display-lg text-primary tracking-tight">Malmalee Creations</div>
+<nav class="flex gap-gutter">
+<a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors duration-300 pb-1" href="#">Shop</a>
+<a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors duration-300 pb-1" href="#">Collections</a>
+<a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors duration-300 pb-1" href="#">Our Story</a>
+<a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors duration-300 pb-1" href="#">Journal</a>
+</nav>
+<div class="flex gap-stack-md">
+<span class="material-symbols-outlined icon-gold">shopping_bag</span>
+</div>
+</div>
+</header>
+<!-- Mobile Header -->
+<header class="md:hidden bg-background docked full-width top-0 shadow-[0px_4px_20px_rgba(183,110,121,0.15)] z-50 p-margin-mobile flex justify-between items-center">
+<div class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Malmalee</div>
+<span class="material-symbols-outlined icon-gold">shopping_bag</span>
+</header>
+<div class="flex-grow flex flex-col md:flex-row max-w-container-max mx-auto w-full">
+<!-- Sidebar Navigation (Active: Order History) -->
+<aside class="hidden md:flex bg-surface-container-lowest border-r border-outline-variant h-full w-64 rounded-r-xl shadow-sm flex-col p-gutter space-y-stack-md shrink-0 py-section-gap">
+<div class="mb-stack-lg">
+<h2 class="font-title-sm text-title-sm text-primary">My Account</h2>
+<p class="font-body-md text-body-md text-on-surface-variant opacity-70">Manage your details</p>
+</div>
+<nav class="flex flex-col space-y-unit">
+<a class="flex items-center gap-stack-sm p-unit text-on-surface-variant hover:bg-surface-container rounded-lg transition-transform hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined icon-gold" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-md text-label-md">My Profile</span>
+</a>
+<a class="flex items-center gap-stack-sm p-unit text-primary font-bold bg-primary-container rounded-lg transition-transform duration-200" href="#">
+<span class="material-symbols-outlined icon-gold" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="font-label-md text-label-md">Order History</span>
+</a>
+<a class="flex items-center gap-stack-sm p-unit text-on-surface-variant hover:bg-surface-container rounded-lg transition-transform hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined icon-gold" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-grow p-margin-mobile md:p-margin-desktop py-section-gap">
+<div class="mb-stack-lg">
+<h1 class="font-headline-md text-headline-md md:font-display-lg md:text-display-lg text-primary mb-unit">Order History</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Review your past purchases and track current orders.</p>
+</div>
+<!-- Bento-style Dashboard Content -->
+<div class="bg-surface-container-lowest rounded-xl shadow-ambient p-gutter md:p-stack-lg overflow-hidden border border-outline-variant/30">
+<!-- Table View -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[600px]">
+<thead>
+<tr class="border-b-2 border-primary/20">
+<th class="py-stack-md px-unit font-label-md text-label-md text-on-surface-variant">Order ID</th>
+<th class="py-stack-md px-unit font-label-md text-label-md text-on-surface-variant">Date</th>
+<th class="py-stack-md px-unit font-label-md text-label-md text-on-surface-variant">Total</th>
+<th class="py-stack-md px-unit font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="py-stack-md px-unit font-label-md text-label-md text-on-surface-variant text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Order Row 1 -->
+<tr class="group hover:bg-surface-container-low transition-colors duration-200">
+<td class="py-stack-md px-unit font-body-md text-body-md text-on-surface">#MC-8492</td>
+<td class="py-stack-md px-unit font-body-md text-body-md text-on-surface-variant">Oct 12, 2024</td>
+<td class="py-stack-md px-unit font-body-md text-body-md text-on-surface">$145.00</td>
+<td class="py-stack-md px-unit">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-secondary mr-2"></span>
+                                        Pending
+                                    </span>
+</td>
+<td class="py-stack-md px-unit text-right">
+<button class="text-primary hover:text-on-primary-container font-label-md text-label-md transition-colors">View Details</button>
+</td>
+</tr>
+<!-- Order Row 2 -->
+<tr class="group hover:bg-surface-container-low transition-colors duration-200">
+<td class="py-stack-md px-unit font-body-md text-body-md text-on-surface">#MC-8310</td>
+<td class="py-stack-md px-unit font-body-md text-body-md text-on-surface-variant">Sep 28, 2024</td>
+<td class="py-stack-md px-unit font-body-md text-body-md text-on-surface">$85.50</td>
+<td class="py-stack-md px-unit">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] mr-1">local_shipping</span>
+                                        Shipped
+                                    </span>
+</td>
+<td class="py-stack-md px-unit text-right">
+<button class="text-primary hover:text-on-primary-container font-label-md text-label-md transition-colors">Track</button>
+</td>
+</tr>
+<!-- Order Row 3 -->
+<tr class="group hover:bg-surface-container-low transition-colors duration-200">
+<td class="py-stack-md px-unit font-body-md text-body-md text-on-surface">#MC-7901</td>
+<td class="py-stack-md px-unit font-body-md text-body-md text-on-surface-variant">Aug 05, 2024</td>
+<td class="py-stack-md px-unit font-body-md text-body-md text-on-surface">$210.00</td>
+<td class="py-stack-md px-unit">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] mr-1">check_circle</span>
+                                        Delivered
+                                    </span>
+</td>
+<td class="py-stack-md px-unit text-right">
+<button class="text-primary hover:text-on-primary-container font-label-md text-label-md transition-colors">Review</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Empty State / Support Note -->
+<div class="mt-stack-lg p-gutter bg-surface-container-low rounded-lg border border-primary-fixed-dim/30 flex items-start gap-stack-md">
+<span class="material-symbols-outlined icon-gold text-title-sm mt-1">favorite</span>
+<div>
+<h4 class="font-title-sm text-title-sm text-primary mb-1">Need help with an order?</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Our customer care team is here to assist you with any questions regarding your handcrafted pieces.</p>
+<button class="mt-stack-sm text-on-primary-container border-b border-on-primary-container font-label-md text-label-md pb-1 hover:opacity-80 transition-opacity">Contact Support</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Mobile Bottom Navigation (Suppressed here due to deep sub-page context, but structurally side nav is used on web) -->
+</body></html>

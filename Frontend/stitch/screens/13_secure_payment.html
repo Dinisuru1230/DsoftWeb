@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Payment Gateway Mockup</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#fbdbde",
+                        "primary-container": "#fadadd",
+                        "surface-container-high": "#eae8e7",
+                        "outline-variant": "#d2c3c4",
+                        "on-background": "#1b1c1c",
+                        "surface-dim": "#dcd9d9",
+                        "tertiary-fixed": "#ffd9dd",
+                        "surface-container-low": "#f6f3f2",
+                        "inverse-surface": "#303030",
+                        "primary": "#70585b",
+                        "tertiary-container": "#ffd8dc",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#765e61",
+                        "on-tertiary-fixed-variant": "#70343e",
+                        "on-primary-fixed": "#281719",
+                        "surface-tint": "#70585b",
+                        "outline": "#807475",
+                        "primary-fixed-dim": "#debfc2",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-bright": "#fbf9f8",
+                        "secondary-fixed": "#e6e5b9",
+                        "tertiary": "#8c4b55",
+                        "tertiary-fixed-dim": "#ffb2bc",
+                        "inverse-primary": "#debfc2",
+                        "secondary-fixed-dim": "#cac99f",
+                        "background": "#fbf9f8",
+                        "surface-container": "#f0eded",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#93505b",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e4e2e1",
+                        "on-tertiary-fixed": "#3a0915",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#60603e",
+                        "on-secondary-container": "#666643",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#484828",
+                        "on-surface-variant": "#4f4445",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "surface": "#fbf9f8",
+                        "on-secondary-fixed": "#1d1d03",
+                        "on-primary-fixed-variant": "#574144",
+                        "surface-container-highest": "#e4e2e1",
+                        "secondary-container": "#e6e5b9",
+                        "on-surface": "#1b1c1c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "margin-mobile": "20px",
+                        "stack-sm": "8px",
+                        "gutter": "24px",
+                        "stack-md": "16px",
+                        "section-gap": "80px",
+                        "container-max": "1200px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-md-mobile": ["Playfair Display"],
+                        "title-sm": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "label-sm": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-md": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "headline-md-mobile": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "title-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .custom-shadow {
+            box-shadow: 0px 4px 20px rgba(183, 110, 121, 0.15);
+        }
+        .input-border {
+            border-bottom: 2px solid #b76e79;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex items-center justify-center p-4">
+<!-- Payment Gateway Canvas -->
+<main class="w-full max-w-md bg-surface-container-lowest rounded-xl custom-shadow p-8 flex flex-col gap-stack-lg relative overflow-hidden">
+<!-- Subtle Glow Effect -->
+<div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-primary-fixed-dim/20 to-transparent pointer-events-none rounded-t-xl"></div>
+<!-- Header / Trust Indicators -->
+<header class="flex flex-col items-center text-center gap-stack-sm relative z-10">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Malmalee Creations</h1>
+<div class="flex items-center gap-2 text-secondary bg-secondary-fixed/30 px-3 py-1 rounded-full font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+                Secure SSL Payment
+            </div>
+</header>
+<!-- Order Summary -->
+<section class="border border-outline-variant/30 rounded-lg p-4 bg-surface-container-low flex justify-between items-center relative z-10">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Order Total</span>
+<span class="font-headline-md-mobile text-headline-md-mobile text-on-background">$114.00</span>
+</div>
+<div class="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container custom-shadow">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+</div>
+</section>
+<!-- Payment Form -->
+<form class="flex flex-col gap-stack-md relative z-10">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="cardName">Name on Card</label>
+<input class="w-full bg-surface-bright border-none input-border rounded-t-md px-4 py-3 focus:outline-none focus:bg-white transition-colors text-on-background font-body-md placeholder:text-outline/50" id="cardName" placeholder="Jane Doe" type="text"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant flex justify-between" for="cardNumber">
+                    Card Number
+                    <div class="flex gap-1 text-primary">
+<!-- Simplified visual representation of accepted cards -->
+<span class="material-symbols-outlined text-[18px]">credit_card</span>
+</div>
+</label>
+<div class="relative">
+<input class="w-full bg-surface-bright border-none input-border rounded-t-md pl-10 pr-4 py-3 focus:outline-none focus:bg-white transition-colors text-on-background font-body-md placeholder:text-outline/50 tracking-widest" id="cardNumber" placeholder="0000 0000 0000 0000" type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/70">credit_card</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-gutter">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="expiry">Expiry Date</label>
+<input class="w-full bg-surface-bright border-none input-border rounded-t-md px-4 py-3 focus:outline-none focus:bg-white transition-colors text-on-background font-body-md placeholder:text-outline/50 text-center tracking-widest" id="expiry" placeholder="MM/YY" type="text"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1" for="cvc">
+                        CVC
+                        <span class="material-symbols-outlined text-[14px] text-outline cursor-help" title="3 digits on back of card">info</span>
+</label>
+<input class="w-full bg-surface-bright border-none input-border rounded-t-md px-4 py-3 focus:outline-none focus:bg-white transition-colors text-on-background font-body-md placeholder:text-outline/50 text-center tracking-widest" id="cvc" maxlength="4" placeholder="•••" type="password"/>
+</div>
+</div>
+<!-- Action Area -->
+<div class="mt-stack-sm flex flex-col gap-stack-sm">
+<button class="w-full bg-primary-container text-on-primary-container font-label-md text-label-md py-4 px-8 rounded-lg flex items-center justify-center gap-2 hover:-translate-y-1 hover:shadow-lg transition-all duration-300" type="button">
+                    Pay $114.00
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<p class="text-center font-label-sm text-label-sm text-outline mt-2 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+                    Payments are secure and encrypted.
+                </p>
+</div>
+</form>
+</main>
+</body></html>
