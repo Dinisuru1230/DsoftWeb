@@ -9,18 +9,18 @@ const INITIAL_ORDERS = [
     item: 'Artisan Silk Ribbon x2',
     date: '2024-08-11',
     status: 'Bank Slip Pending',
-    total: 36.00,
+    total: 10800,
     items: 2,
     paymentMethod: 'Bank Transfer',
     bankSlipUrl: '/14_blush_silk_ribbon_bow.jpg',
     depositRef: 'REF-892103',
   },
-  { id: 'MC-2024-148', customer: 'Amara Perera', email: 'amara@example.com', item: 'Blush Silk Ribbon Bow', date: '2024-08-10', status: 'Pending', total: 12.00, items: 1, paymentMethod: 'COD' },
-  { id: 'MC-2024-147', customer: 'Nimal Silva', email: 'nimal@example.com', item: 'Pearl Satin Scrunchie', date: '2024-08-10', status: 'Processing', total: 15.00, items: 1, paymentMethod: 'Card' },
-  { id: 'MC-2024-146', customer: 'Kasuni Fernando', email: 'kasuni@example.com', item: 'Woven Floral Headband + Ribbon', date: '2024-08-09', status: 'Delivered', total: 40.00, items: 2, paymentMethod: 'Card' },
-  { id: 'MC-2024-145', customer: 'Dilshan Mendis', email: 'dilshan@example.com', item: 'Hair Bows Set', date: '2024-08-09', status: 'Confirmed', total: 28.00, items: 1, paymentMethod: 'COD' },
-  { id: 'MC-2024-144', customer: 'Sachini Jayawardena', email: 'sachini@example.com', item: 'Artisan Silk Ribbon x3', date: '2024-08-08', status: 'Delivered', total: 54.00, items: 3, paymentMethod: 'Card' },
-  { id: 'MC-2024-143', customer: 'Ravindu Perera', email: 'ravindu@example.com', item: 'Cream Linen Bow', date: '2024-08-07', status: 'Cancelled', total: 14.00, items: 1, paymentMethod: 'COD' },
+  { id: 'MC-2024-148', customer: 'Amara Perera', email: 'amara@example.com', item: 'Blush Silk Ribbon Bow', date: '2024-08-10', status: 'Pending', total: 3600, items: 1, paymentMethod: 'COD' },
+  { id: 'MC-2024-147', customer: 'Nimal Silva', email: 'nimal@example.com', item: 'Pearl Satin Scrunchie', date: '2024-08-10', status: 'Processing', total: 4500, items: 1, paymentMethod: 'Card' },
+  { id: 'MC-2024-146', customer: 'Kasuni Fernando', email: 'kasuni@example.com', item: 'Woven Floral Headband + Ribbon', date: '2024-08-09', status: 'Delivered', total: 12000, items: 2, paymentMethod: 'Card' },
+  { id: 'MC-2024-145', customer: 'Dilshan Mendis', email: 'dilshan@example.com', item: 'Hair Bows Set', date: '2024-08-09', status: 'Confirmed', total: 8400, items: 1, paymentMethod: 'COD' },
+  { id: 'MC-2024-144', customer: 'Sachini Jayawardena', email: 'sachini@example.com', item: 'Artisan Silk Ribbon x3', date: '2024-08-08', status: 'Delivered', total: 16200, items: 3, paymentMethod: 'Card' },
+  { id: 'MC-2024-143', customer: 'Ravindu Perera', email: 'ravindu@example.com', item: 'Cream Linen Bow', date: '2024-08-07', status: 'Cancelled', total: 4200, items: 1, paymentMethod: 'COD' },
 ];
 
 const STATUS_COLORS = {
@@ -166,7 +166,7 @@ export default function OrderManagement() {
                       {order.paymentMethod}
                     </span>
                   </td>
-                  <td className="p-4 font-bold text-primary">${order.total.toFixed(2)}</td>
+                  <td className="p-4 font-bold text-primary">Rs. {order.total.toLocaleString()}</td>
                   <td className="p-4">
                     <div className="relative inline-block">
                       <select
@@ -229,7 +229,7 @@ export default function OrderManagement() {
               </div>
               <div className="flex justify-between py-1 border-b border-outline-variant/20">
                 <span className="text-on-surface-variant">Total Transfer Amount</span>
-                <span className="font-bold text-primary text-base">${viewingSlipOrder.total.toFixed(2)}</span>
+                <span className="font-bold text-primary text-base">Rs. {viewingSlipOrder.total.toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-outline-variant/20">
                 <span className="text-on-surface-variant">Deposit Reference No.</span>

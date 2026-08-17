@@ -60,7 +60,7 @@ export default function ProductCard({ product }) {
             </h3>
           </div>
 
-          <p className="font-body-md text-body-md text-on-surface-variant font-medium">${price.toFixed(2)}</p>
+          <p className="font-body-md text-body-md text-on-surface-variant font-medium">Rs. {price.toLocaleString()}</p>
         </div>
       </Link>
 

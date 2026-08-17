@@ -106,7 +106,7 @@ export default function ProductManagement() {
                   <td className="p-4">
                     <span className="px-3 py-1 rounded-full bg-primary-container text-on-background font-label-sm text-label-sm">{p.category}</span>
                   </td>
-                  <td className="p-4 font-body-md text-body-md text-on-surface">${p.price.toFixed(2)}</td>
+                  <td className="p-4 font-body-md text-body-md text-on-surface">Rs. {p.price.toLocaleString()}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${p.stock === 0 ? 'bg-error' : p.stock < 5 ? 'bg-tertiary' : 'bg-secondary'}`} />
@@ -149,7 +149,7 @@ export default function ProductManagement() {
               <img src={p.image} alt={p.name} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
               <div className="flex-grow">
                 <p className="font-title-sm text-title-sm text-on-surface">{p.name}</p>
-                <p className="font-body-md text-body-md text-on-surface-variant">${p.price.toFixed(2)} · {p.stock} units</p>
+                <p className="font-body-md text-body-md text-on-surface-variant">Rs. {p.price.toLocaleString()} · {p.stock} units</p>
               </div>
               <div className="flex gap-1">
                 <button className="p-2 text-primary hover:bg-surface-container rounded-lg">

@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 export default function Cart() {
   const { cartItems, cartSubtotal, updateQuantity, removeFromCart } = useCart();
   const navigate = useNavigate();
-  const DELIVERY_FEE = cartItems.length > 0 ? 5.00 : 0;
+  const DELIVERY_FEE = cartItems.length > 0 ? 450 : 0;
 
   if (cartItems.length === 0) {
     return (
@@ -53,7 +53,7 @@ export default function Cart() {
                     </span>
                   </div>
                   <div className="font-title-sm text-title-sm text-primary">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    Rs. {(item.price * item.quantity).toLocaleString()}
                   </div>
                 </div>
 
@@ -96,16 +96,16 @@ export default function Cart() {
             <div className="space-y-3 border-b border-outline-variant pb-6 mb-6">
               <div className="flex justify-between font-body-md text-body-md text-on-surface-variant">
                 <span>Subtotal ({cartItems.length} items)</span>
-                <span>${cartSubtotal.toFixed(2)}</span>
+                <span>Rs. {cartSubtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between font-body-md text-body-md text-on-surface-variant">
                 <span>Delivery Fee</span>
-                <span>${DELIVERY_FEE.toFixed(2)}</span>
+                <span>Rs. {DELIVERY_FEE.toLocaleString()}</span>
               </div>
             </div>
             <div className="flex justify-between font-title-sm text-title-sm text-on-surface mb-6">
               <span>Total</span>
-              <span>${(cartSubtotal + DELIVERY_FEE).toFixed(2)}</span>
+              <span>Rs. {(cartSubtotal + DELIVERY_FEE).toLocaleString()}</span>
             </div>
             <button
               onClick={() => navigate('/checkout')}

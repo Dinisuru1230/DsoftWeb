@@ -62,7 +62,7 @@ export default function OrderConfirmed() {
 
           <div className="flex justify-between font-title-sm text-title-sm text-on-surface mt-2">
             <span>Total Amount</span>
-            <span className="font-bold text-primary">${totalAmount.toFixed(2)}</span>
+            <span className="font-bold text-primary">Rs. {totalAmount.toLocaleString()}</span>
           </div>
         </div>
 

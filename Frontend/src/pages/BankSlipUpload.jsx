@@ -99,7 +99,7 @@ export default function BankSlipUpload() {
             </div>
             <div className="bg-primary-container/30 rounded-xl p-4 flex justify-between items-center mt-2">
               <span className="font-label-md text-label-md text-primary">Total Payable Amount</span>
-              <span className="font-title-sm text-title-sm text-primary font-bold">${totalAmount.toFixed(2)}</span>
+              <span className="font-title-sm text-title-sm text-primary font-bold">Rs. {totalAmount.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function BankSlipUpload() {
               ) : (
                 <>
                   <span className="material-symbols-outlined text-[20px]">task_alt</span>
-                  Submit Bank Deposit Slip ($${totalAmount.toFixed(2)})
+                  Submit Bank Deposit Slip (Rs. {totalAmount.toLocaleString()})
                 </>
               )}
             </button>

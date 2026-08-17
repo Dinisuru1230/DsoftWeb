@@ -24,8 +24,8 @@ export default function AddProduct() {
     name: '',
     sku: '',
     category: 'Bows',
-    price: '12.00',
-    comparePrice: '18.00',
+    price: '3600',
+    comparePrice: '5400',
     stock: '48',
     description: '',
     featured: false,
@@ -271,7 +271,7 @@ export default function AddProduct() {
             </div>
 
             <p className="font-body-md text-body-md text-on-surface-variant text-sm">
-              Optional: Add color variants for this product. You can set an <span className="text-primary font-bold">individual Price ($), Stock Quantity, and Photo</span> for each color!
+              Optional: Add color variants for this product. You can set an <span className="text-primary font-bold">individual Price (Rs.), Stock Quantity, and Photo</span> for each color!
               <br />
               <span className="text-primary font-medium">
                 {hasColors
@@ -305,7 +305,7 @@ export default function AddProduct() {
 
                   {/* Individual Price for this Color */}
                   <div className="w-full sm:w-28 border-t sm:border-t-0 sm:border-l border-outline-variant/30 pt-2 sm:pt-0 sm:pl-3">
-                    <label className="block font-label-sm text-label-sm text-on-surface-variant mb-0.5">Price ($ USD)</label>
+                    <label className="block font-label-sm text-label-sm text-on-surface-variant mb-0.5">Price (Rs. LKR)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -479,7 +479,7 @@ export default function AddProduct() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="price">
-                    Default Price ($ USD) <span className="text-error">*</span>
+                    Default Price (Rs. LKR) <span className="text-error">*</span>
                   </label>
                   <input
                     id="price"

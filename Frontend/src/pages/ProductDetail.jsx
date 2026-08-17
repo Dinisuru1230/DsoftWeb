@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 const PRODUCT = {
   id: 'blush-ribbon-bow',
   name: 'Blush Silk Ribbon Bow',
-  price: 12.00,
+  price: 3600,
   stock: 48,
   category: 'Bows',
   badge: 'Bestseller',
@@ -18,10 +18,10 @@ const PRODUCT = {
     'Handmade with love in Sri Lanka',
   ],
   colors: [
-    { name: 'Blush Pink', hex: '#fadadd', image: '/14_blush_silk_ribbon_bow.jpg', price: 12.00, stock: 18 },
-    { name: 'Cream Linen', hex: '#f7f4ef', image: '/01_cream_linen_fabrics.jpg', price: 14.00, stock: 12 },
-    { name: 'Rose Gold', hex: '#e8c5c8', image: '/08_pink_satin_robe.jpg', price: 16.00, stock: 5 },
-    { name: 'Sage Olive', hex: '#c5cbba', image: '/03_olive_linen_ribbons.jpg', price: 12.00, stock: 0 },
+    { name: 'Blush Pink', hex: '#fadadd', image: '/14_blush_silk_ribbon_bow.jpg', price: 3600, stock: 18 },
+    { name: 'Cream Linen', hex: '#f7f4ef', image: '/01_cream_linen_fabrics.jpg', price: 4200, stock: 12 },
+    { name: 'Rose Gold', hex: '#e8c5c8', image: '/08_pink_satin_robe.jpg', price: 4800, stock: 5 },
+    { name: 'Sage Olive', hex: '#c5cbba', image: '/03_olive_linen_ribbons.jpg', price: 3600, stock: 0 },
   ],
   images: [
     '/14_blush_silk_ribbon_bow.jpg',
@@ -30,10 +30,10 @@ const PRODUCT = {
     '/19_woman_low_bun_ribbon.jpg',
   ],
   related: [
-    { id: 'pearl-scrunchie', name: 'Pearl Satin Scrunchie', price: 15.00, image: '/18_silk_scrunchie.jpg' },
-    { id: 'woven-headband', name: 'Woven Floral Headband', price: 22.00, image: '/17_woven_floral_headband.jpg' },
-    { id: 'hair-bows-set', name: 'Handmade Hair Bows Set', price: 28.00, image: '/16_flat_lay_hair_bows.jpg' },
-    { id: 'studio-ribbon', name: 'Artisan Silk Ribbon', price: 18.00, image: '/13_studio_table_ribbons.jpg' },
+    { id: 'pearl-scrunchie', name: 'Pearl Satin Scrunchie', price: 4500, image: '/18_silk_scrunchie.jpg' },
+    { id: 'woven-headband', name: 'Woven Floral Headband', price: 6600, image: '/17_woven_floral_headband.jpg' },
+    { id: 'hair-bows-set', name: 'Handmade Hair Bows Set', price: 8400, image: '/16_flat_lay_hair_bows.jpg' },
+    { id: 'studio-ribbon', name: 'Artisan Silk Ribbon', price: 5400, image: '/13_studio_table_ribbons.jpg' },
   ],
 };
 
@@ -127,7 +127,7 @@ export default function ProductDetail() {
 
             {/* Dynamic Price & Color Stock Indicator */}
             <div className="flex items-center space-x-4 mb-6">
-              <span className="font-title-sm text-title-sm text-on-background font-bold">${currentPrice.toFixed(2)}</span>
+              <span className="font-title-sm text-title-sm text-on-background font-bold">Rs. {currentPrice.toLocaleString()}</span>
               {isOutOfStock ? (
                 <span className="flex items-center space-x-1 text-error font-label-sm text-label-sm bg-error-container/40 px-3 py-1 rounded-full">
                   <span className="material-symbols-outlined text-[16px]">block</span>
@@ -153,7 +153,7 @@ export default function ProductDetail() {
                     Selected Color: <span className="font-bold text-primary">{selectedColor?.name}</span>
                   </label>
                   <span className={`font-label-sm text-label-sm ${selectedColor?.stock === 0 ? 'text-error font-bold' : 'text-on-surface-variant'}`}>
-                    ${selectedColor?.price.toFixed(2)} · {selectedColor?.stock === 0 ? 'Out of Stock' : `${selectedColor?.stock} in stock`}
+                    Rs. {selectedColor?.price.toLocaleString()} · {selectedColor?.stock === 0 ? 'Out of Stock' : `${selectedColor?.stock} in stock`}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -165,7 +165,7 @@ export default function ProductDetail() {
                         key={c.name}
                         type="button"
                         onClick={() => handleColorSelect(c)}
-                        title={`${c.name} - $${c.price.toFixed(2)} ${cOutOfStock ? '(Out of Stock)' : `(${c.stock} in stock)`}`}
+                        title={`${c.name} - Rs. ${c.price.toLocaleString()} ${cOutOfStock ? '(Out of Stock)' : `(${c.stock} in stock)`}`}
                         className={`w-9 h-9 rounded-full transition-all flex items-center justify-center relative cursor-pointer border border-outline-variant/40 ${
                           isSelected
                             ? 'ring-2 ring-primary ring-offset-2 scale-110 shadow-sm'
@@ -229,7 +229,7 @@ export default function ProductDetail() {
                   ? `Out of Stock (${selectedColor?.name})`
                   : added
                   ? `Added (${selectedColor ? selectedColor.name : 'Item'})!`
-                  : `Add ${selectedColor ? selectedColor.name : ''} to Bag ($${(currentPrice * quantity).toFixed(2)})`}
+                  : `Add ${selectedColor ? selectedColor.name : ''} to Bag (Rs. ${(currentPrice * quantity).toLocaleString()})`}
               </button>
               <button
                 onClick={() => { handleAddToCart(); navigate('/checkout'); }}
@@ -273,7 +273,7 @@ export default function ProductDetail() {
               </div>
               <div className="text-center">
                 <h4 className="font-title-sm text-title-sm text-on-surface group-hover:text-primary transition-colors">{item.name}</h4>
-                <p className="font-body-md text-body-md text-on-surface-variant">${item.price.toFixed(2)}</p>
+                <p className="font-body-md text-body-md text-on-surface-variant">Rs. {item.price.toLocaleString()}</p>
               </div>
             </Link>
           ))}

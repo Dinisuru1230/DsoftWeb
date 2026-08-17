@@ -92,7 +92,7 @@ export default function TrackOrder() {
                 <img src="/14_blush_silk_ribbon_bow.jpg" alt="Blush Ribbon Bow" className="w-16 h-16 rounded-lg object-cover" />
                 <div>
                   <p className="font-title-sm text-title-sm text-on-surface">Blush Silk Ribbon Bow</p>
-                  <p className="font-body-md text-body-md text-on-surface-variant">Qty: 2 · $24.00</p>
+                  <p className="font-body-md text-body-md text-on-surface-variant">Qty: 2 · Rs. 7,200</p>
                 </div>
               </div>
             </div>
