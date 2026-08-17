@@ -42,13 +42,18 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-outline-variant/30 px-4 sm:px-8 md:px-12 py-4 relative flex flex-col sm:flex-row items-center justify-center gap-2 max-w-[1400px] mx-auto">
-        <span className="font-label-sm text-label-sm text-secondary text-center">
-          © 2026 Malmalee Creations. Handcrafted with Magic.
-        </span>
-        <span className="font-label-sm text-label-sm text-on-surface-variant font-medium sm:absolute sm:right-8 md:right-12">
-          Developed by <span className="text-primary font-bold">Pramod Wijenayake</span>
-        </span>
+      <div className="border-t border-outline-variant/30 px-4 sm:px-8 md:px-12 py-5 flex items-center justify-center text-center max-w-[1400px] mx-auto">
+        <p className="font-label-sm text-label-sm text-on-surface-variant">
+          © 2026 Malmalee Creations. All Rights Reserved. | Website Developed by{' '}
+          <a
+            href="https://fuchsius.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary font-bold hover:underline transition-all"
+          >
+            Fuchsius
+          </a>
+        </p>
       </div>
     </footer>
   );
