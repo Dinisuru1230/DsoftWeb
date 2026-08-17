@@ -12,7 +12,6 @@ export default function Navbar() {
 
   const navLinks = [
     { label: 'Shop', to: '/shop' },
-    { label: 'Collections', to: '/collections' },
     { label: 'Our Story', to: '/our-story' },
     { label: 'Contact Us', to: '/contact' },
   ];
