@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+import { ALL_PRODUCTS } from '../data/productsData';
 
 const CATEGORIES = ['All Products', 'Bows & Ribbons', 'Scrunchies', 'Headbands', 'Ribbons', 'Accessories'];
 
@@ -13,34 +14,35 @@ const categoryIcons = {
   'Accessories': 'straighten',
 };
 
-const PRODUCTS = [
-  { id: 'blush-ribbon-bow', name: 'Blush Silk Ribbon Bow', price: 12.00, category: 'Bows & Ribbons', image: '/14_blush_silk_ribbon_bow.jpg', badge: 'Bestseller' },
-  { id: 'pearl-scrunchie', name: 'Pearl Satin Scrunchie', price: 15.00, category: 'Scrunchies', image: '/18_silk_scrunchie.jpg' },
-  { id: 'woven-headband', name: 'Woven Floral Headband', price: 22.00, category: 'Headbands', image: '/17_woven_floral_headband.jpg', badge: 'New' },
-  { id: 'studio-ribbon', name: 'Artisan Silk Ribbon', price: 18.00, category: 'Ribbons', image: '/13_studio_table_ribbons.jpg' },
-  { id: 'hair-bows-set', name: 'Handmade Hair Bows Set', price: 28.00, category: 'Bows & Ribbons', image: '/16_flat_lay_hair_bows.jpg', badge: 'Popular' },
-  { id: 'boutique-gift-set', name: 'Boutique Gift Set', price: 45.00, category: 'Accessories', image: '/01_cream_linen_fabrics.jpg' },
-  { id: 'loom-woven-headband', name: 'Loom-Woven Headband', price: 35.00, category: 'Headbands', image: '/02_handloom_weaving.jpg' },
-  { id: 'olive-ribbon-bundle', name: 'Olive Ribbon Bundle', price: 24.00, category: 'Ribbons', image: '/03_olive_linen_ribbons.jpg' },
-];
-
 export default function ShopAll() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const catParam = searchParams.get('cat');
+  const searchParam = searchParams.get('search') || '';
 
   const initialCat = catParam
     ? CATEGORIES.find((c) => c.toLowerCase().replace(/[^a-z0-9]/g, '') === catParam.toLowerCase().replace(/[^a-z0-9]/g, '')) || 'All Products'
     : 'All Products';
 
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
+  const [searchQuery, setSearchQuery] = useState(searchParam);
   const [priceRange, setPriceRange] = useState(200);
   const [sortBy, setSortBy] = useState('newest');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  let filtered = PRODUCTS.filter((p) => {
+  useEffect(() => {
+    if (searchParam !== undefined) {
+      setSearchQuery(searchParam);
+    }
+  }, [searchParam]);
+
+  let filtered = ALL_PRODUCTS.filter((p) => {
     const matchCat = selectedCategory === 'All Products' || p.category === selectedCategory;
     const matchPrice = p.price <= priceRange;
-    return matchCat && matchPrice;
+    const matchSearch =
+      !searchQuery.trim() ||
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchCat && matchPrice && matchSearch;
   });
 
   if (sortBy === 'price-asc') filtered.sort((a, b) => a.price - b.price);
@@ -69,6 +71,29 @@ export default function ShopAll() {
       <div className="flex gap-8 lg:gap-12">
         {/* ── Desktop Sidebar Filters (Sticky Fixed on Scroll) ── */}
         <aside className="hidden md:block w-64 flex-shrink-0 space-y-8 sticky top-[100px] self-start max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
+          {/* Live Search Input Box */}
+          <div>
+            <h3 className="font-label-md text-label-md text-primary mb-2 font-bold">Search Catalog</h3>
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Type to filter..."
+                className="w-full bg-surface-container-low border border-outline-variant/50 focus:border-primary rounded-lg pl-9 pr-8 py-2 font-body-md text-sm outline-none transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-primary"
+                >
+                  <span className="material-symbols-outlined text-[16px]">cancel</span>
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Categories */}
           <div>
             <h3 className="font-label-md text-label-md text-primary mb-3 font-bold">Category</h3>

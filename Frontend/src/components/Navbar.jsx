@@ -1,14 +1,19 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { ALL_PRODUCTS } from '../data/productsData';
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { cartCount } = useCart();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef(null);
 
   const navLinks = [
     { label: 'Shop', to: '/shop' },
@@ -17,6 +22,38 @@ export default function Navbar() {
   ];
 
   const isActive = (path) => location.pathname === path;
+
+  // Auto-focus input when search opens
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
+  // Live filter products as user types (even single letter)
+  const searchResults = searchQuery.trim().length > 0
+    ? ALL_PRODUCTS.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+
+  function handleSelectProduct(productId) {
+    setSearchOpen(false);
+    setSearchQuery('');
+    navigate(`/product/${productId}`);
+  }
+
+  function handleSearchSubmit(e) {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      const query = searchQuery;
+      setSearchOpen(false);
+      setSearchQuery('');
+      navigate(`/shop?search=${encodeURIComponent(query)}`);
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-background shadow-ambient w-full">
@@ -49,30 +86,34 @@ export default function Navbar() {
 
         {/* Trailing Icons */}
         <div className="flex items-center space-x-4">
+          {/* Search Toggle Button */}
           <button
-            className="hidden md:flex text-primary hover:opacity-80 transition-all"
+            onClick={() => setSearchOpen(!searchOpen)}
+            className="text-primary hover:opacity-80 transition-all p-1"
             aria-label="Search"
           >
-            <span className="material-symbols-outlined">search</span>
+            <span className="material-symbols-outlined">{searchOpen ? 'close' : 'search'}</span>
           </button>
 
+          {/* Cart Button */}
           <button
             onClick={() => navigate('/cart')}
-            className="relative text-primary hover:opacity-80 transition-all"
+            className="relative text-primary hover:opacity-80 transition-all p-1"
             aria-label="Cart"
           >
             <span className="material-symbols-outlined">shopping_bag</span>
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                 {cartCount}
               </span>
             )}
           </button>
 
+          {/* User Profile */}
           {user ? (
             <button
               onClick={() => navigate('/account')}
-              className="hidden md:flex text-primary hover:opacity-80 transition-all"
+              className="hidden md:flex text-primary hover:opacity-80 transition-all p-1"
               aria-label="Account"
             >
               <span className="material-symbols-outlined">person</span>
@@ -89,7 +130,7 @@ export default function Navbar() {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-primary hover:opacity-80 transition-all"
+            className="md:hidden text-primary hover:opacity-80 transition-all p-1"
             aria-label="Menu"
           >
             <span className="material-symbols-outlined">{mobileOpen ? 'close' : 'menu'}</span>
@@ -97,7 +138,97 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Dropdown */}
+      {/* ── LIVE INSTANT SEARCH BAR OVERLAY ── */}
+      {searchOpen && (
+        <div className="border-t border-outline-variant/40 bg-surface-container-lowest px-4 sm:px-8 md:px-12 py-4 relative shadow-lg">
+          <div className="max-w-[1200px] mx-auto relative">
+            <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+              <span className="material-symbols-outlined absolute left-4 text-primary text-2xl">search</span>
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products, bows, ribbons, headbands... (type any letter)"
+                className="w-full bg-surface-container-low border-2 border-primary/30 focus:border-primary rounded-full pl-12 pr-12 py-3 font-body-md text-on-surface outline-none transition-all shadow-inner"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 text-on-surface-variant hover:text-primary p-1"
+                >
+                  <span className="material-symbols-outlined text-[20px]">cancel</span>
+                </button>
+              )}
+            </form>
+
+            {/* LIVE SEARCH DROPDOWN RESULTS */}
+            {searchQuery.trim().length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 overflow-hidden z-50 max-h-[420px] overflow-y-auto">
+                <div className="p-3 bg-surface-container-low border-b border-outline-variant/30 flex justify-between items-center text-xs font-label-md text-on-surface-variant">
+                  <span>Found <strong>{searchResults.length}</strong> result(s) for "{searchQuery}"</span>
+                  {searchResults.length > 0 && (
+                    <button
+                      onClick={handleSearchSubmit}
+                      className="text-primary hover:underline font-bold"
+                    >
+                      View All Products &rarr;
+                    </button>
+                  )}
+                </div>
+
+                {searchResults.length > 0 ? (
+                  <ul className="divide-y divide-outline-variant/20">
+                    {searchResults.map((product) => (
+                      <li
+                        key={product.id}
+                        onClick={() => handleSelectProduct(product.id)}
+                        className="p-3.5 flex items-center justify-between hover:bg-primary-container/20 transition-colors cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3.5">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-12 h-12 rounded-lg object-cover border border-outline-variant/30 shrink-0"
+                          />
+                          <div>
+                            <h4 className="font-title-sm text-sm text-on-surface group-hover:text-primary font-bold transition-colors">
+                              {product.name}
+                            </h4>
+                            <span className="font-label-sm text-xs text-on-surface-variant">
+                              {product.category}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <span className="font-title-sm text-sm font-bold text-primary">
+                            ${product.price.toFixed(2)}
+                          </span>
+                          {product.badge && (
+                            <span className="block text-[10px] bg-primary-container text-on-background px-2 py-0.5 rounded-full font-bold mt-0.5">
+                              {product.badge}
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="p-8 text-center text-on-surface-variant">
+                    <span className="material-symbols-outlined text-4xl text-outline mb-2">search_off</span>
+                    <p className="font-label-md text-body-md text-on-surface">No products found matching "{searchQuery}"</p>
+                    <p className="font-label-sm text-xs text-outline mt-1">Try searching for "bow", "ribbon", "scrunchie", or "headband"</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Menu Dropdown */}
       {mobileOpen && (
         <div className="md:hidden bg-background border-t border-outline-variant px-5 py-4 flex flex-col space-y-4">
           {navLinks.map((link) => (
