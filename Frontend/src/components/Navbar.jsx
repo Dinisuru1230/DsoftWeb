@@ -112,7 +112,7 @@ export default function Navbar() {
           {/* User Profile */}
           {user ? (
             <button
-              onClick={() => navigate('/account')}
+              onClick={() => navigate('/account/profile')}
               className="hidden md:flex text-primary hover:opacity-80 transition-all p-1"
               aria-label="Account"
             >
@@ -204,7 +204,7 @@ export default function Navbar() {
 
                         <div className="text-right shrink-0">
                           <span className="font-title-sm text-sm font-bold text-primary">
-                            ${product.price.toFixed(2)}
+                            Rs. {product.price.toLocaleString()}
                           </span>
                           {product.badge && (
                             <span className="block text-[10px] bg-primary-container text-on-background px-2 py-0.5 rounded-full font-bold mt-0.5">

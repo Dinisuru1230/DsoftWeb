@@ -9,14 +9,14 @@ export default function SecurePayment() {
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
 
-  // Dynamic Total Amount calculation (from Checkout state -> Cart subtotal + $5 delivery -> default $114.00)
+  // Dynamic Total Amount calculation (from Checkout state -> Cart subtotal + Rs. 450 delivery)
   const numericTotal = location.state?.total
     ? Number(location.state.total)
     : cartSubtotal > 0
-    ? (cartSubtotal + 5.00)
-    : 114.00;
+    ? (cartSubtotal + 450)
+    : 4050;
 
-  const totalAmount = numericTotal.toFixed(2);
+  const totalAmount = Math.round(numericTotal).toLocaleString();
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -52,7 +52,7 @@ export default function SecurePayment() {
         <section className="border border-outline-variant/30 rounded-xl p-4 bg-surface-container-low flex justify-between items-center relative z-10">
           <div className="flex flex-col gap-0.5">
             <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Order Total</span>
-            <span className="font-headline-md-mobile text-headline-md-mobile text-on-background font-bold">${totalAmount}</span>
+            <span className="font-headline-md-mobile text-headline-md-mobile text-on-background font-bold">Rs. {totalAmount}</span>
           </div>
           <div className="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container shadow-sm">
             <span className="material-symbols-outlined text-[24px]">shopping_bag</span>
@@ -162,7 +162,7 @@ export default function SecurePayment() {
                 <>Processing Payment...</>
               ) : (
                 <>
-                  Pay ${totalAmount}
+                  Pay Rs. {totalAmount}
                   <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </>
               )}

@@ -25,7 +25,7 @@ export default function ShopAll() {
 
   const [selectedCategory, setSelectedCategory] = useState(initialCat);
   const [searchQuery, setSearchQuery] = useState(searchParam);
-  const [priceRange, setPriceRange] = useState(200);
+  const [priceRange, setPriceRange] = useState(20000);
   const [sortBy, setSortBy] = useState('newest');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -121,16 +121,17 @@ export default function ShopAll() {
           <div className="pt-4 border-t border-outline-variant/40">
             <div className="flex justify-between items-center mb-2">
               <h3 className="font-label-md text-label-md text-primary font-bold">Price Range</h3>
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-bold">${priceRange}</span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant font-bold">Rs. {priceRange.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-xs text-outline mb-1 font-body-md">
-              <span>$0</span>
-              <span>$200</span>
+              <span>Rs. 0</span>
+              <span>Rs. 20,000</span>
             </div>
             <input
               type="range"
               min="0"
-              max="200"
+              max="20000"
+              step="500"
               value={priceRange}
               onChange={(e) => setPriceRange(Number(e.target.value))}
               className="w-full accent-primary cursor-pointer"
@@ -190,11 +191,12 @@ export default function ShopAll() {
 
                 {/* Price */}
                 <div className="pt-4 border-t border-outline-variant/40">
-                  <h3 className="font-label-md text-label-md text-primary mb-2 font-bold">Max Price: ${priceRange}</h3>
+                  <h3 className="font-label-md text-label-md text-primary mb-2 font-bold">Max Price: Rs. {priceRange.toLocaleString()}</h3>
                   <input
                     type="range"
                     min="0"
-                    max="200"
+                    max="20000"
+                    step="500"
                     value={priceRange}
                     onChange={(e) => setPriceRange(Number(e.target.value))}
                     className="w-full accent-primary"

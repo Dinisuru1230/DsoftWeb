@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 import AccountSidebar from '../components/AccountSidebar';
 
 const ORDERS = [
-  { id: 'MC-8492', date: 'Oct 12, 2024', total: 145.00, items: 3, status: 'Pending', statusColor: 'bg-surface-container border border-outline-variant text-on-surface-variant' },
-  { id: 'MC-8310', date: 'Sep 28, 2024', total: 85.50, items: 2, status: 'Shipped', statusColor: 'bg-primary-container text-on-primary-container' },
-  { id: 'MC-7901', date: 'Aug 05, 2024', total: 210.00, items: 4, status: 'Delivered', statusColor: 'bg-surface-container-highest text-on-surface' },
+  { id: 'MC-8492', date: 'Oct 12, 2024', total: 14500, items: 3, status: 'Pending', statusColor: 'bg-surface-container border border-outline-variant text-on-surface-variant' },
+  { id: 'MC-8310', date: 'Sep 28, 2024', total: 8550, items: 2, status: 'Shipped', statusColor: 'bg-primary-container text-on-primary-container' },
+  { id: 'MC-7901', date: 'Aug 05, 2024', total: 21000, items: 4, status: 'Delivered', statusColor: 'bg-surface-container-highest text-on-surface' },
 ];
 
 export default function MyAccount() {
@@ -42,7 +42,7 @@ export default function MyAccount() {
                   <tr key={order.id} className="group hover:bg-surface-container-low transition-colors duration-200">
                     <td className="py-4 px-4 font-body-md text-body-md text-on-surface font-medium">#{order.id}</td>
                     <td className="py-4 px-4 font-body-md text-body-md text-on-surface-variant">{order.date}</td>
-                    <td className="py-4 px-4 font-body-md text-body-md text-on-surface font-bold">${order.total.toFixed(2)}</td>
+                    <td className="py-4 px-4 font-body-md text-body-md text-on-surface font-bold">Rs. {order.total.toLocaleString()}</td>
                     <td className="py-4 px-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full font-label-sm text-label-sm ${order.statusColor}`}>
                         {order.status}

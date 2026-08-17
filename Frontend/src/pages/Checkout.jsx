@@ -9,7 +9,7 @@ import {
 } from '../data/sriLankaLocationData';
 
 const DEFAULT_CHECKOUT_ITEMS = [
-  { id: 'blush-ribbon-bow', name: 'Blush Silk Ribbon Bow', price: 12.00, quantity: 1, image: '/14_blush_silk_ribbon_bow.jpg' },
+  { id: 'blush-ribbon-bow', name: 'Blush Silk Ribbon Bow', price: 3600, quantity: 1, image: '/14_blush_silk_ribbon_bow.jpg' },
 ];
 
 export default function Checkout() {
@@ -18,7 +18,7 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   const items = cartItems && cartItems.length > 0 ? cartItems : DEFAULT_CHECKOUT_ITEMS;
-  const totalPrice = cartSubtotal && cartSubtotal > 0 ? cartSubtotal : 12.00;
+  const totalPrice = cartSubtotal && cartSubtotal > 0 ? cartSubtotal : 3600;
 
   // Toggle between default profile address vs new custom delivery address
   const [isCustomAddress, setIsCustomAddress] = useState(false);
@@ -56,15 +56,15 @@ export default function Checkout() {
 
   // Calculate custom per-product shipping rates dynamically from items in cart
   const maxProductStandardShipping = Math.max(
-    ...items.map((i) => (i.standardShipping !== undefined ? Number(i.standardShipping) : 5.00)),
-    5.00
+    ...items.map((i) => (i.standardShipping !== undefined ? Number(i.standardShipping) : 450)),
+    450
   );
   const maxProductExpressShipping = Math.max(
-    ...items.map((i) => (i.expressShipping !== undefined ? Number(i.expressShipping) : 15.00)),
-    15.00
+    ...items.map((i) => (i.expressShipping !== undefined ? Number(i.expressShipping) : 1200)),
+    1200
   );
 
-  const standardFee = totalPrice > 50 ? 0 : maxProductStandardShipping;
+  const standardFee = totalPrice > 15000 ? 0 : maxProductStandardShipping;
   const expressFee = maxProductExpressShipping;
 
   const shippingCost = shippingMethod === 'express' ? expressFee : standardFee;
@@ -304,7 +304,7 @@ export default function Checkout() {
                   <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">3-5 Business Days</span>
                 </span>
                 <span className="font-label-md text-label-md text-primary font-bold">
-                  {totalPrice > 50 ? 'FREE' : `$${maxProductStandardShipping.toFixed(2)}`}
+                  {totalPrice > 15000 ? 'FREE' : `Rs. ${maxProductStandardShipping.toLocaleString()}`}
                 </span>
               </label>
 
@@ -328,7 +328,7 @@ export default function Checkout() {
                   <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">1-2 Business Days</span>
                 </span>
                 <span className="font-label-md text-label-md text-primary font-bold">
-                  ${maxProductExpressShipping.toFixed(2)}
+                  Rs. {maxProductExpressShipping.toLocaleString()}
                 </span>
               </label>
             </div>
@@ -440,7 +440,7 @@ export default function Checkout() {
                     </div>
                   </div>
                   <span className="font-label-md text-label-md text-on-background font-bold">
-                    ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                    Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                   </span>
                 </li>
               ))}
@@ -450,17 +450,17 @@ export default function Checkout() {
             <div className="border-t border-outline-variant/40 pt-4 space-y-2 font-body-md text-body-md">
               <div className="flex justify-between text-on-surface-variant">
                 <span>Subtotal</span>
-                <span>${totalPrice.toFixed(2)}</span>
+                <span>Rs. {totalPrice.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-on-surface-variant">
                 <span>Shipping</span>
-                <span>{shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}</span>
+                <span>{shippingCost === 0 ? 'FREE' : `Rs. ${shippingCost.toLocaleString()}`}</span>
               </div>
             </div>
 
             <div className="border-t border-outline-variant/40 pt-4 flex justify-between items-center">
               <span className="font-title-sm text-title-sm text-on-background">Total</span>
-              <span className="font-title-sm text-title-sm text-primary font-bold">${finalTotal.toFixed(2)}</span>
+              <span className="font-title-sm text-title-sm text-primary font-bold">Rs. {finalTotal.toLocaleString()}</span>
             </div>
 
             {/* Dynamic CTA button based on selected payment method */}
@@ -473,10 +473,10 @@ export default function Checkout() {
                 {paymentMethod === 'card' ? 'credit_card' : paymentMethod === 'bank_transfer' ? 'upload_file' : 'check_circle'}
               </span>
               {paymentMethod === 'card'
-                ? `Proceed to Card Payment ($${finalTotal.toFixed(2)})`
+                ? `Proceed to Card Payment (Rs. ${finalTotal.toLocaleString()})`
                 : paymentMethod === 'bank_transfer'
-                ? `Proceed to Upload Bank Slip ($${finalTotal.toFixed(2)})`
-                : `Confirm Order with COD ($${finalTotal.toFixed(2)})`}
+                ? `Proceed to Upload Bank Slip (Rs. ${finalTotal.toLocaleString()})`
+                : `Confirm Order with COD (Rs. ${finalTotal.toLocaleString()})`}
             </button>
 
             <p className="text-center font-body-md text-body-md text-on-surface-variant text-xs pt-1">

@@ -5,7 +5,7 @@ const PRODUCTS = [
   {
     id: 'blush-ribbon-bow',
     name: 'Blush Ribbon Bow',
-    price: 12.00,
+    price: 3600,
     category: 'Bows',
     image: '/14_blush_silk_ribbon_bow.jpg',
     hoverImage: '/15_blush_silk_ribbon_close_up.jpg',
@@ -14,7 +14,7 @@ const PRODUCTS = [
   {
     id: 'pearl-satin-scrunchie',
     name: 'Pearl Satin Scrunchie',
-    price: 15.00,
+    price: 4500,
     category: 'Scrunchies',
     image: '/18_silk_scrunchie.jpg',
     hoverImage: '/08_flat_lay_fabrics_ribbon.jpg',
@@ -23,7 +23,7 @@ const PRODUCTS = [
   {
     id: 'woven-floral-headband',
     name: 'Woven Floral Headband',
-    price: 22.00,
+    price: 6600,
     category: 'Headbands',
     image: '/17_woven_floral_headband.jpg',
     hoverImage: '/02_woman_floral_headband.jpg',
@@ -32,7 +32,7 @@ const PRODUCTS = [
   {
     id: 'flat-lay-hair-bows',
     name: 'Handmade Hair Bows Set',
-    price: 28.00,
+    price: 8400,
     category: 'Bows',
     image: '/16_flat_lay_hair_bows.jpg',
     hoverImage: '/20_flat_lay_ribbon_jasmine.jpg',
