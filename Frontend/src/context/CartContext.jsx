@@ -1,21 +1,33 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
+  // Use sessionStorage — cart clears when browser/tab closes
   const [cartItems, setCartItems] = useState(() => {
     try {
-      const saved = localStorage.getItem('malmalee_cart');
+      const saved = sessionStorage.getItem('malmalee_cart');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
   });
 
-  // Persist cart to localStorage
+  // Persist cart to sessionStorage (not localStorage — so it clears on browser/system restart)
   useEffect(() => {
-    localStorage.setItem('malmalee_cart', JSON.stringify(cartItems));
+    sessionStorage.setItem('malmalee_cart', JSON.stringify(cartItems));
   }, [cartItems]);
+
+  // When user logs out, wipe cart too
+  const { user } = useAuth();
+  useEffect(() => {
+    if (!user) {
+      setCartItems([]);
+      sessionStorage.removeItem('malmalee_cart');
+    }
+  }, [user]);
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const cartSubtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -48,6 +60,7 @@ export function CartProvider({ children }) {
 
   function clearCart() {
     setCartItems([]);
+    sessionStorage.removeItem('malmalee_cart');
   }
 
   return (
