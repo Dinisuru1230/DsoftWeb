@@ -1,559 +1,385 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
-const INITIAL_ADMINS = [
-  { id: 1, name: 'Pramod Wijenayake', email: 'pramod@malmalee.lk', phone: '+94 77 123 4567', role: 'Admin', joined: '2024-01-01', active: true },
-  { id: 2, name: 'Amara Perera', email: 'amara@malmalee.lk', phone: '+94 71 234 5678', role: 'Admin', joined: '2024-02-15', active: true },
-  { id: 3, name: 'Kavindi Silva', email: 'kavindi@malmalee.lk', phone: '+94 76 345 6789', role: 'Admin', joined: '2024-04-10', active: true },
-  { id: 4, name: 'Nimal Fernando', email: 'nimal@malmalee.lk', phone: '+94 70 456 7890', role: 'Admin', joined: '2024-06-01', active: false },
-];
+const API_BASE = 'http://localhost:5050/api';
+
+function Avatar({ name }) {
+  const initials = name ? name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '?';
+  return (
+    <div className="w-9 h-9 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold font-label-md text-sm flex-shrink-0">
+      {initials}
+    </div>
+  );
+}
 
 export default function AdminManagement() {
-  const [admins, setAdmins] = useState(INITIAL_ADMINS);
+  const { token, user: currentUser } = useAuth();
+  const [admins, setAdmins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
 
-  // Modal / Form States
+  // Modal states
   const [isAdding, setIsAdding] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [viewingAdmin, setViewingAdmin] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    role: 'Admin',
-    active: true,
+    name: '', email: '', password: '', phone: '',
   });
+
+  const authHeaders = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+  async function fetchAdmins() {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/users/admins`, { headers: authHeaders });
+      const data = await res.json();
+      if (res.ok) {
+        setAdmins(data.admins);
+      } else {
+        setError(data.error || 'Failed to load admins');
+      }
+    } catch {
+      setError('Network error — cannot reach backend');
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => { fetchAdmins(); }, []);
 
   const filtered = admins.filter((a) => {
-    const matchesSearch =
-      a.name.toLowerCase().includes(search.toLowerCase()) ||
-      a.email.toLowerCase().includes(search.toLowerCase()) ||
-      a.phone.includes(search);
-
-    const matchesStatus =
-      statusFilter === 'All' ||
-      (statusFilter === 'Active' && a.active) ||
-      (statusFilter === 'Inactive' && !a.active);
-
-    return matchesSearch && matchesStatus;
+    const q = search.toLowerCase();
+    return a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q);
   });
 
-  const activeCount = admins.filter((a) => a.active).length;
-  const inactiveCount = admins.filter((a) => !a.active).length;
-
-  function handleFormChange(e) {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
-  }
-
   function resetForm() {
-    setFormData({ name: '', email: '', phone: '', password: '', role: 'Admin', active: true });
+    setFormData({ name: '', email: '', password: '', phone: '' });
+    setFormError('');
   }
 
-  // --- CRUD: CREATE ---
-  function handleCreateSubmit(e) {
+  function openCreate() { resetForm(); setIsAdding(true); }
+  function openEdit(a) {
+    setEditingAdmin(a);
+    setFormData({ name: a.name, email: a.email, password: '', phone: a.phone || '' });
+    setFormError('');
+  }
+
+  // CREATE
+  async function handleCreate(e) {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.email.trim()) return;
-
-    const newAdmin = {
-      id: Date.now(),
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone || '+94 77 000 0000',
-      role: 'Admin',
-      joined: new Date().toISOString().split('T')[0],
-      active: formData.active,
-    };
-
-    setAdmins([newAdmin, ...admins]);
-    setIsAdding(false);
-    resetForm();
-  }
-
-  // --- CRUD: UPDATE / EDIT ---
-  function openEditModal(admin) {
-    setEditingAdmin(admin);
-    setFormData({
-      name: admin.name,
-      email: admin.email,
-      phone: admin.phone,
-      password: '',
-      role: 'Admin',
-      active: admin.active,
+    if (!formData.name || !formData.email || !formData.password) {
+      setFormError('Name, email, and password are required.');
+      return;
+    }
+    if (formData.password.length < 6) {
+      setFormError('Password must be at least 6 characters.');
+      return;
+    }
+    setSaving(true);
+    setFormError('');
+    const res = await fetch(`${API_BASE}/users/admins`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify(formData),
     });
-  }
-
-  function handleEditSubmit(e) {
-    e.preventDefault();
-    setAdmins((prev) =>
-      prev.map((a) =>
-        a.id === editingAdmin.id
-          ? {
-              ...a,
-              name: formData.name,
-              email: formData.email,
-              phone: formData.phone,
-              role: 'Admin',
-              active: formData.active,
-            }
-          : a
-      )
-    );
-    setEditingAdmin(null);
-    resetForm();
-  }
-
-  // --- CRUD: DELETE ---
-  function handleDelete(id) {
-    if (confirm('Are you sure you want to remove this admin user account?')) {
-      setAdmins((prev) => prev.filter((a) => a.id !== id));
+    const data = await res.json();
+    setSaving(false);
+    if (res.ok) {
+      setAdmins([data.admin, ...admins]);
+      setIsAdding(false);
+      resetForm();
+    } else {
+      setFormError(data.error || 'Failed to create admin');
     }
   }
 
-  function toggleActiveStatus(id) {
-    setAdmins((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, active: !a.active } : a))
-    );
+  // UPDATE
+  async function handleUpdate(e) {
+    e.preventDefault();
+    if (!formData.name || !formData.email) {
+      setFormError('Name and email are required.');
+      return;
+    }
+    setSaving(true);
+    setFormError('');
+    const res = await fetch(`${API_BASE}/users/admins/${editingAdmin.id}`, {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify(formData),
+    });
+    const data = await res.json();
+    setSaving(false);
+    if (res.ok) {
+      setAdmins(admins.map((a) => a.id === editingAdmin.id ? data.admin : a));
+      setEditingAdmin(null);
+      resetForm();
+    } else {
+      setFormError(data.error || 'Failed to update admin');
+    }
+  }
+
+  // DELETE
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    const res = await fetch(`${API_BASE}/users/admins/${deleteTarget.id}`, {
+      method: 'DELETE',
+      headers: authHeaders,
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setAdmins(admins.filter((a) => a.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } else {
+      setError(data.error || 'Failed to delete admin');
+      setDeleteTarget(null);
+    }
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-[1400px] mx-auto w-full">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
+    <div className="p-6 md:p-10 w-full">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-headline-md text-headline-md text-primary mb-1">Admin Management</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            Manage admin accounts, access permissions, and credentials.
+          <h1 className="font-headline-md text-headline-md text-on-background">Admin Team</h1>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1">
+            {loading ? 'Loading...' : `${admins.length} admin account${admins.length !== 1 ? 's' : ''}`}
           </p>
         </div>
         <button
-          onClick={() => {
-            resetForm();
-            setIsAdding(true);
-          }}
-          className="bg-primary-container text-on-background px-6 py-3 rounded-lg font-label-md text-label-md hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2 shadow-ambient whitespace-nowrap cursor-pointer"
+          onClick={openCreate}
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer shadow-ambient"
         >
-          <span className="material-symbols-outlined text-[18px]">person_add</span>
-          Add New Admin
+          <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+          Add Admin
         </button>
       </div>
 
-      {/* Bento Stats Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 flex items-center justify-between">
-          <div>
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Total Admin Team</p>
-            <h2 className="font-headline-md text-primary font-bold">{admins.length}</h2>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-primary-container/50 flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary">admin_panel_settings</span>
-          </div>
+      {error && (
+        <div className="mb-4 p-3 bg-error-container text-on-error-container rounded-lg border border-error/30 font-label-md">
+          {error}
+          <button onClick={() => setError('')} className="ml-2 underline text-xs cursor-pointer">Dismiss</button>
         </div>
+      )}
 
-        <div className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 flex items-center justify-between">
-          <div>
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Active Admins</p>
-            <h2 className="font-headline-md text-primary font-bold">{activeCount}</h2>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-secondary-container/50 flex items-center justify-center">
-            <span className="material-symbols-outlined text-secondary">verified_user</span>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 flex items-center justify-between">
-          <div>
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Inactive Admins</p>
-            <h2 className="font-headline-md text-primary font-bold">{inactiveCount}</h2>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-tertiary-container/50 flex items-center justify-center">
-            <span className="material-symbols-outlined text-tertiary">person_off</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Search & Filter Bar */}
-      <div className="bg-surface-container-lowest rounded-xl p-4 shadow-ambient border border-outline-variant/30 flex flex-col md:flex-row justify-between gap-4 items-center">
-        <div className="relative w-full md:w-80">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+      {/* Search */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
           <input
             type="text"
+            placeholder="Search by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name, email, phone..."
-            className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary pl-10 pr-4 py-2 font-body-md text-body-md text-on-surface outline-none transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-full font-body-md text-on-surface outline-none focus:border-primary transition-colors"
           />
         </div>
+      </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
-          {['All', 'Active', 'Inactive'].map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-3.5 py-1.5 rounded-full font-label-md text-label-md transition-colors cursor-pointer whitespace-nowrap ${
-                statusFilter === status
-                  ? 'bg-primary text-white font-bold'
-                  : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
-              }`}
-            >
-              {status}
-            </button>
+      {/* Admin Cards Grid */}
+      {loading ? (
+        <div className="flex items-center justify-center py-20 gap-3 text-on-surface-variant">
+          <span className="material-symbols-outlined animate-spin text-primary text-2xl">sync</span>
+          <span className="font-label-md">Loading admin team...</span>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-2 text-on-surface-variant">
+          <span className="material-symbols-outlined text-4xl text-outline">admin_panel_settings</span>
+          <p className="font-label-md">{search ? 'No admins match your search.' : 'No admins found.'}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((a) => (
+            <div key={a.id} className="bg-surface-container-lowest rounded-2xl shadow-ambient p-5 border border-outline-variant/40 hover:shadow-ambient-lg transition-all duration-200">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Avatar name={a.name} />
+                  <div>
+                    <p className="font-title-sm text-sm text-on-surface font-bold">{a.name}</p>
+                    <p className="font-label-sm text-xs text-on-surface-variant">{a.email}</p>
+                  </div>
+                </div>
+                {currentUser?.id === a.id && (
+                  <span className="text-[10px] bg-primary-container text-primary px-2 py-0.5 rounded-full font-bold">You</span>
+                )}
+              </div>
+
+              <div className="space-y-1.5 mb-4">
+                <div className="flex items-center gap-2 text-on-surface-variant">
+                  <span className="material-symbols-outlined text-[16px]">phone</span>
+                  <span className="font-label-sm text-xs">{a.phone || 'No phone'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-on-surface-variant">
+                  <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+                  <span className="font-label-sm text-xs">Joined {a.joined}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px] text-primary">admin_panel_settings</span>
+                  <span className="font-label-sm text-xs bg-primary-container text-primary px-2 py-0.5 rounded-full font-bold">Admin</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-3 border-t border-outline-variant">
+                <button onClick={() => setViewingAdmin(a)} className="flex-1 flex items-center justify-center gap-1 py-1.5 text-on-surface-variant hover:text-primary hover:bg-primary-container/30 rounded-lg transition-colors text-xs font-label-md cursor-pointer">
+                  <span className="material-symbols-outlined text-[16px]">visibility</span>
+                  View
+                </button>
+                <button onClick={() => openEdit(a)} className="flex-1 flex items-center justify-center gap-1 py-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/30 rounded-lg transition-colors text-xs font-label-md cursor-pointer">
+                  <span className="material-symbols-outlined text-[16px]">edit</span>
+                  Edit
+                </button>
+                {currentUser?.id !== a.id && (
+                  <button onClick={() => setDeleteTarget(a)} className="flex-1 flex items-center justify-center gap-1 py-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors text-xs font-label-md cursor-pointer">
+                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
           ))}
         </div>
-      </div>
+      )}
 
-      {/* Main Data Table Section */}
-      <div className="bg-surface-container-lowest rounded-xl shadow-ambient border border-outline-variant/30 overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant/30 bg-surface-container-low">
-                <th className="p-4 font-label-md text-label-md text-on-surface-variant">Admin User</th>
-                <th className="p-4 font-label-md text-label-md text-on-surface-variant">Phone</th>
-                <th className="p-4 font-label-md text-label-md text-on-surface-variant">Role</th>
-                <th className="p-4 font-label-md text-label-md text-on-surface-variant">Joined Date</th>
-                <th className="p-4 font-label-md text-label-md text-on-surface-variant text-center">Status</th>
-                <th className="p-4 font-label-md text-label-md text-on-surface-variant text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20 font-body-md text-on-surface">
-              {filtered.map((adm) => (
-                <tr key={adm.id} className="hover:bg-surface-container-low/50 transition-colors group">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center font-bold text-primary shrink-0">
-                        {adm.name.charAt(0)}
-                      </div>
-                      <div>
-                        <span className="font-bold text-primary font-title-sm text-base block group-hover:underline">{adm.name}</span>
-                        <span className="font-body-md text-xs text-on-surface-variant">{adm.email}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4 text-on-surface-variant text-sm font-body-md">{adm.phone}</td>
-                  <td className="p-4">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full font-label-sm text-[11px] font-bold bg-primary-container text-on-background">
-                      Admin
-                    </span>
-                  </td>
-                  <td className="p-4 text-on-surface-variant text-sm">{adm.joined}</td>
-                  <td className="p-4 text-center">
-                    <button
-                      onClick={() => toggleActiveStatus(adm.id)}
-                      className={`inline-flex items-center px-3 py-1 rounded-full font-label-sm text-[11px] uppercase tracking-wide cursor-pointer transition-colors ${
-                        adm.active
-                          ? 'bg-secondary-container text-on-secondary-container font-bold'
-                          : 'bg-surface-container text-on-surface-variant'
-                      }`}
-                    >
-                      {adm.active ? 'Active' : 'Inactive'}
-                    </button>
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      {/* View Action */}
-                      <button
-                        onClick={() => setViewingAdmin(adm)}
-                        className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/40 rounded-lg transition-colors cursor-pointer"
-                        title="View Admin Profile"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">visibility</span>
-                      </button>
-                      {/* Edit Action */}
-                      <button
-                        onClick={() => openEditModal(adm)}
-                        className="p-2 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/40 rounded-lg transition-colors cursor-pointer"
-                        title="Edit Admin"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">edit</span>
-                      </button>
-                      {/* Delete Action */}
-                      <button
-                        onClick={() => handleDelete(adm.id)}
-                        className="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/40 rounded-lg transition-colors cursor-pointer"
-                        title="Delete Admin Account"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* --- CREATE ADMIN MODAL --- */}
+      {/* ── ADD ADMIN MODAL ── */}
       {isAdding && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-outline-variant/30 space-y-6">
-            <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
-              <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2">
-                <span className="material-symbols-outlined">person_add</span> Add New Admin Account
-              </h2>
-              <button onClick={() => setIsAdding(false)} className="text-on-surface-variant hover:text-primary">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateSubmit} className="space-y-4">
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">Full Name *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleFormChange}
-                  required
-                  placeholder="e.g. Kasun Kalhara"
-                  className="w-full border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface bg-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">Email Address *</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleFormChange}
-                  required
-                  placeholder="kasun@malmalee.lk"
-                  className="w-full border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface bg-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">Temporary Password *</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleFormChange}
-                  required
-                  placeholder="••••••••"
-                  className="w-full border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface bg-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">Phone Number</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleFormChange}
-                  placeholder="+94 77 123 4567"
-                  className="w-full border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface bg-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">System Role</label>
-                <div className="py-2 px-3 bg-surface-container rounded-lg font-label-md text-label-md text-primary font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">verified_user</span>
-                  Admin
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="active"
-                  name="active"
-                  checked={formData.active}
-                  onChange={handleFormChange}
-                  className="accent-primary h-4 w-4"
-                />
-                <label htmlFor="active" className="font-label-md text-label-md text-on-surface cursor-pointer">
-                  Activate this Admin Account immediately
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/30">
-                <button
-                  type="button"
-                  onClick={() => setIsAdding(false)}
-                  className="px-5 py-2.5 border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-primary-container text-on-background font-label-md text-label-md rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm"
-                >
-                  Create Admin
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <Modal title="Add New Admin" onClose={() => { setIsAdding(false); resetForm(); }}>
+          <AdminForm
+            formData={formData} setFormData={setFormData}
+            onSubmit={handleCreate} onCancel={() => { setIsAdding(false); resetForm(); }}
+            saving={saving} error={formError} isCreate
+          />
+        </Modal>
       )}
 
-      {/* --- EDIT ADMIN MODAL --- */}
+      {/* ── EDIT ADMIN MODAL ── */}
       {editingAdmin && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-outline-variant/30 space-y-6">
-            <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
-              <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2">
-                <span className="material-symbols-outlined">edit</span> Edit Admin Account
-              </h2>
-              <button onClick={() => setEditingAdmin(null)} className="text-on-surface-variant hover:text-primary">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">Full Name *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleFormChange}
-                  required
-                  className="w-full border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface bg-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">Email Address *</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleFormChange}
-                  required
-                  className="w-full border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface bg-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">Phone Number</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleFormChange}
-                  className="w-full border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface bg-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">
-                  Reset Password <span className="text-xs text-on-surface-variant font-normal">(Leave blank to keep current)</span>
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password || ''}
-                  onChange={handleFormChange}
-                  placeholder="Enter new admin password..."
-                  className="w-full border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface bg-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface block mb-1">System Role</label>
-                <div className="py-2 px-3 bg-surface-container rounded-lg font-label-md text-label-md text-primary font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">verified_user</span>
-                  Admin
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="edit-active"
-                  name="active"
-                  checked={formData.active}
-                  onChange={handleFormChange}
-                  className="accent-primary h-4 w-4"
-                />
-                <label htmlFor="edit-active" className="font-label-md text-label-md text-on-surface cursor-pointer">
-                  Account Active Status
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/30">
-                <button
-                  type="button"
-                  onClick={() => setEditingAdmin(null)}
-                  className="px-5 py-2.5 border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-primary-container text-on-background font-label-md text-label-md rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm"
-                >
-                  Save Admin Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <Modal title="Edit Admin" onClose={() => { setEditingAdmin(null); resetForm(); }}>
+          <AdminForm
+            formData={formData} setFormData={setFormData}
+            onSubmit={handleUpdate} onCancel={() => { setEditingAdmin(null); resetForm(); }}
+            saving={saving} error={formError}
+          />
+        </Modal>
       )}
 
-      {/* --- VIEW ADMIN MODAL --- */}
+      {/* ── VIEW ADMIN MODAL ── */}
       {viewingAdmin && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-outline-variant/30 space-y-6">
-            <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
-              <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2">
-                <span className="material-symbols-outlined">account_circle</span> Admin Profile Details
-              </h2>
-              <button onClick={() => setViewingAdmin(null)} className="text-on-surface-variant hover:text-primary">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-4 border-b border-outline-variant/20 pb-4">
-              <div className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold text-2xl">
-                {viewingAdmin.name.charAt(0)}
-              </div>
+        <Modal title="Admin Details" onClose={() => setViewingAdmin(null)}>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Avatar name={viewingAdmin.name} />
               <div>
-                <h3 className="font-title-sm text-lg text-primary">{viewingAdmin.name}</h3>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-sm text-[11px] font-bold bg-primary-container text-on-background mt-1">
-                  Admin
-                </span>
+                <p className="font-title-sm text-on-surface font-bold text-lg">{viewingAdmin.name}</p>
+                <p className="font-label-sm text-on-surface-variant text-sm">{viewingAdmin.email}</p>
               </div>
             </div>
-
-            <div className="space-y-3 font-body-md text-sm">
-              <div className="flex justify-between py-1 border-b border-outline-variant/20">
-                <span className="text-on-surface-variant">Email Address</span>
-                <span className="font-bold text-on-surface">{viewingAdmin.email}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-outline-variant/20">
-                <span className="text-on-surface-variant">Phone Number</span>
-                <span className="font-bold text-on-surface">{viewingAdmin.phone}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-outline-variant/20">
-                <span className="text-on-surface-variant">Joined Date</span>
-                <span className="font-bold text-on-surface">{viewingAdmin.joined}</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-on-surface-variant">Account Status</span>
-                <span className={`font-bold ${viewingAdmin.active ? 'text-secondary' : 'text-error'}`}>
-                  {viewingAdmin.active ? 'Active' : 'Inactive'}
-                </span>
-              </div>
+            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-outline-variant">
+              <InfoRow label="Phone" value={viewingAdmin.phone || '—'} />
+              <InfoRow label="Role" value="System Admin" />
+              <InfoRow label="Joined" value={viewingAdmin.joined} />
+              <InfoRow label="Account ID" value={viewingAdmin.id.slice(0, 8) + '...'} />
             </div>
-
             <div className="flex justify-end pt-2">
-              <button
-                onClick={() => setViewingAdmin(null)}
-                className="px-6 py-2.5 bg-primary-container text-on-background font-label-md text-label-md rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm"
-              >
+              <button onClick={() => setViewingAdmin(null)} className="px-5 py-2 bg-surface-container border border-outline-variant rounded-full font-label-md text-label-md hover:bg-surface-container-high transition-colors cursor-pointer">
                 Close
               </button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* ── DELETE CONFIRM ── */}
+      {deleteTarget && (
+        <Modal title="Remove Admin" onClose={() => setDeleteTarget(null)}>
+          <p className="font-body-md text-body-md text-on-surface mb-6">
+            Are you sure you want to remove <strong>{deleteTarget.name}</strong> from the admin team? They will lose all admin access immediately.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button onClick={() => setDeleteTarget(null)} className="px-5 py-2 border border-outline-variant rounded-full font-label-md text-label-md hover:bg-surface-container transition-colors cursor-pointer">
+              Cancel
+            </button>
+            <button onClick={handleDelete} className="px-5 py-2 bg-error text-white rounded-full font-label-md text-label-md hover:bg-error/80 transition-colors cursor-pointer">
+              Remove Admin
+            </button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ── Sub-components ──
+
+function Modal({ title, onClose, children }) {
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
+          <h2 className="font-title-sm text-title-sm text-primary font-bold">{title}</h2>
+          <button onClick={onClose} className="text-on-surface-variant hover:text-primary p-1 cursor-pointer">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div className="p-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function AdminForm({ formData, setFormData, onSubmit, onCancel, saving, error, isCreate }) {
+  function handleChange(e) { setFormData({ ...formData, [e.target.name]: e.target.value }); }
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      {error && <div className="p-3 bg-error-container text-on-error-container rounded-lg text-sm font-label-md">{error}</div>}
+      <FormField label="Full Name *" name="name" value={formData.name} onChange={handleChange} placeholder="e.g. Kavindi Silva" />
+      <FormField label="Email Address *" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="admin@malmalee.lk" />
+      <FormField
+        label={isCreate ? 'Password *' : 'New Password (leave blank to keep current)'}
+        name="password" type="password" value={formData.password} onChange={handleChange}
+        placeholder={isCreate ? 'Min. 6 characters' : 'Leave blank to keep current'}
+      />
+      <FormField label="Phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="+94 77 123 4567" />
+      {!isCreate && (
+        <div className="p-3 bg-tertiary-container/40 rounded-lg">
+          <p className="font-label-sm text-xs text-on-surface-variant">
+            <span className="material-symbols-outlined text-[14px] align-middle mr-1">info</span>
+            Role is always <strong>Admin</strong> and cannot be changed here.
+          </p>
         </div>
       )}
+      <div className="flex justify-end gap-3 pt-2">
+        <button type="button" onClick={onCancel} className="px-5 py-2 border border-outline-variant rounded-full font-label-md text-label-md hover:bg-surface-container transition-colors cursor-pointer">
+          Cancel
+        </button>
+        <button type="submit" disabled={saving} className="px-5 py-2 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2">
+          {saving && <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>}
+          {isCreate ? 'Create Admin' : 'Save Changes'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function FormField({ label, name, value, onChange, placeholder, type = 'text' }) {
+  return (
+    <div>
+      <label className="block font-label-md text-label-md text-on-surface mb-1">{label}</label>
+      <input
+        type={type} name={name} value={value} onChange={onChange} placeholder={placeholder}
+        className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-on-surface outline-none focus:border-primary transition-colors"
+      />
+    </div>
+  );
+}
+
+function InfoRow({ label, value }) {
+  return (
+    <div>
+      <p className="font-label-sm text-xs text-on-surface-variant mb-0.5">{label}</p>
+      <p className="font-body-md text-sm text-on-surface">{value}</p>
     </div>
   );
 }
