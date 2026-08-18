@@ -158,8 +158,29 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function changePassword({ currentPassword, newPassword }) {
+    try {
+      if (!token) return { success: false, error: 'Not authenticated' };
+      const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to update password' };
+      }
+      return { success: true, message: data.message };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser, changePassword, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

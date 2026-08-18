@@ -108,17 +108,25 @@ async function getMe(req, res) {
 
 async function updateProfile(req, res) {
   try {
-    const { name, phone, address, city, district, postalCode } = req.body;
+    const { name, email, phone, address, city, district, postalCode } = req.body;
+
+    if (email && email !== req.user.email) {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({ error: 'Email is already in use by another account' });
+      }
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
       data: {
         ...(name && { name }),
-        ...(phone && { phone }),
-        ...(address && { address }),
-        ...(city && { city }),
-        ...(district && { district }),
-        ...(postalCode && { postalCode }),
+        ...(email && { email }),
+        ...(phone !== undefined && { phone }),
+        ...(address !== undefined && { address }),
+        ...(city !== undefined && { city }),
+        ...(district !== undefined && { district }),
+        ...(postalCode !== undefined && { postalCode }),
       },
       select: {
         id: true,
@@ -139,4 +147,38 @@ async function updateProfile(req, res) {
   }
 }
 
-module.exports = { register, login, getMe, updateProfile };
+async function changePassword(req, res) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { password: hashedPassword },
+    });
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+module.exports = { register, login, getMe, updateProfile, changePassword };

@@ -1,259 +1,469 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
-export default function AdminProfile() {
-  const { user, updateUser } = useAuth();
+function validateProfileForm(data) {
+  const errors = {};
+  if (!data.name || data.name.trim().length < 2) {
+    errors.name = 'Full name must be at least 2 characters.';
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!data.email || !emailRegex.test(data.email.trim())) {
+    errors.email = 'Please enter a valid email address.';
+  }
+  if (data.phone) {
+    if (data.phone.length !== 9) {
+      errors.phone = 'Phone number must be exactly 9 digits after +94 (e.g. 77 123 4567).';
+    }
+  }
+  return errors;
+}
 
-  const [profile, setProfile] = useState({
-    name: user?.name || 'Pramod Wijenayake',
-    email: user?.email || 'admin@malmalee.lk',
-    phone: user?.phone || '+94 77 123 4567',
-    role: user?.role === 'ADMIN' ? 'System Administrator' : 'Admin',
-    avatar: '',
+function validatePasswordForm(data) {
+  const errors = {};
+  if (!data.currentPassword) {
+    errors.currentPassword = 'Current password is required.';
+  }
+  if (!data.newPassword || data.newPassword.length < 6) {
+    errors.newPassword = 'New password must be at least 6 characters.';
+  }
+  if (data.newPassword !== data.confirmPassword) {
+    errors.confirmPassword = 'Passwords do not match.';
+  }
+  return errors;
+}
+
+export default function AdminProfile() {
+  const { user, updateUser, changePassword } = useAuth();
+
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: (user?.phone || '').replace('+94', '').replace(/\s/g, ''),
   });
 
   const [passwords, setPasswords] = useState({
-    current: '',
-    newPass: '',
-    confirmPass: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   });
 
-  const [savedProfile, setSavedProfile] = useState(false);
-  const [savedPass, setSavedPass] = useState(false);
-  const [passError, setPassError] = useState('');
+  const [profileErrors, setProfileErrors] = useState({});
+  const [profileFormError, setProfileFormError] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+
+  const [passErrors, setPassErrors] = useState({});
+  const [passFormError, setPassFormError] = useState('');
+  const [savingPass, setSavingPass] = useState(false);
+  const [passSaved, setPassSaved] = useState(false);
+
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  // Sync user state when loaded
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: (user.phone || '').replace('+94', '').replace(/\s/g, ''),
+      });
+    }
+  }, [user]);
 
   function handleProfileChange(e) {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'phone') {
+      let val = value.replace(/\D/g, '');
+      if (val.startsWith('0')) val = val.substring(1);
+      if (val.length > 9) val = val.substring(0, 9);
+      setFormData((prev) => ({ ...prev, phone: val }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+    setProfileErrors((prev) => ({ ...prev, [name]: '' }));
+    setProfileFormError('');
+    setProfileSaved(false);
   }
 
   function handlePassChange(e) {
-    setPasswords({ ...passwords, [e.target.name]: e.target.value });
-    setPassError('');
+    const { name, value } = e.target;
+    setPasswords((prev) => ({ ...prev, [name]: value }));
+    setPassErrors((prev) => ({ ...prev, [name]: '' }));
+    setPassFormError('');
+    setPassSaved(false);
   }
 
-  function handleProfileSubmit(e) {
+  async function handleProfileSubmit(e) {
     e.preventDefault();
-    setSavedProfile(true);
-    setTimeout(() => setSavedProfile(false), 2500);
-  }
-
-  function handlePassSubmit(e) {
-    e.preventDefault();
-    if (passwords.newPass !== passwords.confirmPass) {
-      setPassError('New Password and Confirm Password do not match!');
+    const errors = validateProfileForm(formData);
+    if (Object.keys(errors).length > 0) {
+      setProfileErrors(errors);
       return;
     }
-    if (passwords.newPass.length < 6) {
-      setPassError('New Password must be at least 6 characters.');
-      return;
+
+    setSavingProfile(true);
+    setProfileFormError('');
+
+    const formattedPhone = formData.phone ? `+94${formData.phone}` : '';
+    const res = await updateUser({
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formattedPhone,
+    });
+
+    setSavingProfile(false);
+    if (res.success) {
+      setProfileSaved(true);
+      setTimeout(() => setProfileSaved(false), 3000);
+    } else {
+      setProfileFormError(res.error || 'Failed to update profile changes.');
     }
-    setSavedPass(true);
-    setPasswords({ current: '', newPass: '', confirmPass: '' });
-    setTimeout(() => setSavedPass(false), 2500);
   }
 
-  function handleAvatarUpload(e) {
-    const file = e.target.files[0];
-    if (file) {
-      setProfile({ ...profile, avatar: URL.createObjectURL(file) });
+  async function handlePassSubmit(e) {
+    e.preventDefault();
+    const errors = validatePasswordForm(passwords);
+    if (Object.keys(errors).length > 0) {
+      setPassErrors(errors);
+      return;
+    }
+
+    setSavingPass(true);
+    setPassFormError('');
+
+    const res = await changePassword({
+      currentPassword: passwords.currentPassword,
+      newPassword: passwords.newPassword,
+    });
+
+    setSavingPass(false);
+    if (res.success) {
+      setPassSaved(true);
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setTimeout(() => setPassSaved(false), 3000);
+    } else {
+      setPassFormError(res.error || 'Failed to update password.');
     }
   }
+
+  const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : 'A';
+  const passwordsMatch = passwords.newPassword && passwords.confirmPassword && passwords.newPassword === passwords.confirmPassword;
+  const passwordsMismatch = passwords.newPassword && passwords.confirmPassword && passwords.newPassword !== passwords.confirmPassword;
 
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-[1200px] mx-auto w-full">
-      {/* Header */}
-      <div className="border-b border-outline-variant/30 pb-4">
-        <h1 className="font-headline-md text-headline-md text-primary mb-1">Admin Profile Settings</h1>
+    <div className="p-6 md:p-10 space-y-8 max-w-[1200px] mx-auto w-full">
+      {/* Page Header */}
+      <div className="border-b border-outline-variant/40 pb-4">
+        <h1 className="font-headline-md text-headline-md text-on-background mb-1">Admin Profile Settings</h1>
         <p className="font-body-md text-body-md text-on-surface-variant">
           Update your personal administrator account details and security settings.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Personal Information & Avatar */}
-        <div className="lg:col-span-7 space-y-8">
-          <form onSubmit={handleProfileSubmit} className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-6">
-            <h2 className="font-title-sm text-title-sm text-primary border-b border-outline-variant/30 pb-3 flex items-center gap-2">
-              <span className="material-symbols-outlined">person</span>
-              Personal Account Information
-            </h2>
+        {/* Left Column: Personal Information */}
+        <div className="lg:col-span-7 space-y-6">
+          <form onSubmit={handleProfileSubmit} className="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-ambient border border-outline-variant/40 space-y-6">
+            <div className="flex items-center gap-2 pb-3 border-b border-outline-variant/60">
+              <span className="material-symbols-outlined text-primary text-[20px]">person</span>
+              <h2 className="font-title-sm text-sm text-primary font-bold uppercase tracking-widest">
+                Personal Account Information
+              </h2>
+            </div>
 
-            {/* Avatar Uploader */}
-            <div className="flex items-center gap-5 p-4 bg-surface-container-low rounded-xl border border-outline-variant/20">
-              <div className="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center font-bold text-primary text-2xl overflow-hidden border-2 border-primary shrink-0 relative group">
-                {profile.avatar ? (
-                  <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
-                ) : (
-                  profile.name.charAt(0)
-                )}
+            {profileFormError && (
+              <div className="p-3 bg-error-container text-on-error-container rounded-lg text-sm font-label-md flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">error</span>
+                {profileFormError}
               </div>
-              <div className="space-y-1">
-                <p className="font-title-sm text-title-sm text-primary">{profile.name}</p>
-                <p className="font-label-sm text-label-sm text-on-surface-variant mb-2">{profile.role}</p>
-                <button
-                  type="button"
-                  onClick={() => document.getElementById('admin-avatar-input').click()}
-                  className="px-4 py-1.5 border border-primary text-primary rounded-full font-label-sm text-label-sm hover:bg-primary hover:text-white transition-all cursor-pointer"
-                >
-                  Change Profile Picture
-                </button>
-                <input
-                  id="admin-avatar-input"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                />
+            )}
+
+            {profileSaved && (
+              <div className="p-3 bg-secondary-container text-secondary rounded-lg text-sm font-label-md flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                Profile details saved successfully!
+              </div>
+            )}
+
+            {/* Profile Avatar Card */}
+            <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl border border-outline-variant/30">
+              <div className="w-14 h-14 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xl shrink-0">
+                {initials}
+              </div>
+              <div>
+                <p className="font-title-sm text-on-surface font-bold text-base">{user?.name || 'Admin User'}</p>
+                <p className="font-label-sm text-xs text-on-surface-variant">{user?.email || ''}</p>
+                <span className="inline-block mt-1 px-2.5 py-0.5 bg-primary/10 text-primary text-[11px] font-bold rounded-full">
+                  System Administrator
+                </span>
               </div>
             </div>
 
-            <div className="space-y-5">
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="name">
-                  Full Name <span className="text-error">*</span>
+            <div className="space-y-4">
+              {/* Full Name */}
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs" htmlFor="name">
+                  Full Name *
                 </label>
                 <input
                   id="name"
                   name="name"
                   type="text"
-                  value={profile.name}
+                  value={formData.name}
                   onChange={handleProfileChange}
-                  required
-                  className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
+                  placeholder="e.g. Pramod Wijenayake"
+                  className={`w-full px-3 py-2.5 bg-surface-container-low border rounded-lg font-body-md text-on-surface outline-none focus:border-primary transition-colors ${
+                    profileErrors.name ? 'border-error bg-error-container/10' : 'border-outline-variant'
+                  }`}
                 />
+                {profileErrors.name && (
+                  <p className="text-xs text-error font-label-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {profileErrors.name}
+                  </p>
+                )}
               </div>
 
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="email">
-                  Email Address <span className="text-error">*</span>
+              {/* Email Address */}
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs" htmlFor="email">
+                  Email Address *
                 </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
-                  value={profile.email}
+                  value={formData.email}
                   onChange={handleProfileChange}
-                  required
-                  className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
+                  placeholder="admin@malmalee.lk"
+                  className={`w-full px-3 py-2.5 bg-surface-container-low border rounded-lg font-body-md text-on-surface outline-none focus:border-primary transition-colors ${
+                    profileErrors.email ? 'border-error bg-error-container/10' : 'border-outline-variant'
+                  }`}
                 />
+                {profileErrors.email && (
+                  <p className="text-xs text-error font-label-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {profileErrors.email}
+                  </p>
+                )}
               </div>
 
+              {/* Phone & Assigned Role */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="phone">
-                    Phone Number
+                {/* Phone */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs" htmlFor="phone">
+                    Phone Number (+94)
                   </label>
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    value={profile.phone}
-                    onChange={handleProfileChange}
-                    className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
-                  />
+                  <div className={`flex rounded-lg border overflow-hidden ${profileErrors.phone ? 'border-error' : 'border-outline-variant'} focus-within:border-primary transition-colors`}>
+                    <span className="flex items-center px-3 bg-surface-container border-r border-outline-variant/60 text-sm font-label-md text-on-surface-variant whitespace-nowrap">
+                      🇱🇰 +94
+                    </span>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleProfileChange}
+                      placeholder="77 123 4567"
+                      maxLength={9}
+                      className={`flex-1 px-3 py-2.5 bg-surface-container-low font-body-md text-on-surface outline-none ${profileErrors.phone ? 'bg-error-container/10' : ''}`}
+                    />
+                    {formData.phone.length === 9 && (
+                      <span className="flex items-center pr-3 text-primary">
+                        <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                      </span>
+                    )}
+                  </div>
+                  {profileErrors.phone ? (
+                    <p className="text-xs text-error font-label-sm flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">error</span>
+                      {profileErrors.phone}
+                    </p>
+                  ) : formData.phone && formData.phone.length < 9 ? (
+                    <p className="text-xs text-on-surface-variant font-label-sm flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">info</span>
+                      {formData.phone.length}/9 digits entered
+                    </p>
+                  ) : null}
                 </div>
 
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface-variant mb-1" htmlFor="role">
+                {/* Assigned Role */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs">
                     Assigned Role
                   </label>
                   <input
-                    id="role"
-                    name="role"
                     type="text"
-                    value={profile.role}
+                    value="System Administrator"
                     readOnly
-                    className="w-full bg-primary-container/20 border-b-2 border-outline-variant py-2 font-body-md text-body-md text-primary font-bold cursor-not-allowed outline-none"
+                    className="w-full px-3 py-2.5 bg-surface-container border border-outline-variant/60 rounded-lg font-body-md text-primary font-bold cursor-not-allowed outline-none"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end pt-3">
+            <div className="flex justify-end pt-3 border-t border-outline-variant">
               <button
                 type="submit"
-                className={`px-8 py-3 rounded-full font-label-md text-label-md shadow-ambient transition-all duration-300 flex items-center gap-2 cursor-pointer ${
-                  savedProfile ? 'bg-primary text-white' : 'bg-primary-container text-on-background hover:bg-primary hover:text-white'
-                }`}
+                disabled={savingProfile}
+                className="px-6 py-2.5 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2 shadow-ambient"
               >
-                <span className="material-symbols-outlined text-[18px]">{savedProfile ? 'check' : 'save'}</span>
-                {savedProfile ? 'Profile Updated!' : 'Save Profile Changes'}
+                {savingProfile ? (
+                  <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
+                ) : (
+                  <span className="material-symbols-outlined text-[16px]">save</span>
+                )}
+                {savingProfile ? 'Saving...' : 'Save Profile Changes'}
               </button>
             </div>
           </form>
         </div>
 
-        {/* Right Column: Security & Change Password */}
-        <div className="lg:col-span-5 space-y-8">
-          <form onSubmit={handlePassSubmit} className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-6">
-            <h2 className="font-title-sm text-title-sm text-primary border-b border-outline-variant/30 pb-3 flex items-center gap-2">
-              <span className="material-symbols-outlined">lock_reset</span>
-              Security & Password
-            </h2>
+        {/* Right Column: Security & Password */}
+        <div className="lg:col-span-5 space-y-6">
+          <form onSubmit={handlePassSubmit} className="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-ambient border border-outline-variant/40 space-y-6">
+            <div className="flex items-center gap-2 pb-3 border-b border-outline-variant/60">
+              <span className="material-symbols-outlined text-primary text-[20px]">lock_reset</span>
+              <h2 className="font-title-sm text-sm text-primary font-bold uppercase tracking-widest">
+                Security & Password
+              </h2>
+            </div>
 
-            {passError && (
-              <div className="p-3 bg-error-container/40 border border-error/30 text-error rounded-lg text-sm flex items-center gap-2">
-                <span className="material-symbols-outlined text-base">error</span>
-                <span>{passError}</span>
+            {passFormError && (
+              <div className="p-3 bg-error-container text-on-error-container rounded-lg text-sm font-label-md flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">error</span>
+                {passFormError}
+              </div>
+            )}
+
+            {passSaved && (
+              <div className="p-3 bg-secondary-container text-secondary rounded-lg text-sm font-label-md flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                Password updated successfully!
               </div>
             )}
 
             <div className="space-y-4">
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="current">
-                  Current Password
+              {/* Current Password */}
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs" htmlFor="currentPassword">
+                  Current Password *
                 </label>
-                <input
-                  id="current"
-                  name="current"
-                  type="password"
-                  value={passwords.current}
-                  onChange={handlePassChange}
-                  placeholder="••••••••"
-                  className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
-                />
+                <div className="relative">
+                  <input
+                    id="currentPassword"
+                    name="currentPassword"
+                    type={showCurrent ? 'text' : 'password'}
+                    value={passwords.currentPassword}
+                    onChange={handlePassChange}
+                    placeholder="Enter current password"
+                    className={`w-full px-3 py-2.5 pr-10 bg-surface-container-low border rounded-lg font-body-md text-on-surface outline-none focus:border-primary transition-colors ${
+                      passErrors.currentPassword ? 'border-error bg-error-container/10' : 'border-outline-variant'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrent((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">{showCurrent ? 'visibility' : 'visibility_off'}</span>
+                  </button>
+                </div>
+                {passErrors.currentPassword && (
+                  <p className="text-xs text-error font-label-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {passErrors.currentPassword}
+                  </p>
+                )}
               </div>
 
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="newPass">
-                  New Password
+              {/* New Password */}
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs" htmlFor="newPassword">
+                  New Password *
                 </label>
-                <input
-                  id="newPass"
-                  name="newPass"
-                  type="password"
-                  value={passwords.newPass}
-                  onChange={handlePassChange}
-                  placeholder="••••••••"
-                  className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
-                />
+                <div className="relative">
+                  <input
+                    id="newPassword"
+                    name="newPassword"
+                    type={showNew ? 'text' : 'password'}
+                    value={passwords.newPassword}
+                    onChange={handlePassChange}
+                    placeholder="Min. 6 characters"
+                    className={`w-full px-3 py-2.5 pr-10 bg-surface-container-low border rounded-lg font-body-md text-on-surface outline-none focus:border-primary transition-colors ${
+                      passErrors.newPassword ? 'border-error bg-error-container/10' : 'border-outline-variant'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNew((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">{showNew ? 'visibility' : 'visibility_off'}</span>
+                  </button>
+                </div>
+                {passErrors.newPassword && (
+                  <p className="text-xs text-error font-label-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {passErrors.newPassword}
+                  </p>
+                )}
               </div>
 
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="confirmPass">
-                  Confirm New Password
+              {/* Confirm New Password */}
+              <div className="flex flex-col gap-1.5">
+                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs" htmlFor="confirmPassword">
+                  Confirm New Password *
                 </label>
-                <input
-                  id="confirmPass"
-                  name="confirmPass"
-                  type="password"
-                  value={passwords.confirmPass}
-                  onChange={handlePassChange}
-                  placeholder="••••••••"
-                  className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirm ? 'text' : 'password'}
+                    value={passwords.confirmPassword}
+                    onChange={handlePassChange}
+                    placeholder="Re-enter new password"
+                    className={`w-full px-3 py-2.5 pr-10 bg-surface-container-low border rounded-lg font-body-md text-on-surface outline-none focus:border-primary transition-colors ${
+                      passErrors.confirmPassword ? 'border-error bg-error-container/10' : 'border-outline-variant'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">{showConfirm ? 'visibility' : 'visibility_off'}</span>
+                  </button>
+                </div>
+                {passErrors.confirmPassword ? (
+                  <p className="text-xs text-error font-label-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {passErrors.confirmPassword}
+                  </p>
+                ) : (passwordsMatch || passwordsMismatch) ? (
+                  <p className={`text-xs font-label-sm flex items-center gap-1 ${passwordsMatch ? 'text-primary' : 'text-error'}`}>
+                    <span className="material-symbols-outlined text-[14px]">{passwordsMatch ? 'check_circle' : 'cancel'}</span>
+                    {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
+                  </p>
+                ) : null}
               </div>
             </div>
 
-            <div className="pt-3">
+            <div className="flex justify-end pt-3 border-t border-outline-variant">
               <button
                 type="submit"
-                className={`w-full py-3.5 rounded-full font-label-md text-label-md shadow-ambient transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
-                  savedPass ? 'bg-primary text-white' : 'bg-primary-container text-on-background hover:bg-primary hover:text-white'
-                }`}
+                disabled={savingPass}
+                className="px-6 py-2.5 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2 shadow-ambient"
               >
-                <span className="material-symbols-outlined text-[18px]">{savedPass ? 'check' : 'security'}</span>
-                {savedPass ? 'Password Updated!' : 'Update Password'}
+                {savingPass ? (
+                  <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
+                ) : (
+                  <span className="material-symbols-outlined text-[16px]">security</span>
+                )}
+                {savingPass ? 'Updating...' : 'Update Password'}
               </button>
             </div>
           </form>
