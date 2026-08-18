@@ -148,7 +148,6 @@ export default function AdminProfile() {
     }
   }
 
-  const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : 'A';
   const passwordsMatch = passwords.newPassword && passwords.confirmPassword && passwords.newPassword === passwords.confirmPassword;
   const passwordsMismatch = passwords.newPassword && passwords.confirmPassword && passwords.newPassword !== passwords.confirmPassword;
 
@@ -187,19 +186,6 @@ export default function AdminProfile() {
               </div>
             )}
 
-            {/* Profile Avatar Card */}
-            <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl border border-outline-variant/30">
-              <div className="w-14 h-14 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xl shrink-0">
-                {initials}
-              </div>
-              <div>
-                <p className="font-title-sm text-on-surface font-bold text-base">{user?.name || 'Admin User'}</p>
-                <p className="font-label-sm text-xs text-on-surface-variant">{user?.email || ''}</p>
-                <span className="inline-block mt-1 px-2.5 py-0.5 bg-primary/10 text-primary text-[11px] font-bold rounded-full">
-                  System Administrator
-                </span>
-              </div>
-            </div>
 
             <div className="space-y-4">
               {/* Full Name */}
