@@ -204,7 +204,6 @@ export default function Register() {
               </label>
               <div className="flex items-center gap-2 bg-surface-container-low border-b-2 border-outline-variant focus-within:border-primary transition-colors py-1.5">
                 <div className="flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded text-on-surface font-mono font-bold text-xs border border-outline-variant/40 select-none">
-                  <span>🇱🇰</span>
                   <span>+94</span>
                 </div>
                 <input

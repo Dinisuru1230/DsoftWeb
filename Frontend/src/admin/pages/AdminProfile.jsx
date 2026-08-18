@@ -245,7 +245,7 @@ export default function AdminProfile() {
                   </label>
                   <div className={`flex rounded-lg border overflow-hidden ${profileErrors.phone ? 'border-error' : 'border-outline-variant'} focus-within:border-primary transition-colors`}>
                     <span className="flex items-center px-3 bg-surface-container border-r border-outline-variant/60 text-sm font-label-md text-on-surface-variant whitespace-nowrap">
-                      🇱🇰 +94
+                      +94
                     </span>
                     <input
                       id="phone"

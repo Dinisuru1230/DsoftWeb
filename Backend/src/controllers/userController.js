@@ -14,6 +14,7 @@ async function getCustomers(req, res) {
         address: true,
         city: true,
         district: true,
+        postalCode: true,
         createdAt: true,
         _count: { select: { orders: true } },
       },

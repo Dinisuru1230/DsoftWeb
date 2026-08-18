@@ -48,6 +48,12 @@ function validateCustomerForm(data, isCreate) {
       errors.phone = 'Phone must be exactly 9 digits after +94 (e.g. 77 123 4567).';
     }
   }
+  if (data.postalCode) {
+    const digits = data.postalCode.replace(/\D/g, '');
+    if (digits.length !== 5) {
+      errors.postalCode = 'Postal code must be exactly 5 digits (e.g. 10350).';
+    }
+  }
   return errors;
 }
 
@@ -136,6 +142,10 @@ export default function CustomerManagement() {
       if (val.startsWith('0')) val = val.substring(1);
       if (val.length > 9) val = val.substring(0, 9);
       setFormData(prev => ({ ...prev, phone: val }));
+    } else if (name === 'postalCode') {
+      let val = value.replace(/\D/g, '');
+      if (val.length > 5) val = val.substring(0, 5);
+      setFormData(prev => ({ ...prev, postalCode: val }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -494,7 +504,7 @@ function CustomerForm({ formData, onChange, onSubmit, onCancel, saving, formErro
       <Field label="Phone Number (+94)" error={fieldErrors.phone}>
         <div className={`flex rounded-lg border overflow-hidden ${fieldErrors.phone ? 'border-error' : 'border-outline-variant'} focus-within:border-primary transition-colors`}>
           <span className="flex items-center px-3 bg-surface-container border-r border-outline-variant/60 text-sm font-label-md text-on-surface-variant whitespace-nowrap">
-            🇱🇰 +94
+            +94
           </span>
           <input
             name="phone" type="tel" value={formData.phone} onChange={onChange}
