@@ -1,5 +1,8 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useState, useEffect } from 'react';
+
+const API_BASE = 'http://localhost:5050/api';
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: 'dashboard', end: true },
@@ -8,13 +11,36 @@ const navItems = [
   { to: '/admin/categories', label: 'Categories', icon: 'category' },
   { to: '/admin/orders', label: 'Orders', icon: 'shopping_cart' },
   { to: '/admin/customers', label: 'Customers', icon: 'group' },
+  { to: '/admin/messages', label: 'Messages', icon: 'inbox', badgeKey: 'unread' },
   { to: '/admin/admins', label: 'Admin Team', icon: 'admin_panel_settings' },
   { to: '/admin/profile', label: 'Admin Profile', icon: 'account_circle' },
 ];
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, token } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${API_BASE}/contact/stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => { if (data.unread !== undefined) setUnreadCount(data.unread); })
+      .catch(() => {});
+
+    // Poll every 60s for new messages
+    const interval = setInterval(() => {
+      fetch(`${API_BASE}/contact/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.json())
+        .then((data) => { if (data.unread !== undefined) setUnreadCount(data.unread); })
+        .catch(() => {});
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [token]);
 
   function handleLogout() {
     logout();
@@ -47,7 +73,12 @@ export default function AdminSidebar() {
             }
           >
             <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-            {item.label}
+            <span className="flex-grow">{item.label}</span>
+            {item.badgeKey === 'unread' && unreadCount > 0 && (
+              <span className="bg-primary text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -65,3 +96,4 @@ export default function AdminSidebar() {
     </aside>
   );
 }
+

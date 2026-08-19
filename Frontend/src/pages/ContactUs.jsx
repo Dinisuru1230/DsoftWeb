@@ -1,18 +1,41 @@
 import { useState } from 'react';
 
+const API_BASE = 'http://localhost:5050/api';
+
 export default function ContactUs() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError('');
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setSubmitted(true);
-    setForm({ name: '', email: '', subject: '', message: '' });
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSubmitted(true);
+        setForm({ name: '', email: '', subject: '', message: '' });
+      } else {
+        setError(data.error || 'Failed to send message. Please try again.');
+      }
+    } catch {
+      setError('Network error. Please check your connection and try again.');
+    }
+    setSubmitting(false);
   }
+
 
   return (
     <main className="flex-grow flex flex-col md:flex-row w-full min-h-[calc(100vh-140px)]">
@@ -55,6 +78,12 @@ export default function ContactUs() {
           ) : (
             /* Form */
             <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="flex items-center gap-2 p-3 bg-error-container/30 rounded-lg text-sm">
+                  <span className="material-symbols-outlined text-error text-[18px]">error</span>
+                  <span className="font-body-md text-on-error-container">{error}</span>
+                </div>
+              )}
               <div className="space-y-1">
                 <label className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider" htmlFor="name">
                   Name
@@ -121,10 +150,20 @@ export default function ContactUs() {
 
               <button
                 type="submit"
-                className="w-full bg-primary-container text-on-primary-fixed font-label-md text-label-md py-3 px-8 rounded-lg shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center space-x-2"
+                disabled={submitting}
+                className="w-full bg-primary-container text-on-primary-fixed font-label-md text-label-md py-3 px-8 rounded-lg shadow-ambient hover:shadow-ambient-lg hover:-translate-y-0.5 transition-all duration-300 flex justify-center items-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
               >
-                <span>Send Message</span>
-                <span className="material-symbols-outlined text-[18px]">send</span>
+                {submitting ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Send Message</span>
+                    <span className="material-symbols-outlined text-[18px]">send</span>
+                  </>
+                )}
               </button>
             </form>
           )}

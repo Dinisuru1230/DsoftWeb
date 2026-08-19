@@ -113,3 +113,28 @@ model OrderItem {
   quantity  Int
   price     Float
 }
+model ContactMessage {
+  id        String         @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    MessageStatus  @default(UNREAD)
+  createdAt DateTime       @default(now())
+  replies   MessageReply[]
+}
+
+model MessageReply {
+  id        String         @id @default(uuid())
+  messageId String
+  message   ContactMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime       @default(now())
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
+  REPLIED
+  ARCHIVED
+}

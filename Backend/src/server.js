@@ -9,6 +9,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const userRoutes = require('./routes/userRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5050;
@@ -33,6 +34,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
@@ -42,4 +44,5 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Malmalee Creations Server running at http://localhost:${PORT}`);
+  console.log(`📬 Contact API ready at http://localhost:${PORT}/api/contact`);
 });
