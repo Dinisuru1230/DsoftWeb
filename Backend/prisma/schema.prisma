@@ -48,6 +48,8 @@ model Category {
   id       String    @id @default(uuid())
   name     String    @unique
   slug     String    @unique
+  icon     String    @default("category")
+  active   Boolean   @default(true)
   products Product[]
 }
 
