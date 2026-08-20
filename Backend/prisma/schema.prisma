@@ -65,6 +65,7 @@ model Product {
   details          String?
   image            String
   hoverImage       String?
+  galleryImages    String?
   featured         Boolean        @default(false)
   standardShipping Float?
   expressShipping  Float?

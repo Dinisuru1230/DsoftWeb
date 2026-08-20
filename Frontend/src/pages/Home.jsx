@@ -1,44 +1,15 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 
-const PRODUCTS = [
-  {
-    id: 'blush-ribbon-bow',
-    name: 'Blush Ribbon Bow',
-    price: 3600,
-    category: 'Bows',
-    image: '/14_blush_silk_ribbon_bow.jpg',
-    hoverImage: '/15_blush_silk_ribbon_close_up.jpg',
-    isNew: true,
-  },
-  {
-    id: 'pearl-satin-scrunchie',
-    name: 'Pearl Satin Scrunchie',
-    price: 4500,
-    category: 'Scrunchies',
-    image: '/18_silk_scrunchie.jpg',
-    hoverImage: '/08_flat_lay_fabrics_ribbon.jpg',
-    isNew: false,
-  },
-  {
-    id: 'woven-floral-headband',
-    name: 'Woven Floral Headband',
-    price: 6600,
-    category: 'Headbands',
-    image: '/17_woven_floral_headband.jpg',
-    hoverImage: '/02_woman_floral_headband.jpg',
-    isNew: false,
-  },
-  {
-    id: 'flat-lay-hair-bows',
-    name: 'Handmade Hair Bows Set',
-    price: 8400,
-    category: 'Bows',
-    image: '/16_flat_lay_hair_bows.jpg',
-    hoverImage: '/20_flat_lay_ribbon_jasmine.jpg',
-    isNew: true,
-  },
-];
+const API_BASE = 'http://localhost:5050/api';
+
+function imgUrl(path) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  if (path.startsWith('/uploads')) return `http://localhost:5050${path}`;
+  return path;
+}
 
 const CATEGORIES = [
   { label: 'Bows', image: '/14_blush_silk_ribbon_bow.jpg', filter: 'bows' },
@@ -48,6 +19,19 @@ const CATEGORIES = [
 ];
 
 export default function Home() {
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/products?featured=true&limit=4`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setFeaturedProducts(data);
+      })
+      .catch(() => {})
+      .finally(() => setProductsLoading(false));
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* ── Hero Section ── */}
@@ -114,9 +98,28 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PRODUCTS.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {productsLoading
+              ? [...Array(4)].map((_, i) => (
+                  <div key={i} className="animate-pulse flex flex-col rounded-lg overflow-hidden bg-surface-container-lowest">
+                    <div className="aspect-[4/5] bg-surface-container" />
+                    <div className="p-4 space-y-2">
+                      <div className="h-4 bg-surface-container rounded w-2/3 mx-auto" />
+                      <div className="h-4 bg-surface-container rounded w-1/2 mx-auto" />
+                      <div className="h-10 bg-surface-container rounded-full mt-3" />
+                    </div>
+                  </div>
+                ))
+              : featuredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={{
+                      ...product,
+                      image: imgUrl(product.image),
+                      hoverImage: imgUrl(product.hoverImage),
+                      category: product.categoryName,
+                    }}
+                  />
+                ))}
           </div>
           <div className="mt-8 text-center md:hidden">
             <Link

@@ -1,18 +1,48 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { ALL_PRODUCTS } from '../data/productsData';
 
 const API_BASE = 'http://localhost:5050/api';
+
+// Helper: build image URL (handles /public/* and /uploads/*)
+function imgUrl(path) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  if (path.startsWith('/uploads')) return `http://localhost:5050${path}`;
+  return path;
+}
+
+// ── Product Grid Skeleton ─────────────────────────────────────────
+function GridSkeleton() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+      {[...Array(8)].map((_, i) => (
+        <div key={i} className="animate-pulse flex flex-col rounded-lg overflow-hidden bg-surface-container-lowest">
+          <div className="aspect-[4/5] bg-surface-container" />
+          <div className="p-4 space-y-2">
+            <div className="h-4 bg-surface-container rounded w-2/3 mx-auto" />
+            <div className="h-4 bg-surface-container rounded w-1/2 mx-auto" />
+            <div className="h-10 bg-surface-container rounded-full mt-3" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function ShopAll() {
   const [searchParams, setSearchParams] = useSearchParams();
   const catParam = searchParams.get('cat');
   const searchParam = searchParams.get('search') || '';
 
+  // ── DB state ──
   const [dbCategories, setDbCategories] = useState([]);
   const [catLoading, setCatLoading] = useState(true);
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState(null);
 
+  // ── Filter state ──
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [searchQuery, setSearchQuery] = useState(searchParam);
   const [priceRange, setPriceRange] = useState(20000);
@@ -30,11 +60,13 @@ export default function ShopAll() {
       .finally(() => setCatLoading(false));
   }, []);
 
-  // ── Sync URL cat param ──
+  // ── Sync URL cat param once categories are loaded ──
   useEffect(() => {
     if (catParam && dbCategories.length > 0) {
       const match = dbCategories.find(
-        (c) => c.name.toLowerCase().replace(/[^a-z0-9]/g, '') === catParam.toLowerCase().replace(/[^a-z0-9]/g, '')
+        (c) =>
+          c.name.toLowerCase().replace(/[^a-z0-9]/g, '') ===
+          catParam.toLowerCase().replace(/[^a-z0-9]/g, '')
       );
       if (match) setSelectedCategory(match.name);
     }
@@ -44,21 +76,43 @@ export default function ShopAll() {
     if (searchParam !== undefined) setSearchQuery(searchParam);
   }, [searchParam]);
 
+  // ── Fetch products from API whenever filters change ──
+  const fetchProducts = useCallback(() => {
+    setProductsLoading(true);
+    setProductsError(null);
+
+    const params = new URLSearchParams();
+    if (selectedCategory !== 'All Products') params.set('category', selectedCategory);
+    if (searchQuery.trim()) params.set('search', searchQuery.trim());
+    if (priceRange < 20000) params.set('maxPrice', priceRange);
+    if (sortBy !== 'newest') params.set('sort', sortBy);
+
+    fetch(`${API_BASE}/products?${params.toString()}`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else {
+          setProducts([]);
+        }
+        setProductsLoading(false);
+      })
+      .catch((err) => {
+        setProductsError(err.message);
+        setProductsLoading(false);
+      });
+  }, [selectedCategory, searchQuery, priceRange, sortBy]);
+
+  // Debounce product fetch when filters change
+  useEffect(() => {
+    const timer = setTimeout(fetchProducts, 300);
+    return () => clearTimeout(timer);
+  }, [fetchProducts]);
+
   const CATEGORIES = ['All Products', ...dbCategories.map((c) => c.name)];
-  const categoryIconMap = Object.fromEntries(dbCategories.map((c) => [c.name, c.icon]));
-
-  let filtered = ALL_PRODUCTS.filter((p) => {
-    const matchCat = selectedCategory === 'All Products' || p.category === selectedCategory;
-    const matchPrice = p.price <= priceRange;
-    const matchSearch =
-      !searchQuery.trim() ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCat && matchPrice && matchSearch;
-  });
-
-  if (sortBy === 'price-asc') filtered.sort((a, b) => a.price - b.price);
-  if (sortBy === 'price-desc') filtered.sort((a, b) => b.price - a.price);
 
   const SidebarFilters = () => (
     <div className="space-y-8">
@@ -129,7 +183,9 @@ export default function ShopAll() {
       <div className="pt-4 border-t border-outline-variant/40">
         <div className="flex justify-between items-center mb-2">
           <h3 className="font-label-md text-label-md text-primary font-bold">Price Range</h3>
-          <span className="font-label-sm text-label-sm text-on-surface-variant font-bold">Rs. {priceRange.toLocaleString()}</span>
+          <span className="font-label-sm text-label-sm text-on-surface-variant font-bold">
+            Rs. {priceRange.toLocaleString()}
+          </span>
         </div>
         <div className="flex justify-between text-xs text-outline mb-1 font-body-md">
           <span>Rs. 0</span>
@@ -188,7 +244,7 @@ export default function ShopAll() {
           onClick={() => setMobileFilterOpen(true)}
           className="md:hidden flex items-center justify-center gap-2 py-2.5 px-4 bg-primary-container text-on-background rounded-full font-label-md text-label-md"
         >
-          <span className="material-symbols-outlined text-[18px]">tune</span> Filter & Sort
+          <span className="material-symbols-outlined text-[18px]">tune</span> Filter &amp; Sort
         </button>
       </div>
 
@@ -200,7 +256,21 @@ export default function ShopAll() {
 
         {/* ── Product Grid ── */}
         <section className="flex-grow min-w-0">
-          {filtered.length === 0 ? (
+          {productsLoading ? (
+            <GridSkeleton />
+          ) : productsError ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-4 text-on-surface-variant">
+              <span className="material-symbols-outlined text-6xl text-error/50">error</span>
+              <p className="font-title-sm text-title-sm text-error">Failed to load products</p>
+              <p className="font-body-md text-body-md">{productsError}</p>
+              <button
+                onClick={fetchProducts}
+                className="mt-2 bg-primary-container text-on-background font-label-md px-6 py-3 rounded-full hover:bg-primary hover:text-white transition-all"
+              >
+                Retry
+              </button>
+            </div>
+          ) : products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 gap-4 text-on-surface-variant">
               <span className="material-symbols-outlined text-6xl text-outline/50">search_off</span>
               <p className="font-title-sm text-title-sm">No products found</p>
@@ -209,12 +279,20 @@ export default function ShopAll() {
           ) : (
             <>
               <p className="font-label-md text-label-md text-on-surface-variant mb-6">
-                Showing <span className="text-primary font-bold">{filtered.length}</span> product{filtered.length !== 1 ? 's' : ''}
+                Showing <span className="text-primary font-bold">{products.length}</span> product{products.length !== 1 ? 's' : ''}
                 {selectedCategory !== 'All Products' && ` in ${selectedCategory}`}
               </p>
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {filtered.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={{
+                      ...product,
+                      image: imgUrl(product.image),
+                      hoverImage: imgUrl(product.hoverImage),
+                      category: product.categoryName,
+                    }}
+                  />
                 ))}
               </div>
             </>
@@ -228,7 +306,7 @@ export default function ShopAll() {
           <div className="flex-grow bg-black/40" onClick={() => setMobileFilterOpen(false)} />
           <div className="w-80 bg-surface-container-lowest shadow-2xl h-full overflow-y-auto p-6 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-title-sm text-title-sm text-primary">Filters & Sort</h2>
+              <h2 className="font-title-sm text-title-sm text-primary">Filters &amp; Sort</h2>
               <button onClick={() => setMobileFilterOpen(false)} className="text-on-surface-variant hover:text-primary cursor-pointer">
                 <span className="material-symbols-outlined">close</span>
               </button>

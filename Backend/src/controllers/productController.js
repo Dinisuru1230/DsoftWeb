@@ -2,7 +2,7 @@ const prisma = require('../config/prisma');
 
 async function getAllProducts(req, res) {
   try {
-    const { search, category, maxPrice, sort } = req.query;
+    const { search, category, maxPrice, sort, featured, limit, exclude } = req.query;
 
     const where = {};
 
@@ -22,17 +22,34 @@ async function getAllProducts(req, res) {
       ];
     }
 
+    // Filter by featured flag (for Home page "New Arrivals" section)
+    if (featured === 'true') {
+      where.featured = true;
+    }
+
+    // Exclude a specific product ID (for related products section)
+    if (exclude) {
+      where.id = { not: exclude };
+    }
+
     let orderBy = { createdAt: 'desc' };
     if (sort === 'price-asc') orderBy = { price: 'asc' };
     if (sort === 'price-desc') orderBy = { price: 'desc' };
 
-    const products = await prisma.product.findMany({
+    const queryOptions = {
       where,
       orderBy,
       include: {
         colors: true,
       },
-    });
+    };
+
+    // Limit results (for Home page, related products, etc.)
+    if (limit) {
+      queryOptions.take = parseInt(limit);
+    }
+
+    const products = await prisma.product.findMany(queryOptions);
 
     res.json(products);
   } catch (error) {
@@ -62,7 +79,7 @@ async function getProductById(req, res) {
 
 async function createProduct(req, res) {
   try {
-    const { name, price, stock, categoryName, badge, description, details, image, hoverImage, featured, colors, standardShipping, expressShipping } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
 
     if (!name || !price || !categoryName || !description || !image) {
       return res.status(400).json({ error: 'Missing required product fields' });
@@ -90,6 +107,7 @@ async function createProduct(req, res) {
         details: Array.isArray(details) ? JSON.stringify(details) : details,
         image,
         hoverImage,
+        galleryImages: Array.isArray(galleryImages) ? JSON.stringify(galleryImages.filter(Boolean)) : null,
         featured: Boolean(featured),
         standardShipping: standardShipping != null ? parseFloat(standardShipping) : null,
         expressShipping: expressShipping != null ? parseFloat(expressShipping) : null,
@@ -119,7 +137,7 @@ async function createProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, price, stock, categoryName, badge, description, image, featured, colors, standardShipping, expressShipping } = req.body;
+    const { name, price, stock, categoryName, badge, description, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -137,6 +155,12 @@ async function updateProduct(req, res) {
         ...(badge !== undefined && { badge }),
         ...(description && { description }),
         ...(image && { image }),
+        ...(hoverImage !== undefined && { hoverImage }),
+        ...(galleryImages !== undefined && {
+          galleryImages: Array.isArray(galleryImages)
+            ? JSON.stringify(galleryImages.filter(Boolean))
+            : galleryImages,
+        }),
         ...(featured !== undefined && { featured: Boolean(featured) }),
         ...(standardShipping !== undefined && { standardShipping: standardShipping != null ? parseFloat(standardShipping) : null }),
         ...(expressShipping !== undefined && { expressShipping: expressShipping != null ? parseFloat(expressShipping) : null }),

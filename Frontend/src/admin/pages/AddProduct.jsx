@@ -293,8 +293,9 @@ export default function AddProduct() {
       const filledSpecs = specs.filter((s) => s.key.trim() && s.value.trim());
       const detailsText = filledSpecs.map((s) => `${s.key}: ${s.value}`).join('\n');
 
-      // 5. First sub-image = hover image
+      // 5. First sub-image = hover image; all non-empty sub-images = galleryImages
       const hoverImage = galleryUrls[0] || '';
+      const galleryImages = galleryUrls.filter(Boolean); // [sub1, sub2, sub3] filtered
 
       // 6. Build payload
       const payload = {
@@ -306,6 +307,7 @@ export default function AddProduct() {
         stock: colors.length > 0 ? colors.reduce((a, c) => a + (parseInt(c.stock) || 0), 0) : parseInt(form.stock) || 0,
         image: imageUrl,
         hoverImage,
+        galleryImages,
         badge: form.badge.trim() || null,
         featured: form.featured,
         standardShipping: form.standardShipping !== '' ? parseFloat(form.standardShipping) : null,
