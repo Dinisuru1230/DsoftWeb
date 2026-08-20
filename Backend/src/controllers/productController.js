@@ -62,7 +62,7 @@ async function getProductById(req, res) {
 
 async function createProduct(req, res) {
   try {
-    const { name, price, stock, categoryName, badge, description, details, image, hoverImage, featured, colors } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, image, hoverImage, featured, colors, standardShipping, expressShipping } = req.body;
 
     if (!name || !price || !categoryName || !description || !image) {
       return res.status(400).json({ error: 'Missing required product fields' });
@@ -91,6 +91,8 @@ async function createProduct(req, res) {
         image,
         hoverImage,
         featured: Boolean(featured),
+        standardShipping: standardShipping != null ? parseFloat(standardShipping) : null,
+        expressShipping: expressShipping != null ? parseFloat(expressShipping) : null,
         ...(colors && Array.isArray(colors) && colors.length > 0 && {
           colors: {
             create: colors.map((c) => ({
@@ -117,7 +119,7 @@ async function createProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, price, stock, categoryName, badge, description, image, featured, colors } = req.body;
+    const { name, price, stock, categoryName, badge, description, image, featured, colors, standardShipping, expressShipping } = req.body;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -136,6 +138,8 @@ async function updateProduct(req, res) {
         ...(description && { description }),
         ...(image && { image }),
         ...(featured !== undefined && { featured: Boolean(featured) }),
+        ...(standardShipping !== undefined && { standardShipping: standardShipping != null ? parseFloat(standardShipping) : null }),
+        ...(expressShipping !== undefined && { expressShipping: expressShipping != null ? parseFloat(expressShipping) : null }),
       },
       include: { colors: true },
     });
@@ -145,6 +149,7 @@ async function updateProduct(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
 
 async function deleteProduct(req, res) {
   try {

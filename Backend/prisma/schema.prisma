@@ -54,22 +54,24 @@ model Category {
 }
 
 model Product {
-  id           String         @id @default(uuid())
-  name         String
-  price        Float
-  stock        Int            @default(0)
-  categoryName String
-  category     Category       @relation(fields: [categoryName], references: [name])
-  badge        String?
-  description  String
-  details      String?
-  image        String
-  hoverImage   String?
-  featured     Boolean        @default(false)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  colors       ProductColor[]
-  orderItems   OrderItem[]
+  id               String         @id @default(uuid())
+  name             String
+  price            Float
+  stock            Int            @default(0)
+  categoryName     String
+  category         Category       @relation(fields: [categoryName], references: [name])
+  badge            String?
+  description      String
+  details          String?
+  image            String
+  hoverImage       String?
+  featured         Boolean        @default(false)
+  standardShipping Float?
+  expressShipping  Float?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  colors           ProductColor[]
+  orderItems       OrderItem[]
 }
 
 model ProductColor {
