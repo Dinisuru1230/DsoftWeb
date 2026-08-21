@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ConfirmModal from '../../components/ConfirmModal';
 import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
@@ -23,7 +24,8 @@ export default function ProductManagement() {
   const [loading, setLoading] = useState(true);
   const [catFilter, setCatFilter] = useState('All Products');
   const [search, setSearch] = useState('');
-  const [deletingId, setDeletingId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
 
   const fetchProducts = useCallback(() => {
@@ -89,25 +91,28 @@ export default function ProductManagement() {
     setTogglingId(null);
   }
 
-  async function deleteProduct(product) {
-    if (!confirm(`Delete "${product.name}"? This cannot be undone.`)) return;
-    setDeletingId(product.id);
-    const toastId = toast.loading(`Deleting "${product.name}"...`);
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const toastId = toast.loading(`Deleting "${deleteTarget.name}"...`);
     try {
-      const res = await fetch(`${API_BASE}/products/${product.id}`, {
+      const res = await fetch(`${API_BASE}/products/${deleteTarget.id}`, {
         method: 'DELETE',
         headers: authHeaders,
       });
       if (res.ok) {
-        setProducts((prev) => prev.filter((p) => p.id !== product.id));
-        toast.success(`"${product.name}" has been deleted.`, { id: toastId });
+        setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+        toast.success(`"${deleteTarget.name}" has been deleted.`, { id: toastId });
+        setDeleteTarget(null);
       } else {
-        toast.error('Failed to delete product. Please try again.', { id: toastId });
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || 'Failed to delete product. Please try again.', { id: toastId });
       }
     } catch {
       toast.error('Network error deleting product.', { id: toastId });
+    } finally {
+      setDeleting(false);
     }
-    setDeletingId(null);
   }
 
   const catList = ['All Products', ...categories.map((c) => c.name)];
@@ -131,7 +136,7 @@ export default function ProductManagement() {
         </div>
         <Link
           to="/admin/add-product"
-          className="bg-primary-container text-on-background font-label-md text-label-md py-3 px-6 rounded-lg hover:bg-primary hover:text-white transition-all duration-300 flex items-center gap-2 shadow-ambient font-bold"
+          className="bg-primary text-white font-label-md text-label-md py-3 px-6 rounded-lg hover:bg-primary hover:text-white transition-all duration-300 flex items-center gap-2 shadow-ambient font-bold"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           Add New Product
@@ -314,13 +319,12 @@ export default function ProductManagement() {
                             </span>
                           </a>
                           <button
-                            onClick={() => deleteProduct(p)}
-                            disabled={deletingId === p.id}
-                            className="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                            onClick={() => setDeleteTarget(p)}
+                            className="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors cursor-pointer"
                             title="Delete product"
                           >
                             <span className="material-symbols-outlined text-[18px]">
-                              {deletingId === p.id ? 'hourglass_empty' : 'delete'}
+                              delete
                             </span>
                           </button>
                         </div>
@@ -378,13 +382,12 @@ export default function ProductManagement() {
                       </span>
                     </Link>
                     <button
-                      onClick={() => deleteProduct(p)}
-                      disabled={deletingId === p.id}
-                      className="p-2 text-error hover:bg-error-container/30 rounded-lg disabled:opacity-50 cursor-pointer"
+                      onClick={() => setDeleteTarget(p)}
+                      className="p-2 text-error hover:bg-error-container/30 rounded-lg cursor-pointer"
                       title="Delete product"
                     >
                       <span className="material-symbols-outlined text-[18px]">
-                        {deletingId === p.id ? 'hourglass_empty' : 'delete'}
+                        delete
                       </span>
                     </button>
                   </div>
@@ -394,6 +397,21 @@ export default function ProductManagement() {
           </>
         )}
       </div>
+
+      {/* Shared Confirmation Modal for Product Deletion */}
+      <ConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        title="Delete Product"
+        itemName={deleteTarget?.name}
+        message={`Are you sure you want to permanently delete "${deleteTarget?.name}"? This action cannot be undone and will remove the item from your store catalog.`}
+        confirmText="Delete Product"
+        cancelText="Cancel"
+        variant="danger"
+        icon="delete_forever"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onClose={() => { if (!deleting) setDeleteTarget(null); }}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import ConfirmModal from '../../components/ConfirmModal';
 import toast from 'react-hot-toast';
 import {
   SRI_LANKA_PROVINCES,
@@ -417,26 +418,19 @@ export default function CustomerManagement() {
         </Modal>
       )}
 
-      {deleteTarget && (
-        <Modal title="Delete Customer" onClose={() => setDeleteTarget(null)}>
-          <div className="flex items-start gap-3 mb-5 p-3 bg-error-container/30 rounded-lg">
-            <span className="material-symbols-outlined text-error mt-0.5">warning</span>
-            <p className="font-body-md text-body-md text-on-surface">
-              Are you sure you want to permanently delete <strong>{deleteTarget.name}</strong>?
-              This will remove their account and all data. This action cannot be undone.
-            </p>
-          </div>
-          <div className="flex justify-end gap-3">
-            <button onClick={() => setDeleteTarget(null)} className="px-5 py-2 border border-outline-variant rounded-full font-label-md text-label-md hover:bg-surface-container transition-colors cursor-pointer">
-              Cancel
-            </button>
-            <button onClick={handleDelete} className="px-5 py-2 bg-error text-white rounded-full font-label-md text-label-md hover:bg-error/80 transition-colors cursor-pointer flex items-center gap-2 font-bold">
-              <span className="material-symbols-outlined text-[16px]">delete_forever</span>
-              Delete Customer
-            </button>
-          </div>
-        </Modal>
-      )}
+      {/* Shared Confirmation Modal for Deleting Customer */}
+      <ConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        title="Delete Customer Account"
+        itemName={deleteTarget?.name}
+        message={`Are you sure you want to permanently delete "${deleteTarget?.name}" (${deleteTarget?.email})? All associated customer profile data will be removed.`}
+        confirmText="Delete Customer"
+        cancelText="Cancel"
+        variant="danger"
+        icon="delete_forever"
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }
