@@ -1,4 +1,25 @@
+const fs = require('fs');
+const path = require('path');
 const prisma = require('../config/prisma');
+
+function deleteFileIfLocal(imagePath) {
+  if (!imagePath || typeof imagePath !== 'string') return;
+  let relativePath = imagePath;
+  if (relativePath.includes('/uploads/')) {
+    relativePath = '/uploads/' + relativePath.split('/uploads/')[1];
+  }
+  if (relativePath.startsWith('/uploads/')) {
+    const filename = relativePath.replace('/uploads/', '');
+    const filePath = path.join(__dirname, '../../uploads', filename);
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        console.error(`Failed to delete file ${filePath}:`, err.message);
+      }
+    }
+  }
+}
 
 async function getAllProducts(req, res) {
   try {
@@ -194,8 +215,46 @@ async function updateProduct(req, res) {
 async function deleteProduct(req, res) {
   try {
     const { id } = req.params;
+
+    // Fetch product with colors to gather all associated image URLs
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: { colors: true },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Collect all image URLs (main, hover, gallery sub-images, color photos)
+    const urlsToDelete = new Set();
+    if (product.image) urlsToDelete.add(product.image);
+    if (product.hoverImage) urlsToDelete.add(product.hoverImage);
+
+    if (product.galleryImages) {
+      try {
+        const parsed = typeof product.galleryImages === 'string'
+          ? JSON.parse(product.galleryImages)
+          : product.galleryImages;
+        if (Array.isArray(parsed)) {
+          parsed.forEach((img) => img && urlsToDelete.add(img));
+        }
+      } catch {}
+    }
+
+    if (product.colors && Array.isArray(product.colors)) {
+      product.colors.forEach((c) => {
+        if (c.image) urlsToDelete.add(c.image);
+      });
+    }
+
+    // Delete product from DB
     await prisma.product.delete({ where: { id } });
-    res.json({ message: 'Product deleted successfully' });
+
+    // Clean up all associated image files from disk storage
+    urlsToDelete.forEach((url) => deleteFileIfLocal(url));
+
+    res.json({ message: 'Product and all associated images deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
