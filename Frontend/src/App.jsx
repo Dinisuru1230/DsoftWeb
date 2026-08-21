@@ -38,6 +38,7 @@ import AdminManagement from './admin/pages/AdminManagement';
 import AdminProfile from './admin/pages/AdminProfile';
 import ContactManagement from './admin/pages/ContactManagement';
 import DeliverySettings from './admin/pages/DeliverySettings';
+import BankDetailsSettings from './admin/pages/BankDetailsSettings';
 
 // Customer Layout (Navbar + Content + Footer)
 function CustomerLayout({ children }) {
@@ -154,6 +155,7 @@ export default function App() {
             <Route path="/admin/profile" element={<AdminRoute><AdminProfile /></AdminRoute>} />
             <Route path="/admin/messages" element={<AdminRoute><ContactManagement /></AdminRoute>} />
             <Route path="/admin/delivery-settings" element={<AdminRoute><DeliverySettings /></AdminRoute>} />
+            <Route path="/admin/bank-details" element={<AdminRoute><BankDetailsSettings /></AdminRoute>} />
 
             {/* ── 404 Not Found ── */}
             <Route path="*" element={<CustomerLayout><NotFound /></CustomerLayout>} />

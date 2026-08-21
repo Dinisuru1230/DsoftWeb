@@ -10,11 +10,17 @@ async function getOrCreateSettings() {
       standardShipping: 450,
       expressShipping: 1200,
       freeShippingOver: 15000,
+      bankName: 'Commercial Bank of Ceylon',
+      accountName: 'Malmalee Creations (Pvt) Ltd',
+      accountNumber: '8009 123 456',
+      branchName: 'Colombo Main Branch',
+      swiftCode: 'CCEYLKLX',
+      bankNotes: 'Please include your contact number or order ID as the deposit reference.',
     },
   });
 }
 
-// GET /api/settings — Public (frontend needs delivery fee defaults)
+// GET /api/settings — Public (frontend needs delivery fee defaults & bank details)
 async function getSettings(req, res) {
   try {
     const settings = await getOrCreateSettings();
@@ -27,12 +33,28 @@ async function getSettings(req, res) {
 // PUT /api/settings — Admin only
 async function updateSettings(req, res) {
   try {
-    const { standardShipping, expressShipping, freeShippingOver } = req.body;
+    const {
+      standardShipping,
+      expressShipping,
+      freeShippingOver,
+      bankName,
+      accountName,
+      accountNumber,
+      branchName,
+      swiftCode,
+      bankNotes,
+    } = req.body;
 
     const data = {};
     if (standardShipping !== undefined) data.standardShipping = parseFloat(standardShipping);
     if (expressShipping !== undefined) data.expressShipping = parseFloat(expressShipping);
     if (freeShippingOver !== undefined) data.freeShippingOver = parseFloat(freeShippingOver);
+    if (bankName !== undefined) data.bankName = String(bankName).trim();
+    if (accountName !== undefined) data.accountName = String(accountName).trim();
+    if (accountNumber !== undefined) data.accountNumber = String(accountNumber).trim();
+    if (branchName !== undefined) data.branchName = String(branchName).trim();
+    if (swiftCode !== undefined) data.swiftCode = String(swiftCode).trim();
+    if (bankNotes !== undefined) data.bankNotes = String(bankNotes).trim();
 
     if (Object.keys(data).length === 0) {
       return res.status(400).json({ error: 'No valid fields to update' });
@@ -46,6 +68,12 @@ async function updateSettings(req, res) {
         standardShipping: data.standardShipping ?? 450,
         expressShipping: data.expressShipping ?? 1200,
         freeShippingOver: data.freeShippingOver ?? 15000,
+        bankName: data.bankName ?? 'Commercial Bank of Ceylon',
+        accountName: data.accountName ?? 'Malmalee Creations (Pvt) Ltd',
+        accountNumber: data.accountNumber ?? '8009 123 456',
+        branchName: data.branchName ?? 'Colombo Main Branch',
+        swiftCode: data.swiftCode ?? 'CCEYLKLX',
+        bankNotes: data.bankNotes ?? 'Please include your contact number or order ID as the deposit reference.',
       },
     });
 

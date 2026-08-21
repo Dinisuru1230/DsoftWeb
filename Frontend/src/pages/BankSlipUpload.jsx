@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+
+const API_BASE = 'http://localhost:5050/api';
 
 export default function BankSlipUpload() {
   const location = useLocation();
@@ -9,11 +11,38 @@ export default function BankSlipUpload() {
 
   const totalAmount = location.state?.total || cartSubtotal || 55.00;
 
+  const [bankInfo, setBankInfo] = useState({
+    bankName: 'Commercial Bank of Ceylon',
+    accountName: 'Malmalee Creations (Pvt) Ltd',
+    accountNumber: '8009 123 456',
+    branchName: 'Colombo Main Branch',
+    swiftCode: 'CCEYLKLX',
+    bankNotes: 'Please include your contact number or order ID as the deposit reference.',
+  });
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [refNumber, setRefNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch(`${API_BASE}/settings`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.bankName) {
+          setBankInfo({
+            bankName: data.bankName || 'Commercial Bank of Ceylon',
+            accountName: data.accountName || 'Malmalee Creations (Pvt) Ltd',
+            accountNumber: data.accountNumber || '8009 123 456',
+            branchName: data.branchName || 'Colombo Main Branch',
+            swiftCode: data.swiftCode || 'CCEYLKLX',
+            bankNotes: data.bankNotes || '',
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   function handleFileChange(e) {
     const file = e.target.files[0];
@@ -79,24 +108,34 @@ export default function BankSlipUpload() {
           <div className="space-y-4 font-body-md text-sm">
             <div className="flex justify-between py-2 border-b border-outline-variant/20">
               <span className="text-on-surface-variant font-medium">Bank Name</span>
-              <span className="font-bold text-on-surface">Commercial Bank of Ceylon</span>
+              <span className="font-bold text-on-surface">{bankInfo.bankName}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-outline-variant/20">
               <span className="text-on-surface-variant font-medium">Account Name</span>
-              <span className="font-bold text-on-surface">Malmalee Creations (Pvt) Ltd</span>
+              <span className="font-bold text-on-surface">{bankInfo.accountName}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-outline-variant/20">
               <span className="text-on-surface-variant font-medium">Account Number</span>
-              <span className="font-bold text-primary text-base">8009 123 456</span>
+              <span className="font-bold text-primary text-base">{bankInfo.accountNumber}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-outline-variant/20">
               <span className="text-on-surface-variant font-medium">Branch</span>
-              <span className="font-bold text-on-surface">Colombo Main Branch</span>
+              <span className="font-bold text-on-surface">{bankInfo.branchName}</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-outline-variant/20">
-              <span className="text-on-surface-variant font-medium">SWIFT Code</span>
-              <span className="font-bold text-on-surface">CCEYLKLX</span>
-            </div>
+            {bankInfo.swiftCode && (
+              <div className="flex justify-between py-2 border-b border-outline-variant/20">
+                <span className="text-on-surface-variant font-medium">SWIFT Code</span>
+                <span className="font-bold text-on-surface">{bankInfo.swiftCode}</span>
+              </div>
+            )}
+
+            {bankInfo.bankNotes && (
+              <div className="p-3 bg-primary-container/20 border border-primary/20 rounded-xl flex items-start gap-2 text-xs text-on-surface-variant mt-2">
+                <span className="material-symbols-outlined text-primary text-[16px] mt-0.5">info</span>
+                <span>{bankInfo.bankNotes}</span>
+              </div>
+            )}
+
             <div className="bg-primary-container/30 rounded-xl p-4 flex justify-between items-center mt-2">
               <span className="font-label-md text-label-md text-primary">Total Payable Amount</span>
               <span className="font-title-sm text-title-sm text-primary font-bold">Rs. {totalAmount.toLocaleString()}</span>
