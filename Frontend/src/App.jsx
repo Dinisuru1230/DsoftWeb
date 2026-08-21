@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster, ToastBar } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
@@ -125,7 +125,7 @@ export default function App() {
                 background: '#ffffff',
                 color: '#2d1527',
                 border: '1px solid rgba(224, 185, 203, 0.5)',
-                padding: '14px 18px',
+                padding: '10px 14px',
                 borderRadius: '14px',
                 boxShadow: '0 10px 30px rgba(74, 25, 66, 0.12)',
                 fontSize: '14px',
@@ -144,7 +144,29 @@ export default function App() {
                 },
               },
             }}
-          />
+          >
+            {(t) => (
+              <ToastBar toast={t}>
+                {({ icon, message }) => (
+                  <div className="flex items-center gap-2">
+                    {icon}
+                    <div className="flex-1">{message}</div>
+                    {t.type !== 'loading' && (
+                      <button
+                        type="button"
+                        onClick={() => toast.dismiss(t.id)}
+                        className="ml-2 p-1 rounded-full text-on-surface-variant/60 hover:text-primary hover:bg-primary-container/40 transition-colors flex items-center justify-center cursor-pointer"
+                        title="Close notification"
+                        aria-label="Close notification"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">close</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </ToastBar>
+            )}
+          </Toaster>
           <Routes>
             {/* ── Customer Auth Pages (No Navbar/Footer) ── */}
             <Route path="/login" element={<div className="flex flex-col min-h-screen"><Login /></div>} />
