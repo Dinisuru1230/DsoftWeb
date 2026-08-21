@@ -197,6 +197,8 @@ export default function ProductDetail() {
         price: currentPrice,
         image: activeImage,
         categoryName: product.categoryName,
+        standardShipping: product.standardShipping,
+        expressShipping: product.expressShipping,
       },
       quantity
     );
