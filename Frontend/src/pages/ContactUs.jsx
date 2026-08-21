@@ -65,14 +65,19 @@ export default function ContactUs() {
               Get in Touch
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-              We'd love to hear from you. Whether you have a question about our handmade collections or just want to say hello.
+              We'd love to hear from you. Whether you have a question about our
+              handmade collections or just want to say hello.
             </p>
           </div>
 
           {submitted ? (
             <div className="text-center py-12 bg-surface-container-low rounded-xl p-8 space-y-3 shadow-ambient">
-              <span className="material-symbols-outlined text-5xl text-primary block">check_circle</span>
-              <h2 className="font-title-sm text-title-sm text-primary">Message Sent!</h2>
+              <span className="material-symbols-outlined text-5xl text-primary block">
+                check_circle
+              </span>
+              <h2 className="font-title-sm text-title-sm text-primary">
+                Message Sent!
+              </h2>
               <p className="font-body-md text-body-md text-on-surface-variant">
                 Thank you for reaching out. We will respond within 24 hours.
               </p>
@@ -88,12 +93,19 @@ export default function ContactUs() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
                 <div className="flex items-center gap-2 p-3 bg-error-container/30 rounded-lg text-sm">
-                  <span className="material-symbols-outlined text-error text-[18px]">error</span>
-                  <span className="font-body-md text-on-error-container">{error}</span>
+                  <span className="material-symbols-outlined text-error text-[18px]">
+                    error
+                  </span>
+                  <span className="font-body-md text-on-error-container">
+                    {error}
+                  </span>
                 </div>
               )}
               <div className="space-y-1">
-                <label className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider" htmlFor="name">
+                <label
+                  className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider"
+                  htmlFor="name"
+                >
                   Name
                 </label>
                 <input
@@ -109,7 +121,10 @@ export default function ContactUs() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider" htmlFor="email">
+                <label
+                  className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider"
+                  htmlFor="email"
+                >
                   Email Address
                 </label>
                 <input
@@ -125,7 +140,10 @@ export default function ContactUs() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider" htmlFor="subject">
+                <label
+                  className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider"
+                  htmlFor="subject"
+                >
                   Subject
                 </label>
                 <input
@@ -141,7 +159,10 @@ export default function ContactUs() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider" htmlFor="message">
+                <label
+                  className="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider"
+                  htmlFor="message"
+                >
                   Message
                 </label>
                 <textarea
@@ -163,13 +184,17 @@ export default function ContactUs() {
               >
                 {submitting ? (
                   <>
-                    <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+                    <span className="material-symbols-outlined animate-spin text-[18px]">
+                      sync
+                    </span>
                     <span>Sending...</span>
                   </>
                 ) : (
                   <>
                     <span>Send Message</span>
-                    <span className="material-symbols-outlined text-[18px]">send</span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      send
+                    </span>
                   </>
                 )}
               </button>
@@ -177,32 +202,59 @@ export default function ContactUs() {
           )}
 
           {/* Contact Details Footer Grid */}
-          <div className="pt-8 border-t border-outline-variant/30 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-start space-x-3">
-              <span className="material-symbols-outlined text-primary mt-0.5">mail</span>
-              <div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Email</p>
-                <a href="mailto:hello@malmalee.lk" className="font-body-md text-body-md text-primary hover:underline">
-                  hello@malmalee.lk
-                </a>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <span className="material-symbols-outlined text-primary mt-0.5">call</span>
-              <div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Phone</p>
-                <a href="tel:+94771234567" className="font-body-md text-body-md text-primary hover:underline">
-                  +94 77 123 4567
-                </a>
-              </div>
-            </div>
-
+          <div className="pt-8 border-t border-outline-variant/30 grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="flex items-start space-x-3 sm:col-span-2">
-              <span className="material-symbols-outlined text-primary mt-0.5">photo_camera</span>
+              <span className="material-symbols-outlined text-primary mt-0.5">
+                mail
+              </span>
+              <div className="min-w-0">
+                <p className="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider font-semibold">
+                  Email
+                </p>
+                <a
+                  href="mailto:Malmaleecreations@gmail.com"
+                  className="font-body-md text-sm sm:text-base text-primary hover:underline font-medium break-all"
+                >
+                  Malmaleecreations@gmail.com
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3">
+              <span className="material-symbols-outlined text-primary mt-0.5">
+                call
+              </span>
               <div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Facebook</p>
-                <a href="#" className="font-body-md text-body-md text-primary hover:underline">
+                <p className="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider font-semibold">
+                  Phone
+                </p>
+                <a
+                  href="tel:+94786817659"
+                  className="font-body-md text-sm sm:text-base text-primary hover:underline font-medium"
+                >
+                  +94 78 681 7659
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3">
+              <svg
+                className="w-5 h-5 text-primary fill-current mt-0.5 shrink-0"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              <div>
+                <p className="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider font-semibold">
+                  Facebook
+                </p>
+                <a
+                  href="https://www.facebook.com/share/19BFB5mDyC/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-body-md text-sm sm:text-base text-primary hover:underline font-medium"
+                >
                   @malmaleecreations
                 </a>
               </div>
