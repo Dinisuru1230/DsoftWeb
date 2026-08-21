@@ -444,6 +444,7 @@ export default function AddProduct() {
         standardShipping: form.standardShipping !== '' ? parseFloat(form.standardShipping) : null,
         expressShipping: form.expressShipping !== '' ? parseFloat(form.expressShipping) : null,
         colors: colorPayload,
+      };
 
       // Use PUT for edit, POST for create
       const url = isEditMode ? `${API_BASE}/products/${editId}` : `${API_BASE}/products`;
