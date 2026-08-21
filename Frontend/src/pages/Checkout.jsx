@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -12,10 +12,28 @@ const DEFAULT_CHECKOUT_ITEMS = [
   { id: 'blush-ribbon-bow', name: 'Blush Silk Ribbon Bow', price: 3600, quantity: 1, image: '/14_blush_silk_ribbon_bow.jpg' },
 ];
 
+const API_BASE = 'http://localhost:5050/api';
+
 export default function Checkout() {
   const { cartItems, cartSubtotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Fetch global delivery fee defaults from admin settings
+  const [settings, setSettings] = useState({
+    standardShipping: 450,
+    expressShipping: 1200,
+    freeShippingOver: 15000,
+  });
+
+  useEffect(() => {
+    fetch(`${API_BASE}/settings`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.standardShipping !== undefined) setSettings(data);
+      })
+      .catch(() => {}); // silently keep defaults on error
+  }, []);
 
   const items = cartItems && cartItems.length > 0 ? cartItems : DEFAULT_CHECKOUT_ITEMS;
   const totalPrice = cartSubtotal && cartSubtotal > 0 ? cartSubtotal : 3600;
@@ -54,17 +72,22 @@ export default function Checkout() {
     });
   }
 
-  // Calculate custom per-product shipping rates dynamically from items in cart
+  // Calculate shipping:
+  // - If product has its own standardShipping/expressShipping set → use that
+  // - If not set (null/undefined) → fall back to global setting default
+  // - Take MAX across all cart items (most expensive product shipping wins)
   const maxProductStandardShipping = Math.max(
-    ...items.map((i) => (i.standardShipping !== undefined ? Number(i.standardShipping) : 450)),
-    450
+    ...items.map((i) =>
+      i.standardShipping != null ? Number(i.standardShipping) : settings.standardShipping
+    )
   );
   const maxProductExpressShipping = Math.max(
-    ...items.map((i) => (i.expressShipping !== undefined ? Number(i.expressShipping) : 1200)),
-    1200
+    ...items.map((i) =>
+      i.expressShipping != null ? Number(i.expressShipping) : settings.expressShipping
+    )
   );
 
-  const standardFee = totalPrice > 15000 ? 0 : maxProductStandardShipping;
+  const standardFee = totalPrice > settings.freeShippingOver ? 0 : maxProductStandardShipping;
   const expressFee = maxProductExpressShipping;
 
   const shippingCost = shippingMethod === 'express' ? expressFee : standardFee;

@@ -12,6 +12,7 @@ const navItems = [
   { to: '/admin/orders', label: 'Orders', icon: 'shopping_cart' },
   { to: '/admin/customers', label: 'Customers', icon: 'group' },
   { to: '/admin/messages', label: 'Messages', icon: 'inbox', badgeKey: 'unread' },
+  { to: '/admin/delivery-settings', label: 'Delivery Settings', icon: 'local_shipping' },
   { to: '/admin/admins', label: 'Admin Team', icon: 'admin_panel_settings' },
   { to: '/admin/profile', label: 'Admin Profile', icon: 'account_circle' },
 ];

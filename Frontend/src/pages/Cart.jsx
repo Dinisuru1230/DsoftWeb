@@ -4,7 +4,6 @@ import { useCart } from '../context/CartContext';
 export default function Cart() {
   const { cartItems, cartSubtotal, updateQuantity, removeFromCart } = useCart();
   const navigate = useNavigate();
-  const DELIVERY_FEE = cartItems.length > 0 ? 450 : 0;
 
   if (cartItems.length === 0) {
     return (
@@ -95,17 +94,17 @@ export default function Cart() {
             <h2 className="font-headline-md-mobile text-headline-md-mobile text-primary mb-6">Order Summary</h2>
             <div className="space-y-3 border-b border-outline-variant pb-6 mb-6">
               <div className="flex justify-between font-body-md text-body-md text-on-surface-variant">
-                <span>Subtotal ({cartItems.length} items)</span>
+                <span>Subtotal ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})</span>
                 <span>Rs. {cartSubtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between font-body-md text-body-md text-on-surface-variant">
                 <span>Delivery Fee</span>
-                <span>Rs. {DELIVERY_FEE.toLocaleString()}</span>
+                <span className="text-primary font-medium">Calculated at checkout</span>
               </div>
             </div>
             <div className="flex justify-between font-title-sm text-title-sm text-on-surface mb-6">
-              <span>Total</span>
-              <span>Rs. {(cartSubtotal + DELIVERY_FEE).toLocaleString()}</span>
+              <span>Subtotal</span>
+              <span>Rs. {cartSubtotal.toLocaleString()}</span>
             </div>
             <button
               onClick={() => navigate('/checkout')}

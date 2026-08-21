@@ -141,3 +141,12 @@ enum MessageStatus {
   REPLIED
   ARCHIVED
 }
+
+// Global store settings (singleton — always id="global")
+model Setting {
+  id               String   @id @default("global")
+  standardShipping Float    @default(450)
+  expressShipping  Float    @default(1200)
+  freeShippingOver Float    @default(15000)
+  updatedAt        DateTime @updatedAt
+}
