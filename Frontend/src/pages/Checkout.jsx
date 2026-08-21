@@ -346,100 +346,127 @@ export default function Checkout() {
             <div className="space-y-6">
               {/* Group 1: Items with Default Delivery Fees */}
               {hasDefaultItems && (
-                <div className="space-y-4 bg-surface-container-low/50 p-4 md:p-5 rounded-xl border border-outline-variant/30">
-                  <div className="flex items-center justify-between gap-2 pb-2 border-b border-outline-variant/20">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary text-[22px]">storefront</span>
-                      <h3 className="font-title-sm text-title-sm text-primary font-bold">
-                        Standard Store Items ({defaultItems.length} {defaultItems.length === 1 ? 'item' : 'items'})
-                      </h3>
+                      <div>
+                        <h3 className="font-title-sm text-title-sm text-primary font-bold">
+                          Standard Store Items ({defaultItems.length} {defaultItems.length === 1 ? 'item' : 'items'})
+                        </h3>
+                        <p className="font-body-md text-body-md text-on-surface-variant text-xs mt-0.5">
+                          Standard store delivery package. One delivery method applies to all items in this group.
+                        </p>
+                      </div>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-primary-container text-[11px] font-label-sm text-on-background font-bold">
+                    <span className="px-2.5 py-0.5 rounded-full bg-primary-container text-[11px] font-label-sm text-on-background font-bold whitespace-nowrap">
                       Standard Package
                     </span>
                   </div>
 
-                  {/* List down all items in the standard package */}
-                  <div className="divide-y divide-outline-variant/20 space-y-2">
-                    {defaultItems.map((item, idx) => (
-                      <div key={item.id || idx} className="pt-2 first:pt-0 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 border border-outline-variant/30">
-                            <img src={item.image || '/14_blush_silk_ribbon_bow.jpg'} alt={item.name} className="w-full h-full object-cover" />
+                  <div className="space-y-4 bg-surface-container-low/50 p-4 md:p-5 rounded-xl border border-outline-variant/30">
+                    {/* List down all items in the standard package */}
+                    <div className="divide-y divide-outline-variant/20 space-y-2">
+                      {defaultItems.map((item, idx) => (
+                        <div key={item.id || idx} className="pt-2 first:pt-0 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 border border-outline-variant/30">
+                              <img src={item.image || '/14_blush_silk_ribbon_bow.jpg'} alt={item.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <p className="font-label-md text-label-md text-on-surface font-medium line-clamp-1">{item.name}</p>
+                              <p className="font-body-md text-body-md text-on-surface-variant text-xs">
+                                Qty: {item.quantity || 1} &bull; Rs. {(item.price || 0).toLocaleString()} each
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-label-md text-label-md text-on-surface font-medium line-clamp-1">{item.name}</p>
-                            <p className="font-body-md text-body-md text-on-surface-variant text-xs">
-                              Qty: {item.quantity || 1} &bull; Rs. {(item.price || 0).toLocaleString()} each
-                            </p>
-                          </div>
+                          <span className="font-label-md text-label-md text-on-surface font-bold text-sm">
+                            Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                          </span>
                         </div>
-                        <span className="font-label-md text-label-md text-on-surface font-bold text-sm">
-                          Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                      ))}
+                    </div>
+
+                    {/* Single Delivery Selector for All Standard Items */}
+                    <div className="space-y-3 pt-3 border-t border-outline-variant/20">
+                      <p className="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
+                        Select Delivery Method for Standard Items:
+                      </p>
+
+                      <label
+                        className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          defaultShippingMethod === 'standard'
+                            ? 'border-primary bg-primary-container/20 shadow-sm'
+                            : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="defaultShipping"
+                          value="standard"
+                          checked={defaultShippingMethod === 'standard'}
+                          onChange={() => setDefaultShippingMethod('standard')}
+                          className="accent-primary h-4 w-4"
+                        />
+                        <span className="ml-4 flex-grow">
+                          <span className="block font-label-md text-label-md text-on-background">Standard Delivery</span>
+                          <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">3-5 Business Days</span>
                         </span>
-                      </div>
-                    ))}
-                  </div>
+                        <span className="font-label-md text-label-md text-primary font-bold">
+                          {isFreeDefaultShipping ? 'FREE' : `Rs. ${defaultStandardFee.toLocaleString()}`}
+                        </span>
+                      </label>
 
-                  {/* Single Delivery Selector for All Standard Items */}
-                  <div className="space-y-3 pt-3 border-t border-outline-variant/20">
-                    <p className="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                      Select Delivery Method for Standard Items:
-                    </p>
-
-                    <label
-                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        defaultShippingMethod === 'standard'
-                          ? 'border-primary bg-primary-container/20 shadow-sm'
-                          : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="defaultShipping"
-                        value="standard"
-                        checked={defaultShippingMethod === 'standard'}
-                        onChange={() => setDefaultShippingMethod('standard')}
-                        className="accent-primary h-4 w-4"
-                      />
-                      <span className="ml-4 flex-grow">
-                        <span className="block font-label-md text-label-md text-on-background">Standard Delivery (All Standard Items)</span>
-                        <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">3-5 Business Days</span>
-                      </span>
-                      <span className="font-label-md text-label-md text-primary font-bold">
-                        {isFreeDefaultShipping ? 'FREE' : `Rs. ${defaultStandardFee.toLocaleString()}`}
-                      </span>
-                    </label>
-
-                    <label
-                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        defaultShippingMethod === 'express'
-                          ? 'border-primary bg-primary-container/20 shadow-sm'
-                          : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="defaultShipping"
-                        value="express"
-                        checked={defaultShippingMethod === 'express'}
-                        onChange={() => setDefaultShippingMethod('express')}
-                        className="accent-primary h-4 w-4"
-                      />
-                      <span className="ml-4 flex-grow">
-                        <span className="block font-label-md text-label-md text-on-background">Express Delivery (All Standard Items)</span>
-                        <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">1-2 Business Days</span>
-                      </span>
-                      <span className="font-label-md text-label-md text-primary font-bold">
-                        Rs. {defaultExpressFee.toLocaleString()}
-                      </span>
-                    </label>
+                      <label
+                        className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          defaultShippingMethod === 'express'
+                            ? 'border-primary bg-primary-container/20 shadow-sm'
+                            : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="defaultShipping"
+                          value="express"
+                          checked={defaultShippingMethod === 'express'}
+                          onChange={() => setDefaultShippingMethod('express')}
+                          className="accent-primary h-4 w-4"
+                        />
+                        <span className="ml-4 flex-grow">
+                          <span className="block font-label-md text-label-md text-on-background">Express Delivery</span>
+                          <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">1-2 Business Days</span>
+                        </span>
+                        <span className="font-label-md text-label-md text-primary font-bold">
+                          Rs. {defaultExpressFee.toLocaleString()}
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               )}
 
               {/* Group 2: Items with Specific Delivery Fees (Listed Separately) */}
-              {specificShippingCalculations.map((calc) => (
+              {specificShippingCalculations.length > 0 && (
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-secondary text-[22px]">local_shipping</span>
+                      <div>
+                        <h3 className="font-title-sm text-title-sm text-secondary font-bold">
+                          Specific Delivery Items ({specificShippingCalculations.length} {specificShippingCalculations.length === 1 ? 'item' : 'items'})
+                        </h3>
+                        <p className="font-body-md text-body-md text-on-surface-variant text-xs mt-0.5">
+                          These items have custom delivery rates. Select standard or express for each item below.
+                        </p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-secondary-container/50 text-[11px] font-label-sm text-secondary font-bold">
+                      Custom Rates
+                    </span>
+                  </div>
+
+                  <div className="space-y-4">
+                    {specificShippingCalculations.map((calc) => (
                 <div key={calc.key} className="space-y-4 bg-surface-container-low/50 p-4 md:p-5 rounded-xl border border-outline-variant/30">
                   <div className="flex items-center justify-between gap-3 pb-2 border-b border-outline-variant/20">
                     <div className="flex items-center gap-3">
@@ -514,7 +541,10 @@ export default function Checkout() {
                     </label>
                   </div>
                 </div>
-              ))}
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
