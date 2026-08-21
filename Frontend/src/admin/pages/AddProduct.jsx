@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -30,10 +30,13 @@ function sanitizeInteger(val) {
 
 export default function AddProduct() {
   const navigate = useNavigate();
+  const { id: editId } = useParams(); // present when route is /admin/edit-product/:id
+  const isEditMode = Boolean(editId);
   const { token } = useAuth();
 
   const [categories, setCategories] = useState([]);
   const [catLoading, setCatLoading] = useState(true);
+  const [editLoading, setEditLoading] = useState(isEditMode);
 
   const [form, setForm] = useState({
     name: '',
@@ -80,7 +83,10 @@ export default function AddProduct() {
       .then((data) => {
         if (data.categories?.length) {
           setCategories(data.categories);
-          setForm((f) => ({ ...f, category: data.categories[0].name }));
+          // Only set default category for NEW products
+          if (!isEditMode) {
+            setForm((f) => ({ ...f, category: data.categories[0].name }));
+          }
         }
       })
       .catch(() => {})
@@ -98,6 +104,87 @@ export default function AddProduct() {
       })
       .catch(() => {});
   }, []);
+
+  // If edit mode: fetch existing product and pre-fill all fields
+  useEffect(() => {
+    if (!isEditMode) return;
+    setEditLoading(true);
+    fetch(`${API_BASE}/products/${editId}`, { headers: authHeaders })
+      .then((r) => r.json())
+      .then((p) => {
+        // Pre-fill form
+        setForm({
+          name: p.name || '',
+          category: p.categoryName || '',
+          price: p.colors?.length > 0 ? '' : String(p.price ?? ''),
+          stock: p.colors?.length > 0 ? '' : String(p.stock ?? ''),
+          description: p.description || '',
+          badge: p.badge || '',
+          featured: Boolean(p.featured),
+          standardShipping: p.standardShipping != null ? String(p.standardShipping) : '',
+          expressShipping: p.expressShipping != null ? String(p.expressShipping) : '',
+        });
+
+        // Pre-fill main image
+        setMainImageUrl(p.image || '');
+        setMainImagePreview(p.image ? (p.image.startsWith('http') ? p.image : `http://localhost:5050${p.image}`) : null);
+
+        // Pre-fill sub gallery images
+        if (p.galleryImages) {
+          try {
+            const imgs = typeof p.galleryImages === 'string' ? JSON.parse(p.galleryImages) : p.galleryImages;
+            if (Array.isArray(imgs)) {
+              const urls = ['', '', ''];
+              const previews = [null, null, null];
+              imgs.forEach((url, i) => {
+                if (i < 3 && url) {
+                  urls[i] = url;
+                  previews[i] = url.startsWith('http') ? url : `http://localhost:5050${url}`;
+                }
+              });
+              setSubImageUrls(urls);
+              setSubImagePreviews(previews);
+            }
+          } catch {}
+        }
+
+        // Pre-fill specs from details
+        if (p.details) {
+          try {
+            const detailLines = typeof p.details === 'string'
+              ? (p.details.startsWith('[') ? JSON.parse(p.details) : p.details.split('\n').filter(Boolean))
+              : p.details;
+            if (Array.isArray(detailLines) && detailLines.length > 0) {
+              const specsList = detailLines.map((line, i) => {
+                const colonIdx = line.indexOf(':');
+                return {
+                  id: String(Date.now() + i),
+                  key: colonIdx > -1 ? line.slice(0, colonIdx).trim() : line,
+                  value: colonIdx > -1 ? line.slice(colonIdx + 1).trim() : '',
+                };
+              });
+              setSpecs(specsList);
+            }
+          } catch {}
+        }
+
+        // Pre-fill color variants
+        if (p.colors?.length > 0) {
+          setColors(p.colors.map((c) => ({
+            id: c.id || String(Date.now()),
+            name: c.name || '',
+            hex: c.hex || '#fadadd',
+            imageFile: null,
+            imagePreview: c.image ? (c.image.startsWith('http') ? c.image : `http://localhost:5050${c.image}`) : null,
+            imageUrl: c.image || '',
+            price: String(c.price ?? ''),
+            stock: String(c.stock ?? '10'),
+          })));
+        }
+      })
+      .catch(() => { navigate('/admin/products'); })
+      .finally(() => setEditLoading(false));
+  }, [editId]);
 
   // ── Handlers ──────────────────────────────────────────────────────────
 
@@ -190,7 +277,19 @@ export default function AddProduct() {
     setColors(updated);
   }
   function handleAddColor() {
-    setColors([...colors, { id: Date.now().toString(), name: '', hex: '#fadadd', imageFile: null, imagePreview: null, imageUrl: '', price: '', stock: '10' }]);
+    setColors([
+      ...colors,
+      {
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+        name: '',
+        hex: '#fadadd',
+        imageFile: null,
+        imagePreview: null,
+        imageUrl: '',
+        price: form.price || '',
+        stock: '10',
+      },
+    ]);
   }
   function handleRemoveColor(index) {
     setColors(colors.filter((_, i) => i !== index));
@@ -320,7 +419,8 @@ export default function AddProduct() {
         colors.map(async (c) => {
           let imgUrl = c.imageUrl;
           if (c.imageFile) imgUrl = await uploadFile(c.imageFile);
-          return { name: c.name, hex: c.hex, image: imgUrl || null, price: parseFloat(c.price), stock: parseInt(c.stock) || 0 };
+          const colorPrice = c.price !== '' && !isNaN(parseFloat(c.price)) ? parseFloat(c.price) : (form.price !== '' ? parseFloat(form.price) : 0);
+          return { name: c.name.trim(), hex: c.hex, image: imgUrl || null, price: colorPrice, stock: parseInt(c.stock) || 0 };
         })
       );
 
@@ -330,7 +430,7 @@ export default function AddProduct() {
 
       // 5. First sub-image = hover image; all non-empty sub-images = galleryImages
       const hoverImage = galleryUrls[0] || '';
-      const galleryImages = galleryUrls.filter(Boolean); // [sub1, sub2, sub3] filtered
+      const galleryImages = galleryUrls.filter(Boolean);
 
       // 6. Build payload
       const payload = {
@@ -344,23 +444,24 @@ export default function AddProduct() {
         hoverImage,
         galleryImages,
         badge: form.badge.trim() || null,
-        featured: form.featured,
-        standardShipping: shippingType === 'specific' && form.standardShipping !== '' ? parseFloat(form.standardShipping) : null,
-        expressShipping: shippingType === 'specific' && form.expressShipping !== '' ? parseFloat(form.expressShipping) : null,
-        colors: colorPayload.length > 0 ? colorPayload : undefined,
+        standardShipping: form.standardShipping !== '' ? parseFloat(form.standardShipping) : null,
+        expressShipping: form.expressShipping !== '' ? parseFloat(form.expressShipping) : null,
+        colors: colorPayload,
       };
 
-      const res = await fetch(`${API_BASE}/products`, {
-        method: 'POST',
+      // Use PUT for edit, POST for create
+      const url = isEditMode ? `${API_BASE}/products/${editId}` : `${API_BASE}/products`;
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { ...authHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        const errorMsg = data.error || 'Failed to create product. Please try again.';
-        setServerError(errorMsg);
-        toast.error(errorMsg, { id: toastId });
+        setServerError(data.error || 'Failed to create product. Please try again.');
         setSubmitting(false);
         return;
       }
@@ -383,6 +484,16 @@ export default function AddProduct() {
 
   return (
     <div className="p-4 md:p-8 w-full max-w-[1200px] mx-auto space-y-8">
+      {/* Loading overlay for edit mode */}
+      {editLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3 text-primary">
+            <span className="material-symbols-outlined text-5xl animate-spin">sync</span>
+            <p className="font-label-md text-label-md">Loading product details...</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-4">
         <div>
@@ -393,8 +504,12 @@ export default function AddProduct() {
             <span className="material-symbols-outlined text-[16px] mr-1">arrow_back</span>
             Back to Products
           </button>
-          <h1 className="font-headline-md text-headline-md text-on-surface">Add New Product</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">Fill in the details to add a new item to your boutique collection.</p>
+          <h1 className="font-headline-md text-headline-md text-on-surface">
+            {isEditMode ? 'Edit Product' : 'Add New Product'}
+          </h1>
+          <p className="font-body-md text-body-md text-on-surface-variant">
+            {isEditMode ? 'Update the details for this product.' : 'Fill in the details to add a new item to your boutique collection.'}
+          </p>
         </div>
         <div className="flex gap-3">
           <button
@@ -411,9 +526,12 @@ export default function AddProduct() {
           >
             {submitting
               ? <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
-              : <span className="material-symbols-outlined text-[18px]">publish</span>
+              : <span className="material-symbols-outlined text-[18px]">{isEditMode ? 'save' : 'publish'}</span>
             }
-            {submitting ? 'Publishing...' : 'Publish Product'}
+            {submitting
+              ? (isEditMode ? 'Saving...' : 'Publishing...')
+              : (isEditMode ? 'Save Changes' : 'Publish Product')
+            }
           </button>
         </div>
       </div>

@@ -200,6 +200,7 @@ export default function App() {
             <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
             <Route path="/admin/products" element={<AdminRoute><ProductManagement /></AdminRoute>} />
             <Route path="/admin/add-product" element={<AdminRoute><AddProduct /></AdminRoute>} />
+            <Route path="/admin/edit-product/:id" element={<AdminRoute><AddProduct /></AdminRoute>} />
             <Route path="/admin/categories" element={<AdminRoute><CategoryManagement /></AdminRoute>} />
             <Route path="/admin/orders" element={<AdminRoute><OrderManagement /></AdminRoute>} />
             <Route path="/admin/orders/:id" element={<AdminRoute><OrderDetails /></AdminRoute>} />
