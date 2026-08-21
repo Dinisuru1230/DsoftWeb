@@ -26,7 +26,8 @@ async function getSettings(req, res) {
     const settings = await getOrCreateSettings();
     res.json(settings);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('getSettings error:', error);
+    res.status(500).json({ error: 'Failed to load store settings.' });
   }
 }
 
@@ -57,7 +58,7 @@ async function updateSettings(req, res) {
     if (bankNotes !== undefined) data.bankNotes = String(bankNotes).trim();
 
     if (Object.keys(data).length === 0) {
-      return res.status(400).json({ error: 'No valid fields to update' });
+      return res.status(400).json({ error: 'Please provide at least one valid setting field to update.' });
     }
 
     const settings = await prisma.setting.upsert({
@@ -79,7 +80,8 @@ async function updateSettings(req, res) {
 
     res.json({ message: 'Settings updated successfully', settings });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('updateSettings error:', error);
+    res.status(500).json({ error: 'Failed to update store settings. Please try again.' });
   }
 }
 

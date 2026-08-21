@@ -218,26 +218,28 @@ export default function TrackOrder() {
                   Delivery Progress
                 </h3>
                 <div className="relative">
-                  {/* Progress Line */}
-                  <div className="hidden sm:block absolute top-5 left-10 right-10 h-1 bg-surface-container-high pointer-events-none rounded-full" />
-                  <div
-                    className="hidden sm:block absolute top-5 left-10 h-1 bg-primary pointer-events-none rounded-full transition-all duration-700"
-                    style={{
-                      width: `${Math.max(0, Math.min(100, ((currentProgressStep - 1) / (LIFECYCLE_STEPS.length - 1)) * 100))}%`,
-                    }}
-                  />
-
-                  {/* Steps */}
+                  {/* Steps with connecting segments */}
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 relative z-10">
                     {LIFECYCLE_STEPS.map((step, index) => {
                       const stepNum = index + 1;
                       const isDone = currentProgressStep >= stepNum;
                       const isCurrent = currentProgressStep === stepNum;
+                      const isNextDone = currentProgressStep > stepNum;
 
                       return (
-                        <div key={step.key} className="flex flex-col items-center text-center gap-2">
+                        <div key={step.key} className="relative flex flex-col items-center text-center gap-2">
+                          {/* Segment connector to next step (for all except last step) */}
+                          {index < LIFECYCLE_STEPS.length - 1 && (
+                            <div
+                              className={`hidden sm:block absolute top-5 left-1/2 w-full h-1 -translate-y-1/2 pointer-events-none transition-colors duration-500 z-0 ${
+                                isNextDone ? 'bg-primary' : 'bg-surface-container-high'
+                              }`}
+                            />
+                          )}
+
+                          {/* Step Icon Circle */}
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                            className={`w-10 h-10 rounded-full flex items-center justify-center relative z-10 transition-all ${
                               isDone
                                 ? 'bg-primary text-white shadow-ambient scale-105'
                                 : 'bg-surface-container border-2 border-outline-variant text-on-surface-variant'
