@@ -13,15 +13,21 @@ function imgUrl(path) {
   return path; // /public/* served by Vite
 }
 
-// Helper: parse details field (stored as JSON string in DB)
+// Helper: parse details field — handles 3 formats:
+// 1. Already an array (shouldn't happen from API but defensive)
+// 2. JSON string → ["Material: Silk", "Width: 2 inches", ...] (new format)
+// 3. Plain \n-joined string → "Material: Silk\nWidth: 2 inches" (old format)
 function parseDetails(details) {
   if (!details) return [];
-  if (Array.isArray(details)) return details;
+  if (Array.isArray(details)) return details.filter(Boolean);
   try {
     const parsed = JSON.parse(details);
-    return Array.isArray(parsed) ? parsed : [details];
+    if (Array.isArray(parsed)) return parsed.filter(Boolean);
+    // JSON was a plain string — treat as single item or split by \n
+    return String(parsed).split('\n').map((s) => s.trim()).filter(Boolean);
   } catch {
-    return [details];
+    // Not JSON → old \n-joined string
+    return String(details).split('\n').map((s) => s.trim()).filter(Boolean);
   }
 }
 

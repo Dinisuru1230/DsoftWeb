@@ -289,9 +289,9 @@ export default function AddProduct() {
         })
       );
 
-      // 4. Build specs details string
+      // 4. Build specs details array (each spec = one bullet point)
       const filledSpecs = specs.filter((s) => s.key.trim() && s.value.trim());
-      const detailsText = filledSpecs.map((s) => `${s.key}: ${s.value}`).join('\n');
+      const detailsArray = filledSpecs.map((s) => `${s.key}: ${s.value}`);
 
       // 5. First sub-image = hover image; all non-empty sub-images = galleryImages
       const hoverImage = galleryUrls[0] || '';
@@ -301,7 +301,7 @@ export default function AddProduct() {
       const payload = {
         name: form.name.trim(),
         description: form.description.trim(),
-        details: detailsText || null,
+        details: detailsArray.length > 0 ? detailsArray : null,
         categoryName: form.category,
         price: colors.length > 0 ? parseFloat(colors[0].price) : parseFloat(form.price),
         stock: colors.length > 0 ? colors.reduce((a, c) => a + (parseInt(c.stock) || 0), 0) : parseInt(form.stock) || 0,
