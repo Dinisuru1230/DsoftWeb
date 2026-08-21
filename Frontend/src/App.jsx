@@ -41,6 +41,7 @@ import AdminProfile from './admin/pages/AdminProfile';
 import ContactManagement from './admin/pages/ContactManagement';
 import DeliverySettings from './admin/pages/DeliverySettings';
 import BankDetailsSettings from './admin/pages/BankDetailsSettings';
+import OurStoryManagement from './admin/pages/OurStoryManagement';
 
 // Customer Layout (Navbar + Content + Footer)
 function CustomerLayout({ children }) {
@@ -239,6 +240,7 @@ export default function App() {
             <Route path="/admin/admins" element={<AdminRoute><AdminManagement /></AdminRoute>} />
             <Route path="/admin/profile" element={<AdminRoute><AdminProfile /></AdminRoute>} />
             <Route path="/admin/messages" element={<AdminRoute><ContactManagement /></AdminRoute>} />
+            <Route path="/admin/our-story" element={<AdminRoute><OurStoryManagement /></AdminRoute>} />
             <Route path="/admin/delivery-settings" element={<AdminRoute><DeliverySettings /></AdminRoute>} />
             <Route path="/admin/bank-details" element={<AdminRoute><BankDetailsSettings /></AdminRoute>} />
 
