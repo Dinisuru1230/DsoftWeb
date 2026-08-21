@@ -171,11 +171,13 @@ export default function MyProfile() {
       return;
     }
 
+    setSavingPass(true);
     const toastId = toast.loading('Updating your password...');
     const res = await changePassword({
       currentPassword: passwords.currentPassword,
       newPassword: passwords.newPassword,
     });
+    setSavingPass(false);
 
     if (res.success) {
       setPassSaved(true);

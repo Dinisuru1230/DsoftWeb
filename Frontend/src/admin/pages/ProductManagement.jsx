@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmModal from '../../components/ConfirmModal';
 import toast from 'react-hot-toast';
@@ -15,7 +15,6 @@ function imgUrl(path) {
 
 export default function ProductManagement() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { token } = useAuth();
   const authHeaders = { Authorization: `Bearer ${token}` };
 

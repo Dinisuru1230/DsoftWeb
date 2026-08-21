@@ -111,6 +111,12 @@ export default function SecurePayment() {
 
         {/* Payment Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 relative z-10">
+          {error && (
+            <div className="p-3 bg-error-container text-on-error-container rounded-lg text-xs font-label-md flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px]">error</span>
+              {error}
+            </div>
+          )}
           {/* Cardholder Name */}
           <div className="flex flex-col gap-1.5">
             <label className="font-label-md text-label-md text-on-surface-variant" htmlFor="name">

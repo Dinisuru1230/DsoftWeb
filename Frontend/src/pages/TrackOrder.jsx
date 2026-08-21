@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import AccountSidebar from '../components/AccountSidebar';
-import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -61,7 +60,7 @@ export default function TrackOrder() {
         setOrder(null);
         setError(data.error || `Could not find order #${orderNumber}. Please check the order number.`);
       }
-    } catch (err) {
+    } catch {
       setOrder(null);
       setError('Network error while searching for order. Please try again.');
     } finally {

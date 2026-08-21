@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -60,18 +60,6 @@ export default function Footer() {
           <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">
             Help
           </h3>
-          <a
-            href="#"
-            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
-          >
-            Shipping Policy
-          </a>
-          <a
-            href="#"
-            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
-          >
-            Returns & Exchanges
-          </a>
           <Link
             to="/account/track"
             className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
