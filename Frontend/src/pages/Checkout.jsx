@@ -52,7 +52,8 @@ export default function Checkout() {
     postalCode: user?.postalCode || '00300',
   });
 
-  const [shippingMethod, setShippingMethod] = useState('standard');
+  const [defaultShippingMethod, setDefaultShippingMethod] = useState('standard');
+  const [specificShippingMethods, setSpecificShippingMethods] = useState({});
   const [paymentMethod, setPaymentMethod] = useState('card');
 
   const availableCities = SRI_LANKA_CITIES_BY_PROVINCE[form.district] || ALL_SRI_LANKA_CITIES;
@@ -72,25 +73,53 @@ export default function Checkout() {
     });
   }
 
-  // Calculate shipping:
-  // - If product has its own standardShipping/expressShipping set → use that
-  // - If not set (null/undefined) → fall back to global setting default
-  // - Take MAX across all cart items (most expensive product shipping wins)
-  const maxProductStandardShipping = Math.max(
-    ...items.map((i) =>
-      i.standardShipping != null ? Number(i.standardShipping) : settings.standardShipping
-    )
+  function handleSpecificShippingChange(key, method) {
+    setSpecificShippingMethods((prev) => ({ ...prev, [key]: method }));
+  }
+
+  // Separate items into Default shipping items vs Specific/Custom shipping items
+  const defaultItems = items.filter(
+    (i) => i.standardShipping == null && i.expressShipping == null
   );
-  const maxProductExpressShipping = Math.max(
-    ...items.map((i) =>
-      i.expressShipping != null ? Number(i.expressShipping) : settings.expressShipping
-    )
+  const specificItems = items.filter(
+    (i) => i.standardShipping != null || i.expressShipping != null
   );
 
-  const standardFee = totalPrice > settings.freeShippingOver ? 0 : maxProductStandardShipping;
-  const expressFee = maxProductExpressShipping;
+  // 1. Fee calculation for default items package
+  const hasDefaultItems = defaultItems.length > 0;
+  const isFreeDefaultShipping =
+    settings.freeShippingOver > 0 && totalPrice >= settings.freeShippingOver;
+  const defaultStandardFee = isFreeDefaultShipping ? 0 : Number(settings.standardShipping ?? 450);
+  const defaultExpressFee = Number(settings.expressShipping ?? 1200);
+  const defaultShippingCost = hasDefaultItems
+    ? defaultShippingMethod === 'express'
+      ? defaultExpressFee
+      : defaultStandardFee
+    : 0;
 
-  const shippingCost = shippingMethod === 'express' ? expressFee : standardFee;
+  // 2. Fee calculation for each specific item
+  const specificShippingCalculations = specificItems.map((item, idx) => {
+    const key = item.id || `specific-${idx}`;
+    const selectedMethod = specificShippingMethods[key] || 'standard';
+    const standardFee = Number(item.standardShipping ?? settings.standardShipping ?? 450);
+    const expressFee = Number(item.expressShipping ?? settings.expressShipping ?? 1200);
+    const cost = selectedMethod === 'express' ? expressFee : standardFee;
+    return {
+      key,
+      item,
+      selectedMethod,
+      standardFee,
+      expressFee,
+      cost,
+    };
+  });
+
+  const specificShippingTotal = specificShippingCalculations.reduce(
+    (sum, c) => sum + c.cost,
+    0
+  );
+
+  const shippingCost = defaultShippingCost + specificShippingTotal;
   const finalTotal = totalPrice + shippingCost;
 
   const activeAddress = isCustomAddress
@@ -302,58 +331,220 @@ export default function Checkout() {
           </section>
 
           {/* Shipping Method Section */}
-          <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-ambient border border-outline-variant/30 space-y-4">
-            <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background border-b border-outline-variant/30 pb-3">
-              Shipping Method
-            </h2>
-            <div className="space-y-3">
-              <label
-                className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  shippingMethod === 'standard'
-                    ? 'border-primary bg-primary-container/20 shadow-sm'
-                    : 'border-outline-variant/50 hover:border-primary/40'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="shipping"
-                  value="standard"
-                  checked={shippingMethod === 'standard'}
-                  onChange={() => setShippingMethod('standard')}
-                  className="accent-primary h-4 w-4"
-                />
-                <span className="ml-4 flex-grow">
-                  <span className="block font-label-md text-label-md text-on-background">Standard Delivery</span>
-                  <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">3-5 Business Days</span>
-                </span>
-                <span className="font-label-md text-label-md text-primary font-bold">
-                  {totalPrice > 15000 ? 'FREE' : `Rs. ${maxProductStandardShipping.toLocaleString()}`}
-                </span>
-              </label>
+          <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-ambient border border-outline-variant/30 space-y-6">
+            <div className="border-b border-outline-variant/30 pb-3 flex items-center justify-between">
+              <div>
+                <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background">
+                  Delivery &amp; Shipping Options
+                </h2>
+                <p className="font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">
+                  Select standard or express delivery method for your items.
+                </p>
+              </div>
+            </div>
 
-              <label
-                className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  shippingMethod === 'express'
-                    ? 'border-primary bg-primary-container/20 shadow-sm'
-                    : 'border-outline-variant/50 hover:border-primary/40'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="shipping"
-                  value="express"
-                  checked={shippingMethod === 'express'}
-                  onChange={() => setShippingMethod('express')}
-                  className="accent-primary h-4 w-4"
-                />
-                <span className="ml-4 flex-grow">
-                  <span className="block font-label-md text-label-md text-on-background">Express Delivery</span>
-                  <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">1-2 Business Days</span>
-                </span>
-                <span className="font-label-md text-label-md text-primary font-bold">
-                  Rs. {maxProductExpressShipping.toLocaleString()}
-                </span>
-              </label>
+            <div className="space-y-6">
+              {/* Group 1: Items with Default Delivery Fees */}
+              {hasDefaultItems && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-[22px]">storefront</span>
+                      <div>
+                        <h3 className="font-title-sm text-title-sm text-primary font-bold">
+                          Standard Store Items ({defaultItems.length} {defaultItems.length === 1 ? 'item' : 'items'})
+                        </h3>
+                        <p className="font-body-md text-body-md text-on-surface-variant text-xs mt-0.5">
+                          Standard store delivery package. One delivery method applies to all items in this group.
+                        </p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-primary-container text-[11px] font-label-sm text-on-background font-bold whitespace-nowrap">
+                      Standard Package
+                    </span>
+                  </div>
+
+                  <div className="space-y-4 bg-surface-container-low/50 p-4 md:p-5 rounded-xl border border-outline-variant/30">
+                    {/* List down all items in the standard package */}
+                    <div className="divide-y divide-outline-variant/20 space-y-2">
+                      {defaultItems.map((item, idx) => (
+                        <div key={item.id || idx} className="pt-2 first:pt-0 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 border border-outline-variant/30">
+                              <img src={item.image || '/14_blush_silk_ribbon_bow.jpg'} alt={item.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <p className="font-label-md text-label-md text-on-surface font-medium line-clamp-1">{item.name}</p>
+                              <p className="font-body-md text-body-md text-on-surface-variant text-xs">
+                                Qty: {item.quantity || 1} &bull; Rs. {(item.price || 0).toLocaleString()} each
+                              </p>
+                            </div>
+                          </div>
+                          <span className="font-label-md text-label-md text-on-surface font-bold text-sm">
+                            Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Single Delivery Selector for All Standard Items */}
+                    <div className="space-y-3 pt-3 border-t border-outline-variant/20">
+                      <p className="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
+                        Select Delivery Method for Standard Items:
+                      </p>
+
+                      <label
+                        className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          defaultShippingMethod === 'standard'
+                            ? 'border-primary bg-primary-container/20 shadow-sm'
+                            : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="defaultShipping"
+                          value="standard"
+                          checked={defaultShippingMethod === 'standard'}
+                          onChange={() => setDefaultShippingMethod('standard')}
+                          className="accent-primary h-4 w-4"
+                        />
+                        <span className="ml-4 flex-grow">
+                          <span className="block font-label-md text-label-md text-on-background">Standard Delivery</span>
+                          <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">3-5 Business Days</span>
+                        </span>
+                        <span className="font-label-md text-label-md text-primary font-bold">
+                          {isFreeDefaultShipping ? 'FREE' : `Rs. ${defaultStandardFee.toLocaleString()}`}
+                        </span>
+                      </label>
+
+                      <label
+                        className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                          defaultShippingMethod === 'express'
+                            ? 'border-primary bg-primary-container/20 shadow-sm'
+                            : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="defaultShipping"
+                          value="express"
+                          checked={defaultShippingMethod === 'express'}
+                          onChange={() => setDefaultShippingMethod('express')}
+                          className="accent-primary h-4 w-4"
+                        />
+                        <span className="ml-4 flex-grow">
+                          <span className="block font-label-md text-label-md text-on-background">Express Delivery</span>
+                          <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">1-2 Business Days</span>
+                        </span>
+                        <span className="font-label-md text-label-md text-primary font-bold">
+                          Rs. {defaultExpressFee.toLocaleString()}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Group 2: Items with Specific Delivery Fees (Listed Separately) */}
+              {specificShippingCalculations.length > 0 && (
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-secondary text-[22px]">local_shipping</span>
+                      <div>
+                        <h3 className="font-title-sm text-title-sm text-secondary font-bold">
+                          Specific Delivery Items ({specificShippingCalculations.length} {specificShippingCalculations.length === 1 ? 'item' : 'items'})
+                        </h3>
+                        <p className="font-body-md text-body-md text-on-surface-variant text-xs mt-0.5">
+                          These items have custom delivery rates. Select standard or express for each item below.
+                        </p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-secondary-container/50 text-[11px] font-label-sm text-secondary font-bold">
+                      Custom Rates
+                    </span>
+                  </div>
+
+                  <div className="space-y-4">
+                    {specificShippingCalculations.map((calc) => (
+                <div key={calc.key} className="space-y-4 bg-surface-container-low/50 p-4 md:p-5 rounded-xl border border-outline-variant/30">
+                  <div className="flex items-center justify-between gap-3 pb-2 border-b border-outline-variant/20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 border border-outline-variant/30">
+                        <img src={calc.item.image || '/14_blush_silk_ribbon_bow.jpg'} alt={calc.item.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <h3 className="font-title-sm text-title-sm text-on-surface font-bold line-clamp-1">
+                          {calc.item.name}
+                        </h3>
+                        <p className="font-body-md text-body-md text-on-surface-variant text-xs">
+                          Qty: {calc.item.quantity || 1} &bull; Rs. {(calc.item.price || 0).toLocaleString()} each
+                        </p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-secondary-container/50 text-[11px] font-label-sm text-secondary font-bold whitespace-nowrap">
+                      Specific Delivery
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 pt-1">
+                    <p className="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
+                      Select Delivery Method for this Item:
+                    </p>
+
+                    <label
+                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        calc.selectedMethod === 'standard'
+                          ? 'border-primary bg-primary-container/20 shadow-sm'
+                          : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name={`shipping-${calc.key}`}
+                        value="standard"
+                        checked={calc.selectedMethod === 'standard'}
+                        onChange={() => handleSpecificShippingChange(calc.key, 'standard')}
+                        className="accent-primary h-4 w-4"
+                      />
+                      <span className="ml-4 flex-grow">
+                        <span className="block font-label-md text-label-md text-on-background">Standard Delivery</span>
+                        <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">3-5 Business Days</span>
+                      </span>
+                      <span className="font-label-md text-label-md text-primary font-bold">
+                        Rs. {calc.standardFee.toLocaleString()}
+                      </span>
+                    </label>
+
+                    <label
+                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        calc.selectedMethod === 'express'
+                          ? 'border-primary bg-primary-container/20 shadow-sm'
+                          : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name={`shipping-${calc.key}`}
+                        value="express"
+                        checked={calc.selectedMethod === 'express'}
+                        onChange={() => handleSpecificShippingChange(calc.key, 'express')}
+                        className="accent-primary h-4 w-4"
+                      />
+                      <span className="ml-4 flex-grow">
+                        <span className="block font-label-md text-label-md text-on-background">Express Delivery</span>
+                        <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">1-2 Business Days</span>
+                      </span>
+                      <span className="font-label-md text-label-md text-primary font-bold">
+                        Rs. {calc.expressFee.toLocaleString()}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
@@ -475,8 +666,23 @@ export default function Checkout() {
                 <span>Subtotal</span>
                 <span>Rs. {totalPrice.toLocaleString()}</span>
               </div>
+
+              {hasDefaultItems && specificShippingCalculations.length > 0 && (
+                <div className="flex justify-between text-on-surface-variant text-xs">
+                  <span>Standard Store Items ({defaultShippingMethod === 'express' ? 'Express' : 'Standard'})</span>
+                  <span>{defaultShippingCost === 0 ? 'FREE' : `Rs. ${defaultShippingCost.toLocaleString()}`}</span>
+                </div>
+              )}
+
+              {specificShippingCalculations.length > 0 && specificShippingCalculations.map((calc) => (
+                <div key={calc.key} className="flex justify-between text-on-surface-variant text-xs">
+                  <span className="truncate max-w-[200px]">{calc.item.name} ({calc.selectedMethod === 'express' ? 'Express' : 'Standard'})</span>
+                  <span>Rs. {calc.cost.toLocaleString()}</span>
+                </div>
+              ))}
+
               <div className="flex justify-between text-on-surface-variant">
-                <span>Shipping</span>
+                <span>Shipping &amp; Delivery</span>
                 <span>{shippingCost === 0 ? 'FREE' : `Rs. ${shippingCost.toLocaleString()}`}</span>
               </div>
             </div>

@@ -49,6 +49,13 @@ export default function AddProduct() {
   const [specs, setSpecs] = useState(INITIAL_SPECS);
   const [colors, setColors] = useState([]);
 
+  // Delivery fee type: 'default' (store default) or 'specific' (custom rates)
+  const [shippingType, setShippingType] = useState('default');
+  const [defaultSettings, setDefaultSettings] = useState({
+    standardShipping: 450,
+    expressShipping: 1200,
+  });
+
   // Image state: { file, preview, url } — url set after upload
   const [mainImageFile, setMainImageFile] = useState(null);
   const [mainImagePreview, setMainImagePreview] = useState(null);
@@ -65,7 +72,7 @@ export default function AddProduct() {
 
   const authHeaders = { Authorization: `Bearer ${token}` };
 
-  // Load DB categories
+  // Load DB categories and store delivery settings
   useEffect(() => {
     fetch(`${API_BASE}/categories?all=true`, { headers: authHeaders })
       .then((r) => r.json())
@@ -77,6 +84,18 @@ export default function AddProduct() {
       })
       .catch(() => {})
       .finally(() => setCatLoading(false));
+
+    fetch(`${API_BASE}/settings`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.standardShipping !== undefined && data.expressShipping !== undefined) {
+          setDefaultSettings({
+            standardShipping: data.standardShipping,
+            expressShipping: data.expressShipping,
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // ── Handlers ──────────────────────────────────────────────────────────
@@ -128,14 +147,16 @@ export default function AddProduct() {
         if (parseInt(value) < 0) return 'Stock cannot be negative.';
         return '';
       case 'standardShipping':
-        if (!value) return '';
+        if (shippingType === 'default') return '';
+        if (!value) return 'Standard delivery fee is required.';
         if (parseFloat(value) < 0) return 'Shipping fee cannot be negative.';
         return '';
       case 'expressShipping':
-        if (!value) return '';
+        if (shippingType === 'default') return '';
+        if (!value) return 'Express delivery fee is required.';
         if (parseFloat(value) < 0) return 'Shipping fee cannot be negative.';
-        if (currentForm.standardShipping && parseFloat(value) <= parseFloat(currentForm.standardShipping))
-          return 'Express fee should be higher than standard fee.';
+        if (currentForm.standardShipping && parseFloat(value) < parseFloat(currentForm.standardShipping))
+          return 'Express fee should be higher than or equal to standard fee.';
         return '';
       default:
         return '';
@@ -246,11 +267,22 @@ export default function AddProduct() {
       });
     }
 
-    // Shipping validation (optional but must be valid if filled)
-    if (form.standardShipping && parseFloat(form.standardShipping) < 0) errs.standardShipping = 'Shipping fee cannot be negative.';
-    if (form.expressShipping && parseFloat(form.expressShipping) < 0) errs.expressShipping = 'Shipping fee cannot be negative.';
-    if (form.standardShipping && form.expressShipping && parseFloat(form.expressShipping) <= parseFloat(form.standardShipping))
-      errs.expressShipping = 'Express fee should be higher than standard fee.';
+    // Shipping validation based on shippingType ('default' or 'specific')
+    if (shippingType === 'specific') {
+      if (!form.standardShipping) {
+        errs.standardShipping = 'Standard delivery fee is required when specific rate is selected.';
+      } else if (parseFloat(form.standardShipping) < 0) {
+        errs.standardShipping = 'Shipping fee cannot be negative.';
+      }
+
+      if (!form.expressShipping) {
+        errs.expressShipping = 'Express delivery fee is required when specific rate is selected.';
+      } else if (parseFloat(form.expressShipping) < 0) {
+        errs.expressShipping = 'Shipping fee cannot be negative.';
+      } else if (form.standardShipping && parseFloat(form.expressShipping) < parseFloat(form.standardShipping)) {
+        errs.expressShipping = 'Express fee should be higher than or equal to standard fee.';
+      }
+    }
 
     return errs;
   }
@@ -310,8 +342,8 @@ export default function AddProduct() {
         galleryImages,
         badge: form.badge.trim() || null,
         featured: form.featured,
-        standardShipping: form.standardShipping !== '' ? parseFloat(form.standardShipping) : null,
-        expressShipping: form.expressShipping !== '' ? parseFloat(form.expressShipping) : null,
+        standardShipping: shippingType === 'specific' && form.standardShipping !== '' ? parseFloat(form.standardShipping) : null,
+        expressShipping: shippingType === 'specific' && form.expressShipping !== '' ? parseFloat(form.expressShipping) : null,
         colors: colorPayload.length > 0 ? colorPayload : undefined,
       };
 
@@ -338,7 +370,8 @@ export default function AddProduct() {
 
   const totalVariantStock = colors.reduce((acc, c) => acc + (parseInt(c.stock) || 0), 0);
   const hasColors = colors.length > 0;
-  const hasErrors = Object.keys(errors).length > 0;
+  const errorList = Object.values(errors).filter(Boolean);
+  const hasErrors = errorList.length > 0;
 
   return (
     <div className="p-4 md:p-8 w-full max-w-[1200px] mx-auto space-y-8">
@@ -384,7 +417,7 @@ export default function AddProduct() {
           <div>
             <p className="font-label-md font-bold text-error text-sm">Please fix the following errors:</p>
             {serverError && <p className="text-sm text-on-error-container mt-1">{serverError}</p>}
-            {Object.values(errors).filter(Boolean).map((msg, i) => (
+            {errorList.map((msg, i) => (
               <p key={i} className="text-sm text-on-error-container mt-0.5">• {msg}</p>
             ))}
           </div>
@@ -747,84 +780,148 @@ export default function AddProduct() {
               Delivery &amp; Shipping Fees
             </h2>
             <p className="font-body-md text-sm text-on-surface-variant">
-              Set custom delivery rates for this product. These fees are applied at checkout.
-              Leave blank to use the store's default rates.
+              Select whether to use the store's default shipping rates or configure specific delivery rates for this item.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Standard Shipping */}
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="standardShipping">
-                  Standard Delivery Fee
-                  <span className="ml-1 font-normal text-on-surface-variant text-xs">(Optional)</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">Rs.</span>
-                  <input
-                    id="standardShipping"
-                    name="standardShipping"
-                    type="text"
-                    inputMode="decimal"
-                    value={form.standardShipping}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="e.g. 500"
-                    className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${errors.standardShipping ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
-                  />
-                </div>
-                {errors.standardShipping ? (
-                  <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.standardShipping}</p>
-                ) : (
-                  <p className="text-xs text-on-surface-variant mt-1">LKR — Standard / regular delivery option</p>
-                )}
-              </div>
 
-              {/* Express Shipping */}
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="expressShipping">
-                  Express Delivery Fee
-                  <span className="ml-1 font-normal text-on-surface-variant text-xs">(Optional)</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">Rs.</span>
-                  <input
-                    id="expressShipping"
-                    name="expressShipping"
-                    type="text"
-                    inputMode="decimal"
-                    value={form.expressShipping}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="e.g. 1500"
-                    className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${errors.expressShipping ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
-                  />
+            {/* Radio Selection: Default vs Specific */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Option 1: Store Default Fee */}
+              <label
+                className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  shippingType === 'default'
+                    ? 'border-primary bg-primary-container/20 shadow-sm'
+                    : 'border-outline-variant/50 hover:border-primary/40'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="shippingType"
+                  value="default"
+                  checked={shippingType === 'default'}
+                  onChange={() => {
+                    setShippingType('default');
+                    setForm((prev) => ({ ...prev, standardShipping: '', expressShipping: '' }));
+                    setErrors((prev) => ({ ...prev, standardShipping: '', expressShipping: '' }));
+                  }}
+                  className="accent-primary h-4 w-4 mt-1"
+                />
+                <div className="ml-3">
+                  <span className="block font-label-md text-on-background font-bold">Use Default Delivery Fee</span>
+                  <span className="block font-body-md text-on-surface-variant text-xs mt-1">
+                    Standard: <strong className="text-primary">Rs. {Number(defaultSettings.standardShipping).toLocaleString()}</strong> &bull; Express: <strong className="text-primary">Rs. {Number(defaultSettings.expressShipping).toLocaleString()}</strong>
+                  </span>
+                  <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full bg-surface-container text-[11px] font-label-sm text-on-surface-variant">
+                    Store Default
+                  </span>
                 </div>
-                {errors.expressShipping ? (
-                  <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.expressShipping}</p>
-                ) : (
-                  <p className="text-xs text-on-surface-variant mt-1">LKR — Priority / express delivery option</p>
-                )}
-              </div>
+              </label>
+
+              {/* Option 2: Specific Delivery Fee */}
+              <label
+                className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  shippingType === 'specific'
+                    ? 'border-primary bg-primary-container/20 shadow-sm'
+                    : 'border-outline-variant/50 hover:border-primary/40'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="shippingType"
+                  value="specific"
+                  checked={shippingType === 'specific'}
+                  onChange={() => setShippingType('specific')}
+                  className="accent-primary h-4 w-4 mt-1"
+                />
+                <div className="ml-3">
+                  <span className="block font-label-md text-on-background font-bold">Specific Delivery Fee</span>
+                  <span className="block font-body-md text-on-surface-variant text-xs mt-1">
+                    Enter custom Standard &amp; Express rates for this product
+                  </span>
+                  <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full bg-secondary-container/50 text-[11px] font-label-sm text-secondary font-bold">
+                    Custom Rates
+                  </span>
+                </div>
+              </label>
             </div>
 
-            {/* Live preview */}
-            {(form.standardShipping || form.expressShipping) && (
-              <div className="flex gap-4 pt-2">
-                {form.standardShipping && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-surface-container rounded-lg border border-outline-variant/30">
-                    <span className="material-symbols-outlined text-primary text-[18px]">local_shipping</span>
-                    <div>
-                      <p className="font-label-sm text-[10px] text-on-surface-variant uppercase">Standard</p>
-                      <p className="font-bold text-primary text-sm">Rs. {parseInt(form.standardShipping || 0).toLocaleString()}</p>
+            {/* Custom inputs shown only if 'specific' selected */}
+            {shippingType === 'specific' && (
+              <div className="space-y-4 pt-2 border-t border-outline-variant/20">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Standard Shipping */}
+                  <div>
+                    <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="standardShipping">
+                      Custom Standard Delivery Fee (Rs.) <span className="text-error">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">Rs.</span>
+                      <input
+                        id="standardShipping"
+                        name="standardShipping"
+                        type="text"
+                        inputMode="decimal"
+                        value={form.standardShipping}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="e.g. 550"
+                        className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${errors.standardShipping ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
+                      />
                     </div>
+                    {errors.standardShipping ? (
+                      <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.standardShipping}</p>
+                    ) : (
+                      <p className="text-xs text-on-surface-variant mt-1">Standard / regular shipping cost for this product</p>
+                    )}
                   </div>
-                )}
-                {form.expressShipping && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-secondary-container/30 rounded-lg border border-outline-variant/30">
-                    <span className="material-symbols-outlined text-secondary text-[18px]">rocket_launch</span>
-                    <div>
-                      <p className="font-label-sm text-[10px] text-on-surface-variant uppercase">Express</p>
-                      <p className="font-bold text-secondary text-sm">Rs. {parseInt(form.expressShipping || 0).toLocaleString()}</p>
+
+                  {/* Express Shipping */}
+                  <div>
+                    <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="expressShipping">
+                      Custom Express Delivery Fee (Rs.) <span className="text-error">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">Rs.</span>
+                      <input
+                        id="expressShipping"
+                        name="expressShipping"
+                        type="text"
+                        inputMode="decimal"
+                        value={form.expressShipping}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="e.g. 1400"
+                        className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${errors.expressShipping ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
+                      />
                     </div>
+                    {errors.expressShipping ? (
+                      <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.expressShipping}</p>
+                    ) : (
+                      <p className="text-xs text-on-surface-variant mt-1">Priority / express delivery cost for this product</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Live preview */}
+                {(form.standardShipping || form.expressShipping) && (
+                  <div className="flex gap-4 pt-2">
+                    {form.standardShipping && (
+                      <div className="flex items-center gap-2 px-3 py-2 bg-surface-container rounded-lg border border-outline-variant/30">
+                        <span className="material-symbols-outlined text-primary text-[18px]">local_shipping</span>
+                        <div>
+                          <p className="font-label-sm text-[10px] text-on-surface-variant uppercase">Standard Fee</p>
+                          <p className="font-bold text-primary text-sm">Rs. {parseInt(form.standardShipping || 0).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    )}
+                    {form.expressShipping && (
+                      <div className="flex items-center gap-2 px-3 py-2 bg-secondary-container/30 rounded-lg border border-outline-variant/30">
+                        <span className="material-symbols-outlined text-secondary text-[18px]">rocket_launch</span>
+                        <div>
+                          <p className="font-label-sm text-[10px] text-on-surface-variant uppercase">Express Fee</p>
+                          <p className="font-bold text-secondary text-sm">Rs. {parseInt(form.expressShipping || 0).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
