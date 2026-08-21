@@ -1,9 +1,28 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { id, name, price, category, image, hoverImage, isNew, badge } = product;
+  const [added, setAdded] = useState(false);
+
+  function handleAddToCart(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      // Save intended destination so we can return here after login
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+    addToCart(product);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  }
 
   return (
     <div className="group relative flex flex-col h-full bg-surface-container-lowest rounded-lg product-card-hover transition-all duration-300">
@@ -67,10 +86,26 @@ export default function ProductCard({ product }) {
       {/* Add to Cart (Anchored perfectly at the bottom of every card) */}
       <div className="px-4 pb-4 mt-auto">
         <button
-          onClick={() => addToCart(product)}
-          className="w-full py-2.5 bg-primary-container text-on-background font-label-md text-label-md rounded-full hover:bg-primary hover:text-white transition-all duration-300 shadow-sm"
+          onClick={handleAddToCart}
+          className={`w-full py-2.5 font-label-md text-label-md rounded-full transition-all duration-300 shadow-sm ${
+            added
+              ? 'bg-primary text-white'
+              : 'bg-primary-container text-on-background hover:bg-primary hover:text-white'
+          }`}
         >
-          Add to Bag
+          {added ? (
+            <span className="flex items-center justify-center gap-1">
+              <span className="material-symbols-outlined text-[18px]">check</span>
+              Added!
+            </span>
+          ) : user ? (
+            'Add to Bag'
+          ) : (
+            <span className="flex items-center justify-center gap-1">
+              <span className="material-symbols-outlined text-[18px]">lock</span>
+              Login to Add
+            </span>
+          )}
         </button>
       </div>
     </div>

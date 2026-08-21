@@ -29,7 +29,7 @@ export default function AccountSidebar() {
         <div className="mb-2">
           <h2 className="font-title-sm text-title-sm text-primary">My Account</h2>
           <p className="font-label-sm text-label-sm text-on-surface-variant truncate mt-0.5">
-            {user?.name || 'Amara Perera'} ({user?.email || 'amara@malmalee.lk'})
+            {user ? `${user.name} (${user.email})` : 'Account Profile'}
           </p>
         </div>
 

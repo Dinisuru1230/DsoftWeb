@@ -1,0 +1,152 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  BANK_SLIP_PENDING
+  PROCESSING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+  COD
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  phone      String?
+  address    String?
+  city       String?
+  district   String?
+  postalCode String?
+  role       Role     @default(CUSTOMER)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  orders     Order[]
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  slug     String    @unique
+  icon     String    @default("category")
+  active   Boolean   @default(true)
+  products Product[]
+}
+
+model Product {
+  id               String         @id @default(uuid())
+  name             String
+  price            Float
+  stock            Int            @default(0)
+  categoryName     String
+  category         Category       @relation(fields: [categoryName], references: [name])
+  badge            String?
+  description      String
+  details          String?
+  image            String
+  hoverImage       String?
+  galleryImages    String?
+  featured         Boolean        @default(false)
+  standardShipping Float?
+  expressShipping  Float?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  colors           ProductColor[]
+  orderItems       OrderItem[]
+}
+
+model ProductColor {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  hex       String
+  image     String?
+  price     Float
+  stock     Int     @default(0)
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  orderNumber   String        @unique
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id])
+  customerName  String
+  email         String
+  phone         String
+  address       String
+  totalAmount   Float
+  shippingCost  Float         @default(0)
+  paymentMethod PaymentMethod
+  orderStatus   OrderStatus   @default(PENDING)
+  bankSlipUrl   String?
+  depositRef    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  colorName String?
+  quantity  Int
+  price     Float
+}
+model ContactMessage {
+  id        String         @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    MessageStatus  @default(UNREAD)
+  createdAt DateTime       @default(now())
+  replies   MessageReply[]
+}
+
+model MessageReply {
+  id        String         @id @default(uuid())
+  messageId String
+  message   ContactMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime       @default(now())
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
+  REPLIED
+  ARCHIVED
+}
+
+// Global store settings (singleton — always id="global")
+model Setting {
+  id               String   @id @default("global")
+  standardShipping Float    @default(450)
+  expressShipping  Float    @default(1200)
+  freeShippingOver Float    @default(15000)
+  updatedAt        DateTime @updatedAt
+}

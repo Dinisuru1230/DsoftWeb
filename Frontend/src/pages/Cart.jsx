@@ -4,7 +4,6 @@ import { useCart } from '../context/CartContext';
 export default function Cart() {
   const { cartItems, cartSubtotal, updateQuantity, removeFromCart } = useCart();
   const navigate = useNavigate();
-  const DELIVERY_FEE = cartItems.length > 0 ? 450 : 0;
 
   if (cartItems.length === 0) {
     return (
@@ -35,7 +34,7 @@ export default function Cart() {
         <div className="flex-grow space-y-4">
           {cartItems.map((item) => (
             <div
-              key={item.id}
+              key={item.cartKey || item.id}
               className="bg-surface-container-lowest rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 border-b border-outline-variant pb-4 hover:shadow-ambient transition-all duration-300"
             >
               {/* Image */}
@@ -49,7 +48,7 @@ export default function Cart() {
                   <div>
                     <h3 className="font-title-sm text-title-sm text-on-surface mb-1">{item.name}</h3>
                     <span className="inline-block bg-primary-container text-on-surface-variant px-2 py-1 rounded-full font-label-sm text-label-sm">
-                      {item.category}
+                      {item.categoryName || item.category}
                     </span>
                   </div>
                   <div className="font-title-sm text-title-sm text-primary">
@@ -61,14 +60,14 @@ export default function Cart() {
                   {/* Quantity Controls */}
                   <div className="flex items-center border-b-2 border-outline-variant w-24 justify-between bg-surface-container-low rounded-t-sm px-2 py-1">
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.cartKey || item.id, item.quantity - 1)}
                       className="text-on-surface-variant hover:text-primary"
                     >
                       <span className="material-symbols-outlined text-[16px]">remove</span>
                     </button>
                     <span className="font-body-md text-body-md text-on-surface">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.cartKey || item.id, item.quantity + 1)}
                       className="text-on-surface-variant hover:text-primary"
                     >
                       <span className="material-symbols-outlined text-[16px]">add</span>
@@ -77,7 +76,7 @@ export default function Cart() {
 
                   {/* Remove */}
                   <button
-                    onClick={() => removeFromCart(item.id)}
+                    onClick={() => removeFromCart(item.cartKey || item.id)}
                     className="text-on-surface-variant hover:text-error transition-colors duration-200"
                     aria-label="Remove item"
                   >
@@ -95,17 +94,17 @@ export default function Cart() {
             <h2 className="font-headline-md-mobile text-headline-md-mobile text-primary mb-6">Order Summary</h2>
             <div className="space-y-3 border-b border-outline-variant pb-6 mb-6">
               <div className="flex justify-between font-body-md text-body-md text-on-surface-variant">
-                <span>Subtotal ({cartItems.length} items)</span>
+                <span>Subtotal ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})</span>
                 <span>Rs. {cartSubtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between font-body-md text-body-md text-on-surface-variant">
                 <span>Delivery Fee</span>
-                <span>Rs. {DELIVERY_FEE.toLocaleString()}</span>
+                <span className="text-primary font-medium">Calculated at checkout</span>
               </div>
             </div>
             <div className="flex justify-between font-title-sm text-title-sm text-on-surface mb-6">
-              <span>Total</span>
-              <span>Rs. {(cartSubtotal + DELIVERY_FEE).toLocaleString()}</span>
+              <span>Subtotal</span>
+              <span>Rs. {cartSubtotal.toLocaleString()}</span>
             </div>
             <button
               onClick={() => navigate('/checkout')}

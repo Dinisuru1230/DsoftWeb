@@ -1,6 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
@@ -36,6 +36,8 @@ import OrderDetails from './admin/pages/OrderDetails';
 import CustomerManagement from './admin/pages/CustomerManagement';
 import AdminManagement from './admin/pages/AdminManagement';
 import AdminProfile from './admin/pages/AdminProfile';
+import ContactManagement from './admin/pages/ContactManagement';
+import DeliverySettings from './admin/pages/DeliverySettings';
 
 // Customer Layout (Navbar + Content + Footer)
 function CustomerLayout({ children }) {
@@ -52,17 +54,60 @@ function CustomerLayout({ children }) {
 
 // Admin Layout (Sidebar + Content)
 function AdminLayout({ children }) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   return (
-    <div className="flex h-screen bg-surface overflow-hidden">
+    <div className="flex flex-col md:flex-row h-screen bg-surface overflow-hidden">
       <AdminSidebar />
-      <div className="md:hidden flex justify-between items-center w-full px-5 py-4 bg-background border-b border-outline-variant z-40 sticky top-0">
+      <div className="md:hidden flex justify-between items-center w-full px-5 py-4 bg-background border-b border-outline-variant z-40 sticky top-0 flex-shrink-0">
         <h1 className="font-title-sm text-title-sm text-primary" style={{ fontSize: '20px' }}>Malmalee Admin</h1>
+        <button
+          onClick={() => { logout(); navigate('/login'); }}
+          className="text-xs bg-error-container text-error px-3 py-1.5 rounded-md font-bold flex items-center gap-1 cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-[16px]">logout</span>
+          Log Out
+        </button>
       </div>
-      <main className="flex-grow overflow-y-auto bg-surface">
+      <main className="flex-grow overflow-y-auto bg-surface w-full">
         {children}
       </main>
     </div>
   );
+}
+
+function PageLoader() {
+  return (
+    <div className="w-full min-h-screen flex flex-col items-center justify-center bg-background gap-3">
+      <span className="material-symbols-outlined animate-spin text-primary text-4xl">sync</span>
+      <p className="font-label-md text-label-md text-primary font-bold">Malmalee Creations</p>
+    </div>
+  );
+}
+
+// Route Guard for Admin Pages
+function AdminRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (!user || user.role !== 'ADMIN') {
+    return <Navigate to="/login" replace />;
+  }
+  return <AdminLayout>{children}</AdminLayout>;
+}
+
+// Route Guard for Customer Account Pages (ADMIN should never see Customer profile pages)
+function CustomerAccountRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  if (user.role === 'ADMIN') {
+    // Admin accidentally hitting a customer route → send to admin dashboard
+    return <Navigate to="/admin" replace />;
+  }
+  return <CustomerLayout>{children}</CustomerLayout>;
 }
 
 export default function App() {
@@ -92,21 +137,23 @@ export default function App() {
             <Route path="/our-story" element={<CustomerLayout><OurStory /></CustomerLayout>} />
             <Route path="/contact" element={<CustomerLayout><ContactUs /></CustomerLayout>} />
 
-            {/* ── Customer Account Pages ── */}
-            <Route path="/account" element={<CustomerLayout><MyAccount /></CustomerLayout>} />
-            <Route path="/account/profile" element={<CustomerLayout><MyProfile /></CustomerLayout>} />
-            <Route path="/account/track" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
+            {/* ── Protected Customer Account Pages ── */}
+            <Route path="/account" element={<CustomerAccountRoute><MyAccount /></CustomerAccountRoute>} />
+            <Route path="/account/profile" element={<CustomerAccountRoute><MyProfile /></CustomerAccountRoute>} />
+            <Route path="/account/track" element={<CustomerAccountRoute><TrackOrder /></CustomerAccountRoute>} />
 
-            {/* ── Admin Panel Pages (Integrated in same Frontend server) ── */}
-            <Route path="/admin" element={<AdminLayout><Dashboard /></AdminLayout>} />
-            <Route path="/admin/products" element={<AdminLayout><ProductManagement /></AdminLayout>} />
-            <Route path="/admin/add-product" element={<AdminLayout><AddProduct /></AdminLayout>} />
-            <Route path="/admin/categories" element={<AdminLayout><CategoryManagement /></AdminLayout>} />
-            <Route path="/admin/orders" element={<AdminLayout><OrderManagement /></AdminLayout>} />
-            <Route path="/admin/orders/:id" element={<AdminLayout><OrderDetails /></AdminLayout>} />
-            <Route path="/admin/customers" element={<AdminLayout><CustomerManagement /></AdminLayout>} />
-            <Route path="/admin/admins" element={<AdminLayout><AdminManagement /></AdminLayout>} />
-            <Route path="/admin/profile" element={<AdminLayout><AdminProfile /></AdminLayout>} />
+            {/* ── Protected Admin Panel Pages ── */}
+            <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+            <Route path="/admin/products" element={<AdminRoute><ProductManagement /></AdminRoute>} />
+            <Route path="/admin/add-product" element={<AdminRoute><AddProduct /></AdminRoute>} />
+            <Route path="/admin/categories" element={<AdminRoute><CategoryManagement /></AdminRoute>} />
+            <Route path="/admin/orders" element={<AdminRoute><OrderManagement /></AdminRoute>} />
+            <Route path="/admin/orders/:id" element={<AdminRoute><OrderDetails /></AdminRoute>} />
+            <Route path="/admin/customers" element={<AdminRoute><CustomerManagement /></AdminRoute>} />
+            <Route path="/admin/admins" element={<AdminRoute><AdminManagement /></AdminRoute>} />
+            <Route path="/admin/profile" element={<AdminRoute><AdminProfile /></AdminRoute>} />
+            <Route path="/admin/messages" element={<AdminRoute><ContactManagement /></AdminRoute>} />
+            <Route path="/admin/delivery-settings" element={<AdminRoute><DeliverySettings /></AdminRoute>} />
 
             {/* ── 404 Not Found ── */}
             <Route path="*" element={<CustomerLayout><NotFound /></CustomerLayout>} />
