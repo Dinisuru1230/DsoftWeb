@@ -109,7 +109,7 @@ export default function CategoryManagement() {
         setCreateError(msg);
         toast.error(msg, { id: toastId });
       }
-    } catch (err) {
+    } catch {
       setCreating(false);
       toast.error('Network error. Could not create category.', { id: toastId });
     }

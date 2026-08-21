@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -861,7 +861,7 @@ export default function AddProduct() {
                         type="text"
                         value={color.name}
                         onChange={(e) => handleColorChange(index, 'name', e.target.value)}
-                        placeholder="e.g. Blush Pink"
+                        placeholder={DEFAULT_PALETTES[index % DEFAULT_PALETTES.length]?.placeholder || 'e.g. Blush Pink'}
                         className="w-full bg-surface-bright border border-outline-variant rounded-md px-2.5 py-1.5 font-body-md text-sm text-on-surface focus:border-primary outline-none"
                       />
                     </div>

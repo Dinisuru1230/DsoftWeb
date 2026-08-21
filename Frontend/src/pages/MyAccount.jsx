@@ -27,7 +27,7 @@ const STATUS_LABELS = {
 };
 
 export default function MyAccount() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

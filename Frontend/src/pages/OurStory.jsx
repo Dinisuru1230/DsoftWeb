@@ -35,6 +35,17 @@ export default function OurStory() {
   const mainImage = story?.mainImage || '/13_studio_table_ribbons.jpg';
   const sections = story?.sections && story.sections.length > 0 ? story.sections : [];
 
+  if (loading && !story) {
+    return (
+      <main className="w-full min-h-[60vh] flex items-center justify-center bg-background py-20">
+        <div className="flex flex-col items-center gap-3 text-on-surface-variant">
+          <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
+          <p className="font-label-md text-sm font-semibold tracking-wide">Loading Our Story...</p>
+        </div>
+      </main>
+    );
+  }
+
   // Parse title into first line and highlighted second line if newline/comma present
   const titleParts = mainTitle.includes('\n')
     ? mainTitle.split('\n')

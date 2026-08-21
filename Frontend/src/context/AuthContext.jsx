@@ -118,7 +118,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('malmalee_user', JSON.stringify(data.user));
       localStorage.setItem('malmalee_token', data.token);
       return { success: true, user: data.user };
-    } catch (err) {
+    } catch {
       return { success: false, error: 'Network error. Could not connect to backend server.' };
     }
   }
@@ -139,7 +139,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('malmalee_user', JSON.stringify(data.user));
       localStorage.setItem('malmalee_token', data.token);
       return { success: true, user: data.user };
-    } catch (err) {
+    } catch {
       return { success: false, error: 'Network error. Could not connect to backend server.' };
     }
   }
