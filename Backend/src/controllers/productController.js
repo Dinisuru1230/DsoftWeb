@@ -137,7 +137,7 @@ async function createProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, price, stock, categoryName, badge, description, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -154,6 +154,9 @@ async function updateProduct(req, res) {
         ...(categoryName && { categoryName }),
         ...(badge !== undefined && { badge }),
         ...(description && { description }),
+        ...(details !== undefined && {
+          details: Array.isArray(details) ? JSON.stringify(details) : details,
+        }),
         ...(image && { image }),
         ...(hoverImage !== undefined && { hoverImage }),
         ...(galleryImages !== undefined && {
@@ -164,9 +167,22 @@ async function updateProduct(req, res) {
         ...(featured !== undefined && { featured: Boolean(featured) }),
         ...(standardShipping !== undefined && { standardShipping: standardShipping != null ? parseFloat(standardShipping) : null }),
         ...(expressShipping !== undefined && { expressShipping: expressShipping != null ? parseFloat(expressShipping) : null }),
+        ...(colors !== undefined && Array.isArray(colors) && {
+          colors: {
+            deleteMany: {},
+            create: colors.map((c) => ({
+              name: c.name,
+              hex: c.hex,
+              image: c.image,
+              price: parseFloat(c.price || price || existing.price || 0),
+              stock: parseInt(c.stock || 0),
+            })),
+          },
+        }),
       },
       include: { colors: true },
     });
+
 
     res.json(product);
   } catch (error) {
