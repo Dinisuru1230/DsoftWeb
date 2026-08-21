@@ -19,16 +19,17 @@ const CATEGORIES = [
 ];
 
 export default function Home() {
-  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/products?featured=true&limit=4`)
+    // Fetch latest 4 real products from DB (1 row of 4 items)
+    fetch(`${API_BASE}/products?limit=4`)
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setFeaturedProducts(data);
+        if (Array.isArray(data)) setNewArrivals(data);
       })
-      .catch(() => {})
+      .catch((err) => console.error('Failed to load new arrivals:', err))
       .finally(() => setProductsLoading(false));
   }, []);
 
@@ -98,28 +99,38 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {productsLoading
-              ? [...Array(4)].map((_, i) => (
-                  <div key={i} className="animate-pulse flex flex-col rounded-lg overflow-hidden bg-surface-container-lowest">
-                    <div className="aspect-[4/5] bg-surface-container" />
-                    <div className="p-4 space-y-2">
-                      <div className="h-4 bg-surface-container rounded w-2/3 mx-auto" />
-                      <div className="h-4 bg-surface-container rounded w-1/2 mx-auto" />
-                      <div className="h-10 bg-surface-container rounded-full mt-3" />
-                    </div>
+            {productsLoading ? (
+              [...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse flex flex-col rounded-lg overflow-hidden bg-surface-container-lowest">
+                  <div className="aspect-[4/5] bg-surface-container" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 bg-surface-container rounded w-2/3 mx-auto" />
+                    <div className="h-4 bg-surface-container rounded w-1/2 mx-auto" />
+                    <div className="h-10 bg-surface-container rounded-full mt-3" />
                   </div>
-                ))
-              : featuredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={{
-                      ...product,
-                      image: imgUrl(product.image),
-                      hoverImage: imgUrl(product.hoverImage),
-                      category: product.categoryName,
-                    }}
-                  />
-                ))}
+                </div>
+              ))
+            ) : newArrivals.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-on-surface-variant space-y-3">
+                <span className="material-symbols-outlined text-4xl text-outline">inventory_2</span>
+                <p className="font-title-sm text-on-surface font-semibold">New handcrafted designs arriving soon!</p>
+                <Link to="/shop" className="inline-block text-xs text-primary font-bold hover:underline">
+                  Browse All Collections &rarr;
+                </Link>
+              </div>
+            ) : (
+              newArrivals.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    ...product,
+                    image: imgUrl(product.image),
+                    hoverImage: imgUrl(product.hoverImage),
+                    category: product.categoryName,
+                  }}
+                />
+              ))
+            )}
           </div>
           <div className="mt-8 text-center md:hidden">
             <Link

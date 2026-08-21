@@ -201,7 +201,7 @@ export default function ContactUs() {
             <div className="flex items-start space-x-3 sm:col-span-2">
               <span className="material-symbols-outlined text-primary mt-0.5">photo_camera</span>
               <div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Instagram</p>
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Facebook</p>
                 <a href="#" className="font-body-md text-body-md text-primary hover:underline">
                   @malmaleecreations
                 </a>
