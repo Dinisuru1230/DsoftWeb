@@ -254,8 +254,8 @@ export default function AdminProfile() {
                   <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs" htmlFor="phone">
                     Phone Number (+94)
                   </label>
-                  <div className={`flex rounded-lg border overflow-hidden ${profileErrors.phone ? 'border-error' : 'border-outline-variant'} focus-within:border-primary transition-colors`}>
-                    <span className="flex items-center px-3 bg-surface-container border-r border-outline-variant/60 text-sm font-label-md text-on-surface-variant whitespace-nowrap">
+                  <div className={`flex items-center rounded-lg border bg-surface-container-low overflow-hidden ${profileErrors.phone ? 'border-error' : 'border-outline-variant'} focus-within:border-primary transition-colors`}>
+                    <span className="flex items-center px-3 py-2.5 bg-surface-container border-r border-outline-variant/60 text-sm font-label-md text-on-surface-variant whitespace-nowrap flex-shrink-0">
                       +94
                     </span>
                     <input
@@ -266,10 +266,10 @@ export default function AdminProfile() {
                       onChange={handleProfileChange}
                       placeholder="77 123 4567"
                       maxLength={9}
-                      className={`flex-1 px-3 py-2.5 bg-surface-container-low font-body-md text-on-surface outline-none ${profileErrors.phone ? 'bg-error-container/10' : ''}`}
+                      className={`flex-1 min-w-0 px-3 py-2.5 bg-transparent font-body-md text-on-surface outline-none ${profileErrors.phone ? 'bg-error-container/10' : ''}`}
                     />
                     {formData.phone.length === 9 && (
-                      <span className="flex items-center pr-3 text-primary">
+                      <span className="flex items-center justify-center px-3 flex-shrink-0 text-primary">
                         <span className="material-symbols-outlined text-[18px]">check_circle</span>
                       </span>
                     )}
