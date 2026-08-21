@@ -156,3 +156,13 @@ model Setting {
   bankNotes        String?  @default("Please include your contact number or order ID as the deposit reference.")
   updatedAt        DateTime @updatedAt
 }
+
+// Our Story CMS content (singleton — always id="global")
+model OurStory {
+  id        String   @id @default("global")
+  mainTitle String   @default("Born from Stillness,\nCrafted with Intention")
+  subtitle  String   @default("Malmalee Creations began as a quiet idea — that the most beautiful things in life are made slowly, with care, and with love. We are a small, passionate team of makers, dreamers, and storytellers.")
+  mainImage String   @default("/13_studio_table_ribbons.jpg")
+  sections  String   @default("[]") // JSON array of { id, title, paragraph, image, reverse }
+  updatedAt DateTime @updatedAt
+}

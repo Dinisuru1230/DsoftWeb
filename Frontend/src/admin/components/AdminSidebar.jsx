@@ -12,6 +12,7 @@ export const navItems = [
   { to: '/admin/orders', label: 'Orders', icon: 'shopping_cart' },
   { to: '/admin/customers', label: 'Customers', icon: 'group' },
   { to: '/admin/messages', label: 'Messages', icon: 'inbox', badgeKey: 'unread' },
+  { to: '/admin/our-story', label: 'Our Story', icon: 'auto_stories' },
   { to: '/admin/delivery-settings', label: 'Delivery Settings', icon: 'local_shipping' },
   { to: '/admin/bank-details', label: 'Bank Details', icon: 'account_balance' },
   { to: '/admin/admins', label: 'Admin Team', icon: 'admin_panel_settings' },
