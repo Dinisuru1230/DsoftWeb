@@ -219,7 +219,7 @@ export default function TrackOrder() {
                 </h3>
                 <div className="relative">
                   {/* Steps with connecting segments */}
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 relative z-10">
+                  <div className="grid grid-cols-5 gap-1 sm:gap-4 relative z-10">
                     {LIFECYCLE_STEPS.map((step, index) => {
                       const stepNum = index + 1;
                       const isDone = currentProgressStep >= stepNum;
@@ -227,11 +227,11 @@ export default function TrackOrder() {
                       const isNextDone = currentProgressStep > stepNum;
 
                       return (
-                        <div key={step.key} className="relative flex flex-col items-center text-center gap-2">
+                        <div key={step.key} className="relative flex flex-col items-center text-center gap-1.5 sm:gap-2">
                           {/* Segment connector to next step (for all except last step) */}
                           {index < LIFECYCLE_STEPS.length - 1 && (
                             <div
-                              className={`hidden sm:block absolute top-5 left-1/2 w-full h-1 -translate-y-1/2 pointer-events-none transition-colors duration-500 z-0 ${
+                              className={`absolute top-4 sm:top-5 left-1/2 w-full h-0.5 sm:h-1 -translate-y-1/2 pointer-events-none transition-colors duration-500 z-0 ${
                                 isNextDone ? 'bg-primary' : 'bg-surface-container-high'
                               }`}
                             />
@@ -239,18 +239,18 @@ export default function TrackOrder() {
 
                           {/* Step Icon Circle */}
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center relative z-10 transition-all ${
+                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center relative z-10 transition-all ${
                               isDone
                                 ? 'bg-primary text-white shadow-ambient scale-105'
-                                : 'bg-surface-container border-2 border-outline-variant text-on-surface-variant'
+                                : 'bg-surface-container border sm:border-2 border-outline-variant text-on-surface-variant'
                             }`}
                           >
-                            <span className="material-symbols-outlined text-[20px]">
+                            <span className="material-symbols-outlined text-[15px] sm:text-[20px]">
                               {isDone && !isCurrent && stepNum < currentProgressStep ? 'check' : step.icon}
                             </span>
                           </div>
                           <p
-                            className={`font-label-sm text-xs max-w-[100px] leading-tight ${
+                            className={`font-label-sm text-[10px] sm:text-xs max-w-[70px] sm:max-w-[100px] leading-tight ${
                               isCurrent
                                 ? 'text-primary font-bold scale-105'
                                 : isDone

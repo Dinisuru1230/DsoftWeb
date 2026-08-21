@@ -36,24 +36,24 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* ── Hero Section ── */}
-      <section className="relative w-full min-h-[819px] flex items-center justify-center overflow-hidden">
+      <section className="relative w-full min-h-[560px] sm:min-h-[680px] md:min-h-[800px] py-16 md:py-24 flex items-center justify-center overflow-hidden">
         <div
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url('/03_mediterranean_balcony.jpg')` }}
         >
           <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px]" />
         </div>
-        <div className="relative z-10 text-center px-5 md:px-16 max-w-3xl mx-auto flex flex-col items-center">
-          <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-4 drop-shadow-sm">
+        <div className="relative z-10 text-center px-4 sm:px-8 md:px-16 max-w-3xl mx-auto flex flex-col items-center">
+          <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-3 md:mb-4 drop-shadow-sm">
             Handmade Elegance <br />
             <span className="text-on-surface-variant italic font-light">& Everyday Magic</span>
           </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant mb-16 max-w-xl">
+          <p className="font-body-lg text-sm sm:text-base md:text-body-lg text-on-surface-variant mb-8 sm:mb-12 md:mb-16 max-w-xl">
             Discover delicate artisanal accessories crafted to elevate your everyday moments into cherished treasures.
           </p>
           <Link
             to="/shop"
-            className="inline-flex items-center justify-center bg-primary-container text-on-background font-label-md text-label-md py-3 px-8 rounded-full hover:bg-primary hover:text-white transition-all duration-300 shadow-ambient hover-ambient"
+            className="inline-flex items-center justify-center bg-primary-container text-on-background font-label-md text-label-md py-3 px-8 rounded-full hover:bg-primary hover:text-white transition-all duration-300 shadow-ambient hover-ambient font-bold"
           >
             Shop Collection
           </Link>
@@ -98,7 +98,7 @@ export default function Home() {
               View All
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {productsLoading ? (
               [...Array(4)].map((_, i) => (
                 <div key={i} className="animate-pulse flex flex-col rounded-lg overflow-hidden bg-surface-container-lowest">

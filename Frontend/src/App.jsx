@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import toast, { Toaster, ToastBar } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
@@ -54,24 +55,54 @@ function CustomerLayout({ children }) {
   );
 }
 
-// Admin Layout (Sidebar + Content)
+// Admin Layout (Sidebar + Responsive Mobile Drawer + Content)
 function AdminLayout({ children }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-surface overflow-hidden">
-      <AdminSidebar />
-      <div className="md:hidden flex justify-between items-center w-full px-5 py-4 bg-background border-b border-outline-variant z-40 sticky top-0 flex-shrink-0">
-        <h1 className="font-title-sm text-title-sm text-primary" style={{ fontSize: '20px' }}>Malmalee Admin</h1>
+      {/* Desktop Persistent Sidebar */}
+      <div className="hidden md:flex flex-shrink-0 h-full">
+        <AdminSidebar />
+      </div>
+
+      {/* Mobile Sticky Topbar */}
+      <div className="md:hidden flex justify-between items-center w-full px-4 py-3.5 bg-surface-container-lowest border-b border-outline-variant z-40 sticky top-0 flex-shrink-0 shadow-sm">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="p-1.5 rounded-lg text-primary hover:bg-surface-container transition-colors cursor-pointer"
+            aria-label="Open Admin Menu"
+          >
+            <span className="material-symbols-outlined text-[24px]">menu</span>
+          </button>
+          <h1 className="font-title-sm text-lg text-primary font-bold">Malmalee Admin</h1>
+        </div>
         <button
           onClick={() => { logout(); navigate('/login'); }}
-          className="text-xs bg-error-container text-error px-3 py-1.5 rounded-md font-bold flex items-center gap-1 cursor-pointer"
+          className="text-xs bg-error-container/40 text-error hover:bg-error-container px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
         >
-          <span className="material-symbols-outlined text-[16px]">logout</span>
-          Log Out
+          <span className="material-symbols-outlined text-[15px]">logout</span>
+          Sign Out
         </button>
       </div>
+
+      {/* Mobile Drawer Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="relative w-72 max-w-[85vw] h-full shadow-2xl z-10 animate-slide-in">
+            <AdminSidebar onClose={() => setMobileMenuOpen(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Main Admin Content Canvas */}
       <main className="flex-grow overflow-y-auto bg-surface w-full">
         {children}
       </main>
