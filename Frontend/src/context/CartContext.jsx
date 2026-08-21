@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
 
 const CartContext = createContext();
 
@@ -36,7 +37,7 @@ export function CartProvider({ children }) {
     return `${product.id}::${product.name}`;
   }
 
-  function addToCart(product, qty = 1) {
+  function addToCart(product, qty = 1, silent = false) {
     const key = cartKey(product);
     setCartItems((prev) => {
       const existing = prev.find((i) => cartKey(i) === key);
@@ -47,6 +48,14 @@ export function CartProvider({ children }) {
       }
       return [...prev, { ...product, cartKey: key, quantity: qty }];
     });
+
+    if (!silent) {
+      const title = product.name || 'Item';
+      const variant = product.color || product.colorName;
+      toast.success(`Added ${title}${variant ? ` (${variant})` : ''} to bag!`, {
+        id: `cart-${key}`,
+      });
+    }
   }
 
   function updateQuantity(key, quantity) {
@@ -59,8 +68,11 @@ export function CartProvider({ children }) {
     );
   }
 
-  function removeFromCart(key) {
+  function removeFromCart(key, silent = false) {
     setCartItems((prev) => prev.filter((item) => (item.cartKey || cartKey(item)) !== key));
+    if (!silent) {
+      toast('Item removed from your bag.', { icon: '🛍️' });
+    }
   }
 
   function clearCart() {

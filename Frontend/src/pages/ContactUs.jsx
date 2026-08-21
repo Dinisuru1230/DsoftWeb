@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -17,6 +18,8 @@ export default function ContactUs() {
     e.preventDefault();
     setSubmitting(true);
     setError('');
+    const toastId = toast.loading('Sending your message...');
+
     try {
       const res = await fetch(`${API_BASE}/contact`, {
         method: 'POST',
@@ -27,11 +30,16 @@ export default function ContactUs() {
       if (res.ok) {
         setSubmitted(true);
         setForm({ name: '', email: '', subject: '', message: '' });
+        toast.success('Your message has been sent to our team!', { id: toastId });
       } else {
-        setError(data.error || 'Failed to send message. Please try again.');
+        const errorMsg = data.error || 'Failed to send message. Please try again.';
+        setError(errorMsg);
+        toast.error(errorMsg, { id: toastId });
       }
     } catch {
-      setError('Network error. Please check your connection and try again.');
+      const errorMsg = 'Network error. Please check your connection and try again.';
+      setError(errorMsg);
+      toast.error(errorMsg, { id: toastId });
     }
     setSubmitting(false);
   }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -26,21 +27,26 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.email || !form.password) {
+      toast.error('Please enter both email and password.');
       setError('Please enter both email and password.');
       return;
     }
 
     setIsSubmitting(true);
     setError('');
+    const toastId = toast.loading('Signing into your account...');
 
     const result = await login(form.email, form.password);
     setIsSubmitting(false);
 
     if (result.success) {
+      toast.success(`Welcome back, ${result.user.name || 'User'}!`, { id: toastId });
       const targetRoute = result.user.role === 'ADMIN' ? '/admin' : '/';
       navigate(targetRoute, { replace: true });
     } else {
-      setError(result.error || 'Invalid credentials. Please try again.');
+      const errorMsg = result.error || 'Invalid credentials. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg, { id: toastId });
     }
   }
 

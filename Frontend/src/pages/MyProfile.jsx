@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 import AccountSidebar from '../components/AccountSidebar';
 import {
   SRI_LANKA_PROVINCES,
@@ -122,9 +123,11 @@ export default function MyProfile() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      toast.error('Please fix the highlighted errors before saving.');
       return;
     }
 
+    const toastId = toast.loading('Saving your profile details...');
     const formattedPhone = form.phone ? `+94${form.phone}` : '';
 
     const res = await updateUser({
@@ -139,9 +142,12 @@ export default function MyProfile() {
 
     if (res.success) {
       setSaved(true);
+      toast.success('Your profile changes have been saved!', { id: toastId });
       setTimeout(() => setSaved(false), 3000);
     } else {
-      setFormError(res.error || 'Failed to update profile settings.');
+      const msg = res.error || 'Failed to update profile settings.';
+      setFormError(msg);
+      toast.error(msg, { id: toastId });
     }
   }
 
@@ -161,24 +167,25 @@ export default function MyProfile() {
 
     if (Object.keys(newPassErrors).length > 0) {
       setPassErrors(newPassErrors);
+      toast.error('Please check your password fields.');
       return;
     }
 
-    setSavingPass(true);
-    setPassFormError('');
-
+    const toastId = toast.loading('Updating your password...');
     const res = await changePassword({
       currentPassword: passwords.currentPassword,
       newPassword: passwords.newPassword,
     });
 
-    setSavingPass(false);
     if (res.success) {
       setPassSaved(true);
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast.success('Password updated successfully!', { id: toastId });
       setTimeout(() => setPassSaved(false), 3000);
     } else {
-      setPassFormError(res.error || 'Failed to update password.');
+      const msg = res.error || 'Failed to update password.';
+      setPassFormError(msg);
+      toast.error(msg, { id: toastId });
     }
   }
 

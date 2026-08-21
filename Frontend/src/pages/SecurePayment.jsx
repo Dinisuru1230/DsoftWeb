@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -31,6 +32,7 @@ export default function SecurePayment() {
     e.preventDefault();
     setProcessing(true);
     setError('');
+    const toastId = toast.loading('Processing secure SSL card payment...');
 
     try {
       const orderPayload = {
@@ -61,6 +63,7 @@ export default function SecurePayment() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Payment processing failed.');
 
+      toast.success('Payment successful! Order confirmed.', { id: toastId });
       clearCart();
       navigate('/checkout/success', {
         state: {
@@ -71,7 +74,9 @@ export default function SecurePayment() {
         },
       });
     } catch (err) {
-      setError(err.message || 'Payment processing error. Please try again.');
+      const msg = err.message || 'Payment processing error. Please try again.';
+      setError(msg);
+      toast.error(msg, { id: toastId });
       setProcessing(false);
     }
   }

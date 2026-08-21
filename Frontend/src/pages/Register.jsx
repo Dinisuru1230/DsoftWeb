@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -58,6 +59,7 @@ export default function Register() {
 
     // 1. Full Name check
     if (!form.name || form.name.trim().length < 2) {
+      toast.error('Please enter a valid full name (at least 2 characters).');
       setError('Please enter a valid full name (at least 2 characters).');
       return;
     }
@@ -65,30 +67,35 @@ export default function Register() {
     // 2. Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
+      toast.error('Please enter a valid email address.');
       setError('Please enter a valid email address (e.g. name@example.com).');
       return;
     }
 
     // 3. Sri Lankan Contact number validation (must be exactly 9 digits if provided)
     if (form.phone && form.phone.length !== 9) {
+      toast.error('Contact number must contain exactly 9 digits after +94.');
       setError('Contact number must contain exactly 9 digits after +94 (e.g. +94 77 123 4567).');
       return;
     }
 
     // 4. Password length validation
     if (form.password.length < 6) {
+      toast.error('Password must be at least 6 characters long.');
       setError('Password must be at least 6 characters long.');
       return;
     }
 
     // 5. Password match check
     if (form.password !== form.confirm) {
+      toast.error('Passwords do not match.');
       setError('Passwords do not match. Please check and try again.');
       return;
     }
 
     setIsSubmitting(true);
     setError('');
+    const toastId = toast.loading('Creating your account...');
 
     const formattedPhone = form.phone ? `+94${form.phone}` : '';
 
@@ -106,13 +113,16 @@ export default function Register() {
     setIsSubmitting(false);
 
     if (result.success) {
+      toast.success(`Welcome to Malmalee Creations, ${result.user.name || 'Friend'}!`, { id: toastId });
       if (result.user.role === 'ADMIN') {
         navigate('/admin');
       } else {
         navigate('/');
       }
     } else {
-      setError(result.error || 'Registration failed. Please try again.');
+      const errorMsg = result.error || 'Registration failed. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg, { id: toastId });
     }
   }
 

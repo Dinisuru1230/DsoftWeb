@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 import {
   SRI_LANKA_PROVINCES,
   SRI_LANKA_CITIES_BY_PROVINCE,
@@ -171,12 +172,13 @@ export default function Checkout() {
     } else {
       // Cash on Delivery (COD) — create real order immediately
       setIsPlacingOrder(true);
+      const toastId = toast.loading('Placing your order...');
       try {
         const orderPayload = {
           customerName: customerDetails.customerName,
           email: customerDetails.email,
           phone: customerDetails.phone,
-          address: customerDetails.address,
+          address: customerAddress,
           totalAmount: finalTotal,
           shippingCost: shippingCost,
           paymentMethod: 'COD',
@@ -200,6 +202,7 @@ export default function Checkout() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to place order');
 
+        toast.success('Order placed successfully! We are preparing your package.', { id: toastId });
         clearCart();
         navigate('/checkout/success', {
           state: {
@@ -210,7 +213,8 @@ export default function Checkout() {
           },
         });
       } catch (err) {
-        alert(err.message || 'Could not create order. Please try again.');
+        const msg = err.message || 'Could not create order. Please try again.';
+        toast.error(msg, { id: toastId });
       } finally {
         setIsPlacingOrder(false);
       }

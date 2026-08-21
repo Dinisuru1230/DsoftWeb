@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -64,12 +65,14 @@ export default function BankSlipUpload() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!selectedFile) {
-      setError('Please select and upload your bank deposit slip / receipt before proceeding.');
+      toast.error('Please select and upload your bank deposit slip receipt.');
+      setError('Please upload your bank deposit slip / receipt.');
       return;
     }
 
     setIsSubmitting(true);
     setError('');
+    const toastId = toast.loading('Submitting bank deposit slip and confirming order...');
 
     try {
       // 1. Create the order in the database
@@ -119,6 +122,7 @@ export default function BankSlipUpload() {
       const finalOrder = uploadData.order || createdOrder;
 
       // 3. Clear cart and redirect to success
+      toast.success('Payment receipt submitted successfully! Verification in progress.', { id: toastId });
       clearCart();
       navigate('/checkout/success', {
         state: {
@@ -130,7 +134,9 @@ export default function BankSlipUpload() {
         },
       });
     } catch (err) {
-      setError(err.message || 'An error occurred while submitting your payment slip. Please try again.');
+      const msg = err.message || 'An error occurred while submitting your payment slip. Please try again.';
+      setError(msg);
+      toast.error(msg, { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
