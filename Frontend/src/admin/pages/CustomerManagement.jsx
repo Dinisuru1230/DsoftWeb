@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 import {
   SRI_LANKA_PROVINCES,
   SRI_LANKA_CITIES_BY_PROVINCE,
@@ -66,7 +67,6 @@ export default function CustomerManagement() {
   const { token } = useAuth();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -85,12 +85,16 @@ export default function CustomerManagement() {
     try {
       const res = await fetch(`${API_BASE}/users/customers`, { headers: authHeaders });
       const data = await res.json();
-      if (res.ok) setCustomers(data.customers);
-      else setError(data.error || 'Failed to load customers');
+      if (res.ok) {
+        setCustomers(data.customers);
+      } else {
+        toast.error(data.error || 'Failed to load customers');
+      }
     } catch {
-      setError('Network error — cannot reach backend');
+      toast.error('Network error — cannot reach backend server');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   useEffect(() => { fetchCustomers(); }, []);
@@ -110,9 +114,7 @@ export default function CustomerManagement() {
 
   function openEdit(c) {
     setEditingCustomer(c);
-    // c.phone stored as "+94XXXXXXXXX" → strip prefix for the input field
     const rawPhone = (c.phone || '').replace('+94', '').replace(/\s/g, '');
-    // province from c.province (district in DB), city from c.city
     const province = c.province || 'Western Province';
     const citiesForProvince = SRI_LANKA_CITIES_BY_PROVINCE[province] || [];
     const city = c.city && citiesForProvince.includes(c.city) ? c.city : (citiesForProvince[0] || '');
@@ -157,9 +159,15 @@ export default function CustomerManagement() {
   async function handleCreate(e) {
     e.preventDefault();
     const errors = validateCustomerForm(formData, true);
-    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast.error('Please fix the highlighted errors before saving.');
+      return;
+    }
     setSaving(true);
     setFormError('');
+    const toastId = toast.loading('Creating customer account...');
+
     const payload = {
       name: formData.name.trim(),
       email: formData.email.trim(),
@@ -170,27 +178,42 @@ export default function CustomerManagement() {
       district: formData.province,
       postalCode: formData.postalCode,
     };
-    const res = await fetch(`${API_BASE}/users/customers`, {
-      method: 'POST', headers: authHeaders, body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    setSaving(false);
-    if (res.ok) {
-      setCustomers([data.customer, ...customers]);
-      setIsCreateOpen(false);
-      resetForm();
-    } else {
-      setFormError(data.error || 'Failed to create customer');
+
+    try {
+      const res = await fetch(`${API_BASE}/users/customers`, {
+        method: 'POST', headers: authHeaders, body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setSaving(false);
+      if (res.ok) {
+        setCustomers([data.customer, ...customers]);
+        setIsCreateOpen(false);
+        resetForm();
+        toast.success(`Customer "${data.customer.name}" created successfully!`, { id: toastId });
+      } else {
+        const msg = data.error || 'Failed to create customer';
+        setFormError(msg);
+        toast.error(msg, { id: toastId });
+      }
+    } catch {
+      setSaving(false);
+      toast.error('Network error. Could not create customer.', { id: toastId });
     }
   }
 
-  // UPDATE — update local state immediately from the API response
+  // UPDATE
   async function handleUpdate(e) {
     e.preventDefault();
     const errors = validateCustomerForm(formData, false);
-    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast.error('Please fix the highlighted errors before saving.');
+      return;
+    }
     setSaving(true);
     setFormError('');
+    const toastId = toast.loading('Updating customer profile...');
+
     const payload = {
       name: formData.name.trim(),
       email: formData.email.trim(),
@@ -202,34 +225,50 @@ export default function CustomerManagement() {
     };
     if (formData.password) payload.password = formData.password;
 
-    const res = await fetch(`${API_BASE}/users/customers/${editingCustomer.id}`, {
-      method: 'PUT', headers: authHeaders, body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    setSaving(false);
-    if (res.ok) {
-      // Merge the API response back into local state (keep order count from old record)
-      setCustomers(prev => prev.map(c =>
-        c.id === editingCustomer.id
-          ? { ...data.customer, orders: c.orders }
-          : c
-      ));
-      setEditingCustomer(null);
-      resetForm();
-    } else {
-      setFormError(data.error || 'Failed to update customer');
+    try {
+      const res = await fetch(`${API_BASE}/users/customers/${editingCustomer.id}`, {
+        method: 'PUT', headers: authHeaders, body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setSaving(false);
+      if (res.ok) {
+        setCustomers(prev => prev.map(c =>
+          c.id === editingCustomer.id
+            ? { ...data.customer, orders: c.orders }
+            : c
+        ));
+        setEditingCustomer(null);
+        resetForm();
+        toast.success(`Customer "${data.customer.name}" updated successfully!`, { id: toastId });
+      } else {
+        const msg = data.error || 'Failed to update customer';
+        setFormError(msg);
+        toast.error(msg, { id: toastId });
+      }
+    } catch {
+      setSaving(false);
+      toast.error('Network error. Could not update customer.', { id: toastId });
     }
   }
 
   // DELETE
   async function handleDelete() {
     if (!deleteTarget) return;
-    const res = await fetch(`${API_BASE}/users/customers/${deleteTarget.id}`, {
-      method: 'DELETE', headers: authHeaders,
-    });
-    if (res.ok) {
-      setCustomers(customers.filter(c => c.id !== deleteTarget.id));
-      setDeleteTarget(null);
+    const toastId = toast.loading(`Deleting ${deleteTarget.name}...`);
+    try {
+      const res = await fetch(`${API_BASE}/users/customers/${deleteTarget.id}`, {
+        method: 'DELETE', headers: authHeaders,
+      });
+      if (res.ok) {
+        setCustomers(customers.filter(c => c.id !== deleteTarget.id));
+        setDeleteTarget(null);
+        toast.success(`Customer account deleted successfully.`, { id: toastId });
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Failed to delete customer', { id: toastId });
+      }
+    } catch {
+      toast.error('Network error deleting customer', { id: toastId });
     }
   }
 
@@ -245,19 +284,12 @@ export default function CustomerManagement() {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer shadow-ambient"
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer shadow-ambient font-bold"
         >
           <span className="material-symbols-outlined text-[18px]">person_add</span>
           Add Customer
         </button>
       </div>
-
-      {error && (
-        <div className="mb-4 p-3 bg-error-container text-on-error-container rounded-lg border border-error/30 font-label-md flex items-center justify-between">
-          {error}
-          <button onClick={() => setError('')} className="text-xs underline cursor-pointer">Dismiss</button>
-        </div>
-      )}
 
       {/* Search */}
       <div className="mb-6">
@@ -272,7 +304,7 @@ export default function CustomerManagement() {
       </div>
 
       {/* Table */}
-      <div className="bg-surface-container-lowest rounded-xl shadow-ambient overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-xl shadow-ambient overflow-hidden border border-outline-variant/30">
         {loading ? (
           <div className="flex items-center justify-center py-20 gap-3 text-on-surface-variant">
             <span className="material-symbols-outlined animate-spin text-primary text-2xl">sync</span>
@@ -287,13 +319,13 @@ export default function CustomerManagement() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-outline-variant bg-surface-container-low">
+                <tr className="border-b border-outline-variant/30 bg-surface-container-low">
                   {['Customer', 'Contact', 'Location', 'Orders', 'Joined', 'Actions'].map(h => (
                     <th key={h} className="px-4 py-3 font-label-md text-label-md text-on-surface-variant">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-outline-variant">
+              <tbody className="divide-y divide-outline-variant/20 font-body-md text-sm">
                 {filtered.map(c => (
                   <tr key={c.id} className="hover:bg-surface-container-low transition-colors">
                     <td className="px-4 py-3">
@@ -316,13 +348,13 @@ export default function CustomerManagement() {
                     <td className="px-4 py-3 font-label-sm text-label-sm text-on-surface-variant">{c.joined}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => setViewingCustomer(c)} title="View" className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary-container/40 rounded-lg transition-colors cursor-pointer">
+                        <button onClick={() => setViewingCustomer(c)} title="View Customer Details" className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary-container/40 rounded-lg transition-colors cursor-pointer">
                           <span className="material-symbols-outlined text-[18px]">visibility</span>
                         </button>
-                        <button onClick={() => openEdit(c)} title="Edit" className="p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/40 rounded-lg transition-colors cursor-pointer">
+                        <button onClick={() => openEdit(c)} title="Edit Customer" className="p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/40 rounded-lg transition-colors cursor-pointer">
                           <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
-                        <button onClick={() => setDeleteTarget(c)} title="Delete" className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/40 rounded-lg transition-colors cursor-pointer">
+                        <button onClick={() => setDeleteTarget(c)} title="Delete Customer" className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/40 rounded-lg transition-colors cursor-pointer">
                           <span className="material-symbols-outlined text-[18px]">delete</span>
                         </button>
                       </div>
@@ -398,7 +430,7 @@ export default function CustomerManagement() {
             <button onClick={() => setDeleteTarget(null)} className="px-5 py-2 border border-outline-variant rounded-full font-label-md text-label-md hover:bg-surface-container transition-colors cursor-pointer">
               Cancel
             </button>
-            <button onClick={handleDelete} className="px-5 py-2 bg-error text-white rounded-full font-label-md text-label-md hover:bg-error/80 transition-colors cursor-pointer flex items-center gap-2">
+            <button onClick={handleDelete} className="px-5 py-2 bg-error text-white rounded-full font-label-md text-label-md hover:bg-error/80 transition-colors cursor-pointer flex items-center gap-2 font-bold">
               <span className="material-symbols-outlined text-[16px]">delete_forever</span>
               Delete Customer
             </button>
@@ -566,7 +598,7 @@ function CustomerForm({ formData, onChange, onSubmit, onCancel, saving, formErro
           Cancel
         </button>
         <button type="submit" disabled={saving}
-          className="px-5 py-2.5 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2">
+          className="px-5 py-2.5 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2 font-bold shadow-ambient">
           {saving
             ? <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
             : <span className="material-symbols-outlined text-[16px]">{isCreate ? 'person_add' : 'save'}</span>
@@ -607,7 +639,7 @@ function InfoRow({ label, value }) {
   return (
     <div>
       <p className="font-label-sm text-xs text-on-surface-variant mb-0.5">{label}</p>
-      <p className="font-body-md text-sm text-on-surface">{value}</p>
+      <p className="font-body-md text-sm text-on-surface font-semibold">{value}</p>
     </div>
   );
 }
