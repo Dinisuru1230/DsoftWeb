@@ -85,7 +85,7 @@ export default function Login() {
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="e.g. customer@example.com or admin@malmalee.lk"
+                placeholder="e.g. customer@example.com"
                 required
                 className="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none py-3 font-body-md text-on-surface transition-colors"
               />
