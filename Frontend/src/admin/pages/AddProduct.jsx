@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ConfirmModal from '../../components/ConfirmModal';
 import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
@@ -28,6 +29,47 @@ function sanitizeInteger(val) {
   return val.replace(/[^0-9]/g, '');
 }
 
+const DEFAULT_PALETTES = [
+  { name: 'Blush Pink', hex: '#fadadd', placeholder: 'e.g. Blush Pink' },
+  { name: 'Ivory White', hex: '#fdfbf7', placeholder: 'e.g. Ivory White' },
+  { name: 'Sage Green', hex: '#9caf88', placeholder: 'e.g. Sage Green' },
+  { name: 'Lavender', hex: '#e6e6fa', placeholder: 'e.g. Lavender' },
+  { name: 'Dusty Rose', hex: '#dcae96', placeholder: 'e.g. Dusty Rose' },
+  { name: 'Champagne Gold', hex: '#f7e7ce', placeholder: 'e.g. Champagne Gold' },
+  { name: 'Sky Blue', hex: '#87ceeb', placeholder: 'e.g. Sky Blue' },
+];
+
+const SPEC_PRESETS = [
+  { key: 'Material', keyPlaceholder: 'e.g. Material', valPlaceholder: 'e.g. 100% Mulberry Silk / Satin' },
+  { key: 'Width', keyPlaceholder: 'e.g. Width', valPlaceholder: 'e.g. 2.5 inches / 6.5 cm' },
+  { key: 'Length', keyPlaceholder: 'e.g. Length / Dimensions', valPlaceholder: 'e.g. 15 cm length' },
+  { key: 'Care Instructions', keyPlaceholder: 'e.g. Care Instructions', valPlaceholder: 'e.g. Spot clean with cool water' },
+  { key: 'Origin / Craftsmanship', keyPlaceholder: 'e.g. Craftsmanship', valPlaceholder: 'e.g. Handmade with love in Sri Lanka' },
+  { key: 'Fastening / Attachment', keyPlaceholder: 'e.g. Fastening / Clip', valPlaceholder: 'e.g. French Alligator Clip (Steel)' },
+  { key: 'Packaging', keyPlaceholder: 'e.g. Packaging', valPlaceholder: 'e.g. Signature Malmalee Gift Box' },
+  { key: 'Suitable For', keyPlaceholder: 'e.g. Suitable For', valPlaceholder: 'e.g. Weddings, Parties, Everyday Chic' },
+];
+
+function getSpecPlaceholders(spec, index) {
+  const keyLower = (spec.key || '').toLowerCase().trim();
+  if (keyLower.includes('material')) return { key: 'e.g. Material', val: 'e.g. 100% Mulberry Silk / Satin' };
+  if (keyLower.includes('width')) return { key: 'e.g. Width', val: 'e.g. 2.5 inches / 6.5 cm' };
+  if (keyLower.includes('length') || keyLower.includes('dimension') || keyLower.includes('size')) {
+    return { key: 'e.g. Dimensions', val: 'e.g. 15cm × 10cm' };
+  }
+  if (keyLower.includes('care')) return { key: 'e.g. Care Instructions', val: 'e.g. Spot clean with damp cloth' };
+  if (keyLower.includes('origin') || keyLower.includes('craft')) return { key: 'e.g. Craftsmanship', val: 'e.g. Handmade with love in Sri Lanka' };
+  if (keyLower.includes('clip') || keyLower.includes('fasten') || keyLower.includes('attach')) {
+    return { key: 'e.g. Fastening', val: 'e.g. French Alligator Clip (Steel)' };
+  }
+  if (keyLower.includes('pack')) return { key: 'e.g. Packaging', val: 'e.g. Signature Malmalee Gift Box' };
+  if (keyLower.includes('weight')) return { key: 'e.g. Weight', val: 'e.g. 45 grams' };
+  if (keyLower.includes('suit') || keyLower.includes('occasion')) return { key: 'e.g. Suitable For', val: 'e.g. Weddings, Parties, Casual wear' };
+
+  const preset = SPEC_PRESETS[index % SPEC_PRESETS.length];
+  return { key: preset.keyPlaceholder, val: preset.valPlaceholder };
+}
+
 export default function AddProduct() {
   const navigate = useNavigate();
   const { id: editId } = useParams(); // present when route is /admin/edit-product/:id
@@ -52,6 +94,7 @@ export default function AddProduct() {
 
   const [specs, setSpecs] = useState(INITIAL_SPECS);
   const [colors, setColors] = useState([]);
+  const [showClearColorsConfirm, setShowClearColorsConfirm] = useState(false);
 
   // Delivery fee type: 'default' (store default) or 'specific' (custom rates)
   const [shippingType, setShippingType] = useState('default');
@@ -908,7 +951,7 @@ export default function AddProduct() {
               {hasColors && (
                 <button
                   type="button"
-                  onClick={() => setColors([])}
+                  onClick={() => setShowClearColorsConfirm(true)}
                   className="font-label-sm text-label-sm text-error hover:underline cursor-pointer"
                 >
                   Clear All
@@ -932,40 +975,48 @@ export default function AddProduct() {
               Fill in the specification rows. Leave empty rows blank and they'll be ignored.
             </p>
             <div className="space-y-3">
-              {specs.map((spec, index) => (
-                <div
-                  key={spec.id || index}
-                  className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-surface-container-low p-3.5 rounded-lg border border-outline-variant/20"
-                >
-                  <div className="sm:w-1/3">
-                    <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Label</label>
-                    <input
-                      type="text"
-                      value={spec.key}
-                      onChange={(e) => handleSpecChange(index, 'key', e.target.value)}
-                      placeholder="e.g. Material"
-                      className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 font-body-md text-on-surface focus:border-primary outline-none"
-                    />
-                  </div>
-                  <div className="flex-grow">
-                    <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Value</label>
-                    <input
-                      type="text"
-                      value={spec.value}
-                      onChange={(e) => handleSpecChange(index, 'value', e.target.value)}
-                      placeholder="e.g. 100% Silk"
-                      className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 font-body-md text-on-surface focus:border-primary outline-none"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSpec(index)}
-                    className="self-end sm:self-center sm:mt-5 p-2 text-on-surface-variant hover:text-error transition-colors cursor-pointer"
+              {specs.map((spec, index) => {
+                const placeholders = getSpecPlaceholders(spec, index);
+                return (
+                  <div
+                    key={spec.id || index}
+                    className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-surface-container-low p-3.5 rounded-lg border border-outline-variant/20"
                   >
-                    <span className="material-symbols-outlined text-[20px]">delete</span>
-                  </button>
-                </div>
-              ))}
+                    <div className="sm:w-1/3">
+                      <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1 font-semibold">
+                        Specification Label
+                      </label>
+                      <input
+                        type="text"
+                        value={spec.key}
+                        onChange={(e) => handleSpecChange(index, 'key', e.target.value)}
+                        placeholder={placeholders.key}
+                        className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary outline-none"
+                      />
+                    </div>
+                    <div className="flex-grow">
+                      <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1 font-semibold">
+                        Specification Detail / Value
+                      </label>
+                      <input
+                        type="text"
+                        value={spec.value}
+                        onChange={(e) => handleSpecChange(index, 'value', e.target.value)}
+                        placeholder={placeholders.val}
+                        className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary outline-none"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSpec(index)}
+                      className="self-end sm:self-center sm:mt-5 p-2 text-on-surface-variant hover:text-error transition-colors cursor-pointer"
+                      title="Delete specification"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
             <button
               type="button"
@@ -1340,6 +1391,23 @@ export default function AddProduct() {
           </section>
         </div>
       </form>
+
+      {/* Shared Confirmation Modal for Clearing Colors */}
+      <ConfirmModal
+        isOpen={showClearColorsConfirm}
+        title="Clear All Color Variants"
+        message="Are you sure you want to remove all configured color variants? The product will revert to a single product with global price and stock."
+        confirmText="Clear All Colors"
+        cancelText="Keep Variants"
+        variant="warning"
+        icon="delete_sweep"
+        onConfirm={() => {
+          setColors([]);
+          setShowClearColorsConfirm(false);
+          toast.success('All color variants cleared.');
+        }}
+        onClose={() => setShowClearColorsConfirm(false)}
+      />
     </div>
   );
 }

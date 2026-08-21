@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import ConfirmModal from '../../components/ConfirmModal';
 import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
@@ -521,36 +522,20 @@ export default function ContactManagement() {
         </div>
       </div>
 
-      {/* ── Delete Confirm Modal ── */}
-      {deleteTarget && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <div className="flex items-start gap-3 mb-5 p-3 bg-error-container/30 rounded-lg">
-              <span className="material-symbols-outlined text-error mt-0.5">warning</span>
-              <div>
-                <p className="font-title-sm text-on-surface font-bold">Delete Message</p>
-                <p className="font-body-md text-sm text-on-surface-variant mt-1">
-                  Delete message from <strong>{deleteTarget.name}</strong>? All replies will also be deleted.
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3">
-              <button onClick={() => setDeleteTarget(null)} className="px-5 py-2 border border-outline-variant rounded-full font-label-md text-sm cursor-pointer hover:bg-surface-container transition-colors">Cancel</button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-5 py-2 bg-error text-white rounded-full font-label-md text-sm hover:bg-error/80 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
-              >
-                {deleting
-                  ? <span className="material-symbols-outlined animate-spin text-[14px]">sync</span>
-                  : <span className="material-symbols-outlined text-[14px]">delete</span>
-                }
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Shared Confirmation Modal for Deleting Message */}
+      <ConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        title="Delete Customer Message"
+        itemName={deleteTarget?.name ? `From: ${deleteTarget.name}` : null}
+        message={`Are you sure you want to delete this message from "${deleteTarget?.name}"? All reply threads for this message will also be removed.`}
+        confirmText="Delete Message"
+        cancelText="Cancel"
+        variant="danger"
+        icon="delete_forever"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onClose={() => { if (!deleting) setDeleteTarget(null); }}
+      />
     </div>
   );
 }

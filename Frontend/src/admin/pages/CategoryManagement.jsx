@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import ConfirmModal from '../../components/ConfirmModal';
 import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
@@ -484,42 +485,20 @@ export default function CategoryManagement() {
         </div>
       </div>
 
-      {/* ── Delete Confirm Modal ── */}
-      {deleteTarget && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <div className="flex items-start gap-3 mb-5 p-3 bg-error-container/30 rounded-lg">
-              <span className="material-symbols-outlined text-error mt-0.5">warning</span>
-              <div>
-                <p className="font-title-sm text-on-surface font-bold">Delete Category</p>
-                <p className="font-body-md text-sm text-on-surface-variant mt-1">
-                  Are you sure you want to delete <strong>{deleteTarget.name}</strong>?
-                  This action cannot be undone.
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                className="px-5 py-2 border border-outline-variant rounded-full font-label-md text-label-md hover:bg-surface-container transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-5 py-2 bg-error text-white rounded-full font-label-md text-label-md hover:bg-error/80 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
-              >
-                {deleting
-                  ? <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
-                  : <span className="material-symbols-outlined text-[16px]">delete</span>
-                }
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Shared Confirmation Modal for Deleting Category */}
+      <ConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        title="Delete Category"
+        itemName={deleteTarget?.name}
+        message={`Are you sure you want to delete category "${deleteTarget?.name}"? Any products assigned to this category will become unassigned.`}
+        confirmText="Delete Category"
+        cancelText="Cancel"
+        variant="danger"
+        icon="delete_forever"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onClose={() => { if (!deleting) setDeleteTarget(null); }}
+      />
     </div>
   );
 }
