@@ -148,5 +148,11 @@ model Setting {
   standardShipping Float    @default(450)
   expressShipping  Float    @default(1200)
   freeShippingOver Float    @default(15000)
+  bankName         String   @default("Commercial Bank of Ceylon")
+  accountName      String   @default("Malmalee Creations (Pvt) Ltd")
+  accountNumber    String   @default("8009 123 456")
+  branchName       String   @default("Colombo Main Branch")
+  swiftCode        String   @default("CCEYLKLX")
+  bankNotes        String?  @default("Please include your contact number or order ID as the deposit reference.")
   updatedAt        DateTime @updatedAt
 }

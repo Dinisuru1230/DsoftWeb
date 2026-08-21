@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -112,26 +113,39 @@ export default function AdminManagement() {
   async function handleCreate(e) {
     e.preventDefault();
     const errors = validateAdminForm(formData, true);
-    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast.error('Please fix the highlighted errors.');
+      return;
+    }
     setSaving(true);
     setFormError('');
+    const toastId = toast.loading('Adding new admin member...');
     const payload = {
       name: formData.name.trim(),
       email: formData.email.trim(),
       password: formData.password,
       phone: formData.phone ? `+94${formData.phone}` : '',
     };
-    const res = await fetch(`${API_BASE}/users/admins`, {
-      method: 'POST', headers: authHeaders, body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    setSaving(false);
-    if (res.ok) {
-      setAdmins([data.admin, ...admins]);
-      setIsAdding(false);
-      resetForm();
-    } else {
-      setFormError(data.error || 'Failed to create admin');
+    try {
+      const res = await fetch(`${API_BASE}/users/admins`, {
+        method: 'POST', headers: authHeaders, body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setSaving(false);
+      if (res.ok) {
+        setAdmins([data.admin, ...admins]);
+        setIsAdding(false);
+        resetForm();
+        toast.success(`Admin "${data.admin.name}" added to the team!`, { id: toastId });
+      } else {
+        const msg = data.error || 'Failed to create admin';
+        setFormError(msg);
+        toast.error(msg, { id: toastId });
+      }
+    } catch {
+      setSaving(false);
+      toast.error('Network error. Could not add admin.', { id: toastId });
     }
   }
 
@@ -139,9 +153,14 @@ export default function AdminManagement() {
   async function handleUpdate(e) {
     e.preventDefault();
     const errors = validateAdminForm(formData, false);
-    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast.error('Please fix the highlighted errors.');
+      return;
+    }
     setSaving(true);
     setFormError('');
+    const toastId = toast.loading('Updating admin account...');
     const payload = {
       name: formData.name.trim(),
       email: formData.email.trim(),
@@ -149,32 +168,49 @@ export default function AdminManagement() {
     };
     if (formData.password) payload.password = formData.password;
 
-    const res = await fetch(`${API_BASE}/users/admins/${editingAdmin.id}`, {
-      method: 'PUT', headers: authHeaders, body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    setSaving(false);
-    if (res.ok) {
-      setAdmins(admins.map(a => a.id === editingAdmin.id ? data.admin : a));
-      setEditingAdmin(null);
-      resetForm();
-    } else {
-      setFormError(data.error || 'Failed to update admin');
+    try {
+      const res = await fetch(`${API_BASE}/users/admins/${editingAdmin.id}`, {
+        method: 'PUT', headers: authHeaders, body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setSaving(false);
+      if (res.ok) {
+        setAdmins(admins.map(a => a.id === editingAdmin.id ? data.admin : a));
+        setEditingAdmin(null);
+        resetForm();
+        toast.success(`Admin "${data.admin.name}" updated successfully!`, { id: toastId });
+      } else {
+        const msg = data.error || 'Failed to update admin';
+        setFormError(msg);
+        toast.error(msg, { id: toastId });
+      }
+    } catch {
+      setSaving(false);
+      toast.error('Network error. Could not update admin.', { id: toastId });
     }
   }
 
   // DELETE
   async function handleDelete() {
     if (!deleteTarget) return;
-    const res = await fetch(`${API_BASE}/users/admins/${deleteTarget.id}`, {
-      method: 'DELETE', headers: authHeaders,
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setAdmins(admins.filter(a => a.id !== deleteTarget.id));
-      setDeleteTarget(null);
-    } else {
-      setError(data.error || 'Failed to delete admin');
+    const toastId = toast.loading(`Removing ${deleteTarget.name}...`);
+    try {
+      const res = await fetch(`${API_BASE}/users/admins/${deleteTarget.id}`, {
+        method: 'DELETE', headers: authHeaders,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAdmins(admins.filter(a => a.id !== deleteTarget.id));
+        toast.success(`Admin "${deleteTarget.name}" removed.`, { id: toastId });
+        setDeleteTarget(null);
+      } else {
+        const msg = data.error || 'Failed to delete admin';
+        setError(msg);
+        toast.error(msg, { id: toastId });
+        setDeleteTarget(null);
+      }
+    } catch {
+      toast.error('Network error. Could not remove admin.', { id: toastId });
       setDeleteTarget(null);
     }
   }

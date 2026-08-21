@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -124,6 +125,12 @@ export default function AddProduct() {
           expressShipping: p.expressShipping != null ? String(p.expressShipping) : '',
         });
 
+        if (p.standardShipping != null || p.expressShipping != null) {
+          setShippingType('specific');
+        } else {
+          setShippingType('default');
+        }
+
         // Pre-fill main image
         setMainImageUrl(p.image || '');
         setMainImagePreview(p.image ? (p.image.startsWith('http') ? p.image : `http://localhost:5050${p.image}`) : null);
@@ -201,7 +208,10 @@ export default function AddProduct() {
     setForm(newForm);
 
     if (touched[name]) {
-      setErrors((prev) => ({ ...prev, [name]: validateField(name, finalVal, newForm) }));
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validateField(name, finalVal, newForm),
+      }));
     } else {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -220,7 +230,11 @@ export default function AddProduct() {
       case 'name':
         return !value?.trim() ? 'Product name is required.' : '';
       case 'description':
-        return !value?.trim() ? 'Short description is required.' : value.trim().length < 10 ? 'Description must be at least 10 characters.' : '';
+        return !value?.trim()
+          ? 'Short description is required.'
+          : value.trim().length < 10
+          ? 'Description must be at least 10 characters.'
+          : '';
       case 'category':
         return !value ? 'Please select a category.' : '';
       case 'price':
@@ -308,10 +322,15 @@ export default function AddProduct() {
   function handleSubImage(index, e) {
     const file = e.target.files[0];
     if (!file) return;
-    const files = [...subImageFiles]; files[index] = file;
-    const previews = [...subImagePreviews]; previews[index] = URL.createObjectURL(file);
-    const urls = [...subImageUrls]; urls[index] = '';
-    setSubImageFiles(files); setSubImagePreviews(previews); setSubImageUrls(urls);
+    const files = [...subImageFiles];
+    files[index] = file;
+    const previews = [...subImagePreviews];
+    previews[index] = URL.createObjectURL(file);
+    const urls = [...subImageUrls];
+    urls[index] = '';
+    setSubImageFiles(files);
+    setSubImagePreviews(previews);
+    setSubImageUrls(urls);
   }
 
   // Color image select
@@ -343,14 +362,12 @@ export default function AddProduct() {
 
   function validate() {
     const errs = {};
-    // Required fields
     if (!form.name.trim()) errs.name = 'Product name is required.';
     if (!form.description.trim()) errs.description = 'Short description is required.';
     else if (form.description.trim().length < 10) errs.description = 'Description must be at least 10 characters.';
     if (!form.category) errs.category = 'Please select a category.';
     if (!mainImageFile && !mainImageUrl) errs.image = 'Main cover photo is required.';
 
-    // Pricing validation
     const hasColors = colors.length > 0;
     if (!hasColors) {
       if (!form.price) errs.price = 'Price is required.';
@@ -366,7 +383,6 @@ export default function AddProduct() {
       });
     }
 
-    // Shipping validation based on shippingType ('default' or 'specific')
     if (shippingType === 'specific') {
       if (!form.standardShipping) {
         errs.standardShipping = 'Standard delivery fee is required when specific rate is selected.';
@@ -389,16 +405,19 @@ export default function AddProduct() {
   // ── Submit ────────────────────────────────────────────────────────────
 
   async function handleSubmit(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    if (submitting) return;
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
+      toast.error('Please fix the highlighted errors before saving.', { id: 'validate-err' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
     setSubmitting(true);
     setServerError('');
+    const toastId = toast.loading(isEditMode ? 'Updating product...' : 'Saving and publishing product...');
 
     try {
       // 1. Upload main image
@@ -421,7 +440,7 @@ export default function AddProduct() {
         })
       );
 
-      // 4. Build specs details array (each spec = one bullet point)
+      // 4. Build specs details array
       const filledSpecs = specs.filter((s) => s.key.trim() && s.value.trim());
       const detailsArray = filledSpecs.map((s) => `${s.key}: ${s.value}`);
 
@@ -441,8 +460,9 @@ export default function AddProduct() {
         hoverImage,
         galleryImages,
         badge: form.badge.trim() || null,
-        standardShipping: form.standardShipping !== '' ? parseFloat(form.standardShipping) : null,
-        expressShipping: form.expressShipping !== '' ? parseFloat(form.expressShipping) : null,
+        featured: form.featured,
+        standardShipping: shippingType === 'specific' && form.standardShipping !== '' ? parseFloat(form.standardShipping) : null,
+        expressShipping: shippingType === 'specific' && form.expressShipping !== '' ? parseFloat(form.expressShipping) : null,
         colors: colorPayload,
       };
 
@@ -458,15 +478,20 @@ export default function AddProduct() {
 
       const data = await res.json();
       if (!res.ok) {
-        setServerError(data.error || `Failed to ${isEditMode ? 'update' : 'create'} product. Please try again.`);
+        const errorMsg = data.error || `Failed to ${isEditMode ? 'update' : 'create'} product. Please try again.`;
+        setServerError(errorMsg);
+        toast.error(errorMsg, { id: toastId });
         setSubmitting(false);
         return;
       }
 
-      // Success → go to products list
-      navigate('/admin/products', { state: { created: data.name } });
+      // Success
+      toast.success(`"${data.name || form.name}" has been ${isEditMode ? 'updated' : 'published'} successfully!`, { id: toastId });
+      navigate('/admin/products');
     } catch (err) {
-      setServerError(err.message || 'Unexpected error. Please try again.');
+      const errorMsg = err.message || 'Unexpected network error. Please check your connection and try again.';
+      setServerError(errorMsg);
+      toast.error(errorMsg, { id: toastId });
       setSubmitting(false);
     }
   }
@@ -498,181 +523,259 @@ export default function AddProduct() {
             <span className="material-symbols-outlined text-[16px] mr-1">arrow_back</span>
             Back to Products
           </button>
-          <h1 className="font-headline-md text-headline-md text-on-surface">
+          <h1 className="font-headline-md text-headline-md text-on-background">
             {isEditMode ? 'Edit Product' : 'Add New Product'}
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant">
-            {isEditMode ? 'Update the details for this product.' : 'Fill in the details to add a new item to your boutique collection.'}
+            {isEditMode
+              ? 'Update the details, imagery, and pricing for this artisanal piece.'
+              : 'Add a new handcrafted piece to your boutique catalog.'}
           </p>
         </div>
-        <div className="flex gap-3">
+
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => navigate('/admin/products')}
-            className="px-6 py-3 rounded-full border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors cursor-pointer"
+            className="px-5 py-2.5 rounded-full border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={submitting}
-            className="px-8 py-3 rounded-full font-label-md text-label-md shadow-ambient transition-all duration-300 flex items-center gap-2 bg-primary text-white hover:bg-primary/80 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+            className="px-6 py-2.5 rounded-full bg-primary text-white font-label-md text-label-md hover:bg-primary/90 transition-all duration-300 shadow-ambient disabled:opacity-50 flex items-center gap-2 cursor-pointer font-bold"
           >
-            {submitting
-              ? <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
-              : <span className="material-symbols-outlined text-[18px]">{isEditMode ? 'save' : 'publish'}</span>
-            }
-            {submitting
-              ? (isEditMode ? 'Saving...' : 'Publishing...')
-              : (isEditMode ? 'Save Changes' : 'Publish Product')
-            }
+            {submitting ? (
+              <>
+                <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+                {isEditMode ? 'Updating...' : 'Publishing...'}
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[18px]">
+                  {isEditMode ? 'save' : 'publish'}
+                </span>
+                {isEditMode ? 'Update Product' : 'Publish Product'}
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Global Error Banner */}
-      {(serverError || hasErrors) && (
-        <div className="p-4 bg-error-container/30 border border-error/30 rounded-xl flex items-start gap-3">
-          <span className="material-symbols-outlined text-error mt-0.5">error</span>
-          <div>
-            <p className="font-label-md font-bold text-error text-sm">Please fix the following errors:</p>
-            {serverError && <p className="text-sm text-on-error-container mt-1">{serverError}</p>}
-            {errorList.map((msg, i) => (
-              <p key={i} className="text-sm text-on-error-container mt-0.5">• {msg}</p>
-            ))}
-          </div>
+      {/* Server Error Banner */}
+      {serverError && (
+        <div className="p-4 bg-error-container text-on-error-container rounded-xl flex items-center gap-3">
+          <span className="material-symbols-outlined">error</span>
+          <p className="font-body-md text-sm">{serverError}</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* ── Left Column ── */}
-        <div className="lg:col-span-2 space-y-8">
+      {/* Form Validation Banner */}
+      {hasErrors && (
+        <div className="p-4 bg-error-container/30 border border-error-container rounded-xl">
+          <p className="font-label-md text-sm font-bold text-error mb-1">
+            Please resolve the following errors before submitting:
+          </p>
+          <ul className="list-disc list-inside space-y-0.5">
+            {errorList.map((err, i) => (
+              <li key={i} className="text-xs text-error">{err}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
-          {/* General Information */}
+      {/* Form Layout: 2 Columns */}
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* ── Left Column (Main Info, Media, Specs, Colors, Shipping) ── */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Basic Info */}
           <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-5">
             <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2 border-b border-outline-variant/30 pb-3">
               <span className="material-symbols-outlined">edit_note</span>
-              General Information
+              Basic Information
             </h2>
-            <div className="space-y-5">
-              {/* Product Name */}
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="name">
-                  Product Name <span className="text-error">*</span>
-                </label>
-                <input
-                  id="name" name="name" type="text"
-                  value={form.name} onChange={handleChange} onBlur={handleBlur}
-                  placeholder="e.g. Blush Silk Ribbon Bow"
-                  className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface placeholder:text-outline transition-colors ${errors.name ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
-                />
-                {errors.name && <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.name}</p>}
-              </div>
 
-              {/* Description */}
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="description">
-                  Short Description <span className="text-error">*</span>
-                </label>
-                <textarea
-                  id="description" name="description"
-                  value={form.description} onChange={handleChange} onBlur={handleBlur}
-                  rows={4}
-                  placeholder="Describe your handcrafted product details, charm, and styling..."
-                  className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface placeholder:text-outline transition-colors resize-none ${errors.description ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
-                />
-                {errors.description && <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.description}</p>}
-              </div>
+            {/* Product Name */}
+            <div>
+              <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="name">
+                Product Name <span className="text-error">*</span>
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={form.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="e.g. Blush Silk Ribbon Bow"
+                className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface transition-colors ${
+                  errors.name ? 'border-error' : 'border-outline-variant focus:border-primary'
+                }`}
+              />
+              {errors.name && (
+                <p className="text-xs text-error mt-1 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px]">error</span>
+                  {errors.name}
+                </p>
+              )}
+            </div>
 
-              {/* Badge (optional) */}
-              <div>
-                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="badge">
-                  Badge Label <span className="text-on-surface-variant font-normal">(Optional — e.g. New, Best Seller, Limited)</span>
-                </label>
-                <input
-                  id="badge" name="badge" type="text"
-                  value={form.badge} onChange={handleChange}
-                  placeholder="e.g. Best Seller"
-                  className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface placeholder:text-outline transition-colors"
-                />
+            {/* Description */}
+            <div>
+              <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="description">
+                Description <span className="text-error">*</span>
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                rows={4}
+                value={form.description}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Describe the piece, materials, occasion, craftsmanship, etc."
+                className={`w-full bg-surface-container-low border rounded-lg p-3 font-body-md text-on-surface focus:outline-none transition-colors ${
+                  errors.description ? 'border-error' : 'border-outline-variant focus:border-primary'
+                }`}
+              />
+              <div className="flex justify-between items-center mt-1">
+                {errors.description ? (
+                  <p className="text-xs text-error flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {errors.description}
+                  </p>
+                ) : <span />}
+                <span className="font-label-sm text-xs text-on-surface-variant">
+                  {form.description.length} chars
+                </span>
               </div>
+            </div>
+
+            {/* Badge */}
+            <div>
+              <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="badge">
+                Product Badge <span className="text-on-surface-variant font-normal text-xs">(optional)</span>
+              </label>
+              <input
+                id="badge"
+                name="badge"
+                type="text"
+                value={form.badge}
+                onChange={handleChange}
+                placeholder="e.g. Bestseller, New Arrival, Limited Edition"
+                className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface transition-colors"
+              />
             </div>
           </section>
 
-          {/* Media / Photo Upload */}
+          {/* Media & Photography */}
           <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-5">
             <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
               <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2">
-                <span className="material-symbols-outlined">imagesmode</span>
-                Product Photos
+                <span className="material-symbols-outlined">photo_library</span>
+                Product Photography
               </h2>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">Main + 3 Gallery</span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant">
+                1 Main + up to 3 Sub-images
+              </span>
             </div>
 
-            {errors.image && (
-              <p className="text-xs text-error flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">error</span>
-                {errors.image}
-              </p>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              {/* Main Cover */}
-              <div className="sm:col-span-2">
-                <label className="font-label-sm text-label-sm text-primary font-bold block mb-2">Main Cover Photo *</label>
-                <div
-                  className={`w-full aspect-square rounded-xl border-2 border-dashed transition-colors overflow-hidden cursor-pointer bg-surface-container flex items-center justify-center relative group ${errors.image ? 'border-error' : 'border-outline-variant hover:border-primary'}`}
-                  onClick={() => document.getElementById('main-image-input').click()}
-                >
-                  {mainImagePreview ? (
-                    <>
-                      <img src={mainImagePreview} alt="Main Cover" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="material-symbols-outlined text-white text-3xl">edit</span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center p-4">
-                      <span className="material-symbols-outlined text-4xl text-primary block mb-2">cloud_upload</span>
-                      <p className="font-label-md text-label-md text-on-surface font-bold">Upload Main Cover</p>
-                      <p className="font-label-sm text-label-sm text-outline">Click to select</p>
+            {/* Main Cover Photo */}
+            <div>
+              <label className="block font-label-md text-label-md text-on-surface mb-2">
+                Main Cover Photo <span className="text-error">*</span>
+              </label>
+              <div
+                onClick={() => document.getElementById('main-image-input').click()}
+                className={`relative w-full h-56 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
+                  mainImagePreview
+                    ? 'border-primary/50 bg-surface-container-low'
+                    : errors.image
+                    ? 'border-error bg-error-container/10'
+                    : 'border-outline-variant hover:border-primary/60 bg-surface-container-low/50'
+                }`}
+              >
+                {mainImagePreview ? (
+                  <>
+                    <img
+                      src={mainImagePreview}
+                      alt="Main Preview"
+                      className="w-full h-full object-contain p-2"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <span className="px-3 py-1.5 bg-white text-on-surface font-label-sm text-xs rounded-full shadow">
+                        Change Image
+                      </span>
                     </div>
-                  )}
-                </div>
-                <input id="main-image-input" type="file" accept="image/*" onChange={handleMainImage} className="hidden" />
+                  </>
+                ) : (
+                  <div className="text-center p-6 space-y-2">
+                    <span className="material-symbols-outlined text-4xl text-primary">cloud_upload</span>
+                    <p className="font-label-md text-sm text-on-surface">Click to upload cover photo</p>
+                    <p className="font-body-md text-xs text-on-surface-variant">PNG, JPG, WEBP up to 5MB</p>
+                  </div>
+                )}
               </div>
-
-              {/* Sub Gallery */}
-              <div className="sm:col-span-2 flex flex-col justify-between gap-2">
-                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block">Gallery Sub Images (3)</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[0, 1, 2].map((idx) => (
-                    <div key={idx} className="flex flex-col items-center">
-                      <div
-                        className="w-full aspect-square rounded-lg border border-dashed border-outline-variant hover:border-primary transition-colors overflow-hidden cursor-pointer bg-surface-container flex items-center justify-center relative group"
-                        onClick={() => document.getElementById(`sub-image-input-${idx}`).click()}
-                      >
-                        {subImagePreviews[idx] ? (
-                          <>
-                            <img src={subImagePreviews[idx]} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <span className="material-symbols-outlined text-white text-xl">edit</span>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-center">
-                            <span className="material-symbols-outlined text-xl text-outline block">add_a_photo</span>
-                            <span className="font-label-sm text-[10px] text-outline">Sub {idx + 1}</span>
-                          </div>
-                        )}
-                      </div>
-                      <input id={`sub-image-input-${idx}`} type="file" accept="image/*" onChange={(e) => handleSubImage(idx, e)} className="hidden" />
-                    </div>
-                  ))}
-                </div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant opacity-70">
-                  Gallery images appear on the Product Details page. First sub-image used as hover image.
+              <input
+                id="main-image-input"
+                type="file"
+                accept="image/*"
+                onChange={handleMainImage}
+                className="hidden"
+              />
+              {errors.image && (
+                <p className="text-xs text-error mt-1 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px]">error</span>
+                  {errors.image}
                 </p>
+              )}
+            </div>
+
+            {/* Sub-Images (Hover + Gallery) */}
+            <div>
+              <label className="block font-label-md text-label-md text-on-surface mb-2">
+                Additional Gallery / Hover Images <span className="font-normal text-xs text-on-surface-variant">(1st is used as hover effect)</span>
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {[0, 1, 2].map((idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => document.getElementById(`sub-img-${idx}`).click()}
+                    className={`relative h-28 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
+                      subImagePreviews[idx]
+                        ? 'border-primary/40 bg-surface-container-low'
+                        : 'border-outline-variant hover:border-primary/40 bg-surface-container-low/40'
+                    }`}
+                  >
+                    {subImagePreviews[idx] ? (
+                      <>
+                        <img
+                          src={subImagePreviews[idx]}
+                          alt={`Gallery ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-white text-sm">edit</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center p-2 text-on-surface-variant">
+                        <span className="material-symbols-outlined text-xl text-outline">add_photo_alternate</span>
+                        <p className="font-label-sm text-[10px] mt-1">
+                          {idx === 0 ? 'Hover Image' : `Gallery ${idx + 1}`}
+                        </p>
+                      </div>
+                    )}
+                    <input
+                      id={`sub-img-${idx}`}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleSubImage(idx, e)}
+                      className="hidden"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </section>
@@ -680,71 +783,77 @@ export default function AddProduct() {
           {/* Color Variants */}
           <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-5">
             <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
-              <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2">
-                <span className="material-symbols-outlined">palette</span>
-                Color Variants
-              </h2>
-              <span className="font-label-sm text-label-sm text-on-surface-variant font-bold">
-                {hasColors ? `${colors.length} variants (${totalVariantStock} units)` : 'None added'}
+              <div>
+                <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2">
+                  <span className="material-symbols-outlined">palette</span>
+                  Color Variants
+                </h2>
+                <p className="font-body-md text-xs text-on-surface-variant mt-0.5">
+                  Optional. If added, customers can choose colors and each color can have its own price & stock.
+                </p>
+              </div>
+              <span className="font-label-sm text-label-sm text-primary font-bold">
+                {colors.length} {colors.length === 1 ? 'Variant' : 'Variants'}
               </span>
             </div>
 
-            <p className="font-body-md text-sm text-on-surface-variant">
-              Optional: Add color variants with individual price, stock &amp; photo.{' '}
-              <span className="text-primary font-medium">
-                {hasColors ? 'Price & Stock set per variant below.' : 'If no colors, default price & stock used.'}
-              </span>
-            </p>
-
+            {/* Colors list */}
             <div className="space-y-4">
               {colors.map((color, index) => (
-                <div key={color.id || index} className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
-                  {/* Swatch + Name */}
-                  <div className="flex items-center gap-3 flex-grow min-w-[180px]">
+                <div
+                  key={color.id || index}
+                  className="flex flex-col lg:flex-row items-start lg:items-center gap-4 bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 relative"
+                >
+                  {/* Color Picker & Name */}
+                  <div className="flex items-center gap-3 w-full lg:w-48">
                     <input
-                      type="color" value={color.hex}
+                      type="color"
+                      value={color.hex}
                       onChange={(e) => handleColorChange(index, 'hex', e.target.value)}
-                      className="w-9 h-9 rounded-full cursor-pointer border border-outline-variant p-0.5 bg-transparent flex-shrink-0"
+                      className="w-9 h-9 rounded-full border border-outline-variant cursor-pointer p-0.5 bg-transparent"
+                      title="Select variant color swatch"
                     />
                     <div className="flex-grow">
-                      <label className="block font-label-sm text-label-sm text-on-surface-variant mb-0.5">Color Name *</label>
                       <input
-                        type="text" value={color.name}
-                        onChange={(e) => { handleColorChange(index, 'name', e.target.value); setErrors((p) => ({ ...p, [`color_name_${index}`]: '' })); }}
+                        type="text"
+                        value={color.name}
+                        onChange={(e) => handleColorChange(index, 'name', e.target.value)}
                         placeholder="e.g. Blush Pink"
-                        className={`w-full bg-surface-bright border rounded-md px-3 py-1.5 font-body-md text-on-surface focus:border-primary outline-none ${errors[`color_name_${index}`] ? 'border-error' : 'border-outline-variant'}`}
+                        className="w-full bg-surface-bright border border-outline-variant rounded-md px-2.5 py-1.5 font-body-md text-sm text-on-surface focus:border-primary outline-none"
                       />
-                      {errors[`color_name_${index}`] && <p className="text-xs text-error">{errors[`color_name_${index}`]}</p>}
                     </div>
                   </div>
 
                   {/* Price */}
-                  <div className="w-full sm:w-32 border-t sm:border-t-0 sm:border-l border-outline-variant/30 pt-2 sm:pt-0 sm:pl-3">
-                    <label className="block font-label-sm text-label-sm text-on-surface-variant mb-0.5">Price (Rs.)*</label>
+                  <div className="w-full lg:w-32">
+                    <label className="block font-label-sm text-[11px] text-on-surface-variant mb-0.5">Price (Rs.)</label>
                     <input
-                      type="text" inputMode="decimal" value={color.price}
-                      onChange={(e) => { handleColorChange(index, 'price', e.target.value); setErrors((p) => ({ ...p, [`color_price_${index}`]: '' })); }}
+                      type="text"
+                      inputMode="decimal"
+                      value={color.price}
+                      onChange={(e) => handleColorChange(index, 'price', e.target.value)}
                       placeholder="1200"
-                      className={`w-full bg-surface-bright border rounded-md px-3 py-1.5 font-body-md text-on-surface focus:border-primary outline-none font-bold ${errors[`color_price_${index}`] ? 'border-error' : 'border-outline-variant'}`}
+                      className="w-full bg-surface-bright border border-outline-variant rounded-md px-2.5 py-1.5 font-body-md text-sm text-on-surface focus:border-primary outline-none"
                     />
-                    {errors[`color_price_${index}`] && <p className="text-xs text-error">{errors[`color_price_${index}`]}</p>}
                   </div>
 
                   {/* Stock */}
-                  <div className="w-full sm:w-28 border-t sm:border-t-0 sm:border-l border-outline-variant/30 pt-2 sm:pt-0 sm:pl-3">
-                    <label className="block font-label-sm text-label-sm text-on-surface-variant mb-0.5">Stock Qty</label>
+                  <div className="w-full lg:w-24">
+                    <label className="block font-label-sm text-[11px] text-on-surface-variant mb-0.5">Stock</label>
                     <input
-                      type="text" inputMode="numeric" value={color.stock}
+                      type="text"
+                      inputMode="numeric"
+                      value={color.stock}
                       onChange={(e) => handleColorChange(index, 'stock', e.target.value)}
-                      placeholder="0"
-                      className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-1.5 font-body-md text-on-surface focus:border-primary outline-none font-bold text-primary"
+                      placeholder="10"
+                      className="w-full bg-surface-bright border border-outline-variant rounded-md px-2.5 py-1.5 font-body-md text-sm text-on-surface focus:border-primary outline-none"
                     />
                   </div>
 
-                  {/* Color Photo Upload */}
-                  <div className="flex items-center gap-2 w-full sm:w-48 border-t sm:border-t-0 sm:border-l border-outline-variant/30 pt-2 sm:pt-0 sm:pl-3">
+                  {/* Photo */}
+                  <div className="flex items-center gap-2">
                     <div
-                      className="w-11 h-11 rounded-lg border border-dashed border-outline-variant hover:border-primary transition-colors overflow-hidden cursor-pointer bg-surface-bright flex items-center justify-center flex-shrink-0 relative group"
+                      className="w-10 h-10 rounded-lg border border-outline-variant bg-surface-container overflow-hidden flex items-center justify-center cursor-pointer relative group"
                       onClick={() => document.getElementById(`color-img-${index}`).click()}
                     >
                       {color.imagePreview ? (
@@ -765,12 +874,19 @@ export default function AddProduct() {
                     >
                       {color.imagePreview ? 'Change' : 'Add Photo'}
                     </button>
-                    <input id={`color-img-${index}`} type="file" accept="image/*" onChange={(e) => handleColorImage(index, e)} className="hidden" />
+                    <input
+                      id={`color-img-${index}`}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleColorImage(index, e)}
+                      className="hidden"
+                    />
                   </div>
 
                   {/* Remove */}
                   <button
-                    type="button" onClick={() => handleRemoveColor(index)}
+                    type="button"
+                    onClick={() => handleRemoveColor(index)}
                     className="p-2 text-on-surface-variant hover:text-error transition-colors self-end lg:self-center cursor-pointer"
                     title="Delete color variant"
                   >
@@ -782,14 +898,19 @@ export default function AddProduct() {
 
             <div className="pt-2 flex justify-between items-center">
               <button
-                type="button" onClick={handleAddColor}
+                type="button"
+                onClick={handleAddColor}
                 className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-primary-container/30 transition-all cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 Add Color Variant
               </button>
               {hasColors && (
-                <button type="button" onClick={() => setColors([])} className="font-label-sm text-label-sm text-error hover:underline cursor-pointer">
+                <button
+                  type="button"
+                  onClick={() => setColors([])}
+                  className="font-label-sm text-label-sm text-error hover:underline cursor-pointer"
+                >
                   Clear All
                 </button>
               )}
@@ -803,18 +924,24 @@ export default function AddProduct() {
                 <span className="material-symbols-outlined">checklist</span>
                 Product Details &amp; Specifications
               </h2>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">Key-Value Specs</span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant">
+                Key-Value Specs
+              </span>
             </div>
             <p className="font-body-md text-sm text-on-surface-variant">
               Fill in the specification rows. Leave empty rows blank and they'll be ignored.
             </p>
             <div className="space-y-3">
               {specs.map((spec, index) => (
-                <div key={spec.id || index} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-surface-container-low p-3.5 rounded-lg border border-outline-variant/20">
+                <div
+                  key={spec.id || index}
+                  className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-surface-container-low p-3.5 rounded-lg border border-outline-variant/20"
+                >
                   <div className="sm:w-1/3">
                     <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Label</label>
                     <input
-                      type="text" value={spec.key}
+                      type="text"
+                      value={spec.key}
                       onChange={(e) => handleSpecChange(index, 'key', e.target.value)}
                       placeholder="e.g. Material"
                       className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 font-body-md text-on-surface focus:border-primary outline-none"
@@ -823,14 +950,16 @@ export default function AddProduct() {
                   <div className="flex-grow">
                     <label className="block font-label-sm text-label-sm text-on-surface-variant mb-1">Value</label>
                     <input
-                      type="text" value={spec.value}
+                      type="text"
+                      value={spec.value}
                       onChange={(e) => handleSpecChange(index, 'value', e.target.value)}
                       placeholder="e.g. 100% Silk"
                       className="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 font-body-md text-on-surface focus:border-primary outline-none"
                     />
                   </div>
                   <button
-                    type="button" onClick={() => handleRemoveSpec(index)}
+                    type="button"
+                    onClick={() => handleRemoveSpec(index)}
                     className="self-end sm:self-center sm:mt-5 p-2 text-on-surface-variant hover:text-error transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[20px]">delete</span>
@@ -839,7 +968,8 @@ export default function AddProduct() {
               ))}
             </div>
             <button
-              type="button" onClick={handleAddSpec}
+              type="button"
+              onClick={handleAddSpec}
               className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-primary-container/30 transition-all cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
@@ -860,24 +990,48 @@ export default function AddProduct() {
                     Price (Rs. LKR) <span className="text-error">*</span>
                   </label>
                   <input
-                    id="price" name="price" type="text" inputMode="decimal"
-                    value={form.price} onChange={handleChange} onBlur={handleBlur}
+                    id="price"
+                    name="price"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.price}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="1200.00"
-                    className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${errors.price ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
+                    className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${
+                      errors.price ? 'border-error' : 'border-outline-variant focus:border-primary'
+                    }`}
                   />
-                  {errors.price && <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.price}</p>}
+                  {errors.price && (
+                    <p className="text-xs text-error mt-1 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">error</span>
+                      {errors.price}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="stock">
                     Stock Quantity <span className="text-error">*</span>
                   </label>
                   <input
-                    id="stock" name="stock" type="text" inputMode="numeric"
-                    value={form.stock} onChange={handleChange} onBlur={handleBlur}
+                    id="stock"
+                    name="stock"
+                    type="text"
+                    inputMode="numeric"
+                    value={form.stock}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="48"
-                    className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${errors.stock ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
+                    className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${
+                      errors.stock ? 'border-error' : 'border-outline-variant focus:border-primary'
+                    }`}
                   />
-                  {errors.stock && <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.stock}</p>}
+                  {errors.stock && (
+                    <p className="text-xs text-error mt-1 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">error</span>
+                      {errors.stock}
+                    </p>
+                  )}
                 </div>
               </div>
             </section>
@@ -888,7 +1042,9 @@ export default function AddProduct() {
               <span className="material-symbols-outlined text-primary mt-0.5">info</span>
               <div className="text-sm">
                 <p className="font-bold text-primary mb-0.5">Color Variants Active</p>
-                <p className="text-on-surface-variant">Price &amp; Stock are set per color above. Total: <span className="font-bold text-primary">{totalVariantStock} units</span></p>
+                <p className="text-on-surface-variant">
+                  Price &amp; Stock are set per color above. Total: <span className="font-bold text-primary">{totalVariantStock} units</span>
+                </p>
               </div>
             </div>
           )}
@@ -974,7 +1130,9 @@ export default function AddProduct() {
                       Custom Standard Delivery Fee (Rs.) <span className="text-error">*</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">Rs.</span>
+                      <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">
+                        Rs.
+                      </span>
                       <input
                         id="standardShipping"
                         name="standardShipping"
@@ -984,13 +1142,20 @@ export default function AddProduct() {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         placeholder="e.g. 550"
-                        className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${errors.standardShipping ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
+                        className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${
+                          errors.standardShipping ? 'border-error' : 'border-outline-variant focus:border-primary'
+                        }`}
                       />
                     </div>
                     {errors.standardShipping ? (
-                      <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.standardShipping}</p>
+                      <p className="text-xs text-error mt-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">error</span>
+                        {errors.standardShipping}
+                      </p>
                     ) : (
-                      <p className="text-xs text-on-surface-variant mt-1">Standard / regular shipping cost for this product</p>
+                      <p className="text-xs text-on-surface-variant mt-1">
+                        Standard / regular shipping cost for this product
+                      </p>
                     )}
                   </div>
 
@@ -1000,7 +1165,9 @@ export default function AddProduct() {
                       Custom Express Delivery Fee (Rs.) <span className="text-error">*</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">Rs.</span>
+                      <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">
+                        Rs.
+                      </span>
                       <input
                         id="expressShipping"
                         name="expressShipping"
@@ -1010,13 +1177,20 @@ export default function AddProduct() {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         placeholder="e.g. 1400"
-                        className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${errors.expressShipping ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
+                        className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${
+                          errors.expressShipping ? 'border-error' : 'border-outline-variant focus:border-primary'
+                        }`}
                       />
                     </div>
                     {errors.expressShipping ? (
-                      <p className="text-xs text-error mt-1 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">error</span>{errors.expressShipping}</p>
+                      <p className="text-xs text-error mt-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">error</span>
+                        {errors.expressShipping}
+                      </p>
                     ) : (
-                      <p className="text-xs text-on-surface-variant mt-1">Priority / express delivery cost for this product</p>
+                      <p className="text-xs text-on-surface-variant mt-1">
+                        Priority / express delivery cost for this product
+                      </p>
                     )}
                   </div>
                 </div>
@@ -1068,18 +1242,19 @@ export default function AddProduct() {
                 </div>
               ) : categories.length === 0 ? (
                 <div className="p-3 bg-error-container/20 rounded-lg text-sm text-error">
-                  No categories found. Please{' '}
-                  <button type="button" onClick={() => navigate('/admin/categories')} className="underline font-bold cursor-pointer">
-                    create categories
-                  </button>{' '}
-                  first.
+                  No categories found. Please <button type="button" onClick={() => navigate('/admin/categories')} className="underline font-bold cursor-pointer">create categories</button> first.
                 </div>
               ) : (
                 <div className="relative">
                   <select
-                    id="category" name="category"
-                    value={form.category} onChange={handleChange} onBlur={handleBlur}
-                    className={`w-full bg-transparent border-0 border-b-2 outline-none py-2 pr-8 font-body-md text-on-surface appearance-none cursor-pointer transition-colors ${errors.category ? 'border-error' : 'border-outline-variant focus:border-primary'}`}
+                    id="category"
+                    name="category"
+                    value={form.category}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full bg-transparent border-0 border-b-2 outline-none py-2 pr-8 font-body-md text-on-surface appearance-none cursor-pointer transition-colors ${
+                      errors.category ? 'border-error' : 'border-outline-variant focus:border-primary'
+                    }`}
                   >
                     {categories.map((c) => (
                       <option key={c.id} value={c.name} className="bg-surface-container-lowest text-on-surface py-2">
@@ -1087,7 +1262,9 @@ export default function AddProduct() {
                       </option>
                     ))}
                   </select>
-                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">unfold_more</span>
+                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
+                    unfold_more
+                  </span>
                 </div>
               )}
               {errors.category && <p className="text-xs text-error mt-1">{errors.category}</p>}
@@ -1104,8 +1281,10 @@ export default function AddProduct() {
               <label className="flex items-center justify-between cursor-pointer">
                 <span className="font-label-md text-label-md text-on-surface">Mark as Featured</span>
                 <input
-                  type="checkbox" name="featured"
-                  checked={form.featured} onChange={handleChange}
+                  type="checkbox"
+                  name="featured"
+                  checked={form.featured}
+                  onChange={handleChange}
                   className="w-5 h-5 accent-primary cursor-pointer"
                 />
               </label>
@@ -1114,7 +1293,9 @@ export default function AddProduct() {
 
           {/* Summary Card */}
           <section className="bg-primary-container/20 rounded-xl p-6 border border-primary/20 space-y-3">
-            <h3 className="font-title-sm text-sm text-primary font-bold uppercase tracking-widest">Ready to Publish?</h3>
+            <h3 className="font-title-sm text-sm text-primary font-bold uppercase tracking-widest">
+              {isEditMode ? 'Ready to Update?' : 'Ready to Publish?'}
+            </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-on-surface-variant">Product Name</span>
@@ -1134,18 +1315,27 @@ export default function AddProduct() {
                   {mainImagePreview ? '✓ Ready' : '✗ Missing'}
                 </span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-on-surface-variant">Delivery Fee</span>
+                <span className="font-medium text-on-surface">
+                  {shippingType === 'specific' ? 'Custom Rates' : 'Store Default'}
+                </span>
+              </div>
             </div>
             <button
               type="button"
               onClick={handleSubmit}
               disabled={submitting || !mainImagePreview || !form.name || !form.category}
-              className="w-full mt-2 px-6 py-3 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-ambient"
+              className="w-full mt-2 px-6 py-3 bg-primary text-white rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-ambient font-bold"
             >
-              {submitting
-                ? <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
-                : <span className="material-symbols-outlined text-[18px]">publish</span>
-              }
-              {submitting ? 'Publishing...' : 'Publish Product'}
+              {submitting ? (
+                <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+              ) : (
+                <span className="material-symbols-outlined text-[18px]">
+                  {isEditMode ? 'save' : 'publish'}
+                </span>
+              )}
+              {submitting ? (isEditMode ? 'Updating...' : 'Publishing...') : (isEditMode ? 'Update Product' : 'Publish Product')}
             </button>
           </section>
         </div>

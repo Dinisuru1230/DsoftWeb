@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -17,6 +18,8 @@ export default function ContactUs() {
     e.preventDefault();
     setSubmitting(true);
     setError('');
+    const toastId = toast.loading('Sending your message...');
+
     try {
       const res = await fetch(`${API_BASE}/contact`, {
         method: 'POST',
@@ -27,11 +30,16 @@ export default function ContactUs() {
       if (res.ok) {
         setSubmitted(true);
         setForm({ name: '', email: '', subject: '', message: '' });
+        toast.success('Your message has been sent to our team!', { id: toastId });
       } else {
-        setError(data.error || 'Failed to send message. Please try again.');
+        const errorMsg = data.error || 'Failed to send message. Please try again.';
+        setError(errorMsg);
+        toast.error(errorMsg, { id: toastId });
       }
     } catch {
-      setError('Network error. Please check your connection and try again.');
+      const errorMsg = 'Network error. Please check your connection and try again.';
+      setError(errorMsg);
+      toast.error(errorMsg, { id: toastId });
     }
     setSubmitting(false);
   }
@@ -193,7 +201,7 @@ export default function ContactUs() {
             <div className="flex items-start space-x-3 sm:col-span-2">
               <span className="material-symbols-outlined text-primary mt-0.5">photo_camera</span>
               <div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Instagram</p>
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Facebook</p>
                 <a href="#" className="font-body-md text-body-md text-primary hover:underline">
                   @malmaleecreations
                 </a>

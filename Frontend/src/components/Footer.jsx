@@ -28,7 +28,7 @@ export default function Footer() {
           <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">Company</h3>
           <Link to="/our-story" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Our Story</Link>
           <Link to="/contact" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Contact Us</Link>
-          <a href="#" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Instagram</a>
+          <a href="#" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Facebook</a>
           <a href="#" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Pinterest</a>
         </div>
 

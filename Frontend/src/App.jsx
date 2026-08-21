@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import toast, { Toaster, ToastBar } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
@@ -38,6 +39,7 @@ import AdminManagement from './admin/pages/AdminManagement';
 import AdminProfile from './admin/pages/AdminProfile';
 import ContactManagement from './admin/pages/ContactManagement';
 import DeliverySettings from './admin/pages/DeliverySettings';
+import BankDetailsSettings from './admin/pages/BankDetailsSettings';
 
 // Customer Layout (Navbar + Content + Footer)
 function CustomerLayout({ children }) {
@@ -115,6 +117,56 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#ffffff',
+                color: '#2d1527',
+                border: '1px solid rgba(224, 185, 203, 0.5)',
+                padding: '10px 14px',
+                borderRadius: '14px',
+                boxShadow: '0 10px 30px rgba(74, 25, 66, 0.12)',
+                fontSize: '14px',
+                fontWeight: '500',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#852e69',
+                  secondary: '#ffffff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ba1a1a',
+                  secondary: '#ffffff',
+                },
+              },
+            }}
+          >
+            {(t) => (
+              <ToastBar toast={t}>
+                {({ icon, message }) => (
+                  <div className="flex items-center gap-2">
+                    {icon}
+                    <div className="flex-1">{message}</div>
+                    {t.type !== 'loading' && (
+                      <button
+                        type="button"
+                        onClick={() => toast.dismiss(t.id)}
+                        className="ml-2 p-1 rounded-full text-on-surface-variant/60 hover:text-primary hover:bg-primary-container/40 transition-colors flex items-center justify-center cursor-pointer"
+                        title="Close notification"
+                        aria-label="Close notification"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">close</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </ToastBar>
+            )}
+          </Toaster>
           <Routes>
             {/* ── Customer Auth Pages (No Navbar/Footer) ── */}
             <Route path="/login" element={<div className="flex flex-col min-h-screen"><Login /></div>} />
@@ -136,11 +188,13 @@ export default function App() {
             <Route path="/checkout/failed" element={<CustomerLayout><PaymentUnsuccessful /></CustomerLayout>} />
             <Route path="/our-story" element={<CustomerLayout><OurStory /></CustomerLayout>} />
             <Route path="/contact" element={<CustomerLayout><ContactUs /></CustomerLayout>} />
+            <Route path="/track-order" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
+            <Route path="/track" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
 
             {/* ── Protected Customer Account Pages ── */}
             <Route path="/account" element={<CustomerAccountRoute><MyAccount /></CustomerAccountRoute>} />
             <Route path="/account/profile" element={<CustomerAccountRoute><MyProfile /></CustomerAccountRoute>} />
-            <Route path="/account/track" element={<CustomerAccountRoute><TrackOrder /></CustomerAccountRoute>} />
+            <Route path="/account/track" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
 
             {/* ── Protected Admin Panel Pages ── */}
             <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
@@ -155,6 +209,7 @@ export default function App() {
             <Route path="/admin/profile" element={<AdminRoute><AdminProfile /></AdminRoute>} />
             <Route path="/admin/messages" element={<AdminRoute><ContactManagement /></AdminRoute>} />
             <Route path="/admin/delivery-settings" element={<AdminRoute><DeliverySettings /></AdminRoute>} />
+            <Route path="/admin/bank-details" element={<AdminRoute><BankDetailsSettings /></AdminRoute>} />
 
             {/* ── 404 Not Found ── */}
             <Route path="*" element={<CustomerLayout><NotFound /></CustomerLayout>} />

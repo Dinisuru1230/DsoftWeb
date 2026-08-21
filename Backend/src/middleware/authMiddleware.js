@@ -27,6 +27,29 @@ async function authenticateToken(req, res, next) {
   }
 }
 
+async function optionalAuth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'malmalee_creations_super_secret_jwt_key_2026');
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, name: true, email: true, role: true, address: true, phone: true, city: true, district: true, postalCode: true },
+    });
+    req.user = user || null;
+    next();
+  } catch (err) {
+    req.user = null;
+    next();
+  }
+}
+
 function requireAdmin(req, res, next) {
   if (req.user && req.user.role === 'ADMIN') {
     next();
@@ -35,4 +58,4 @@ function requireAdmin(req, res, next) {
   }
 }
 
-module.exports = { authenticateToken, requireAdmin };
+module.exports = { authenticateToken, optionalAuth, requireAdmin };

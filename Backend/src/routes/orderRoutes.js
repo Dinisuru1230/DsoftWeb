@@ -5,15 +5,21 @@ const {
   uploadBankSlip,
   getMyOrders,
   getAllOrders,
+  getOrderById,
   updateOrderStatus,
+  trackOrder,
+  getDashboardStats,
 } = require('../controllers/orderController');
-const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
+const { authenticateToken, optionalAuth, requireAdmin } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
-router.post('/', createOrder);
+router.post('/', optionalAuth, createOrder);
 router.post('/:id/bank-slip', upload.single('bankSlip'), uploadBankSlip);
 router.get('/my-orders', authenticateToken, getMyOrders);
+router.get('/dashboard-stats', authenticateToken, requireAdmin, getDashboardStats);
+router.get('/track/:orderNumber', trackOrder);
 router.get('/', authenticateToken, requireAdmin, getAllOrders);
+router.get('/:id', authenticateToken, requireAdmin, getOrderById);
 router.put('/:id/status', authenticateToken, requireAdmin, updateOrderStatus);
 
 module.exports = router;

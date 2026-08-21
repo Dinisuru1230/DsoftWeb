@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 
 const API_BASE_URL = 'http://localhost:5050/api';
 const INACTIVITY_LIMIT_MS = 10 * 60 * 1000; // 10 minutes
@@ -31,10 +32,18 @@ export function AuthProvider({ children }) {
     }
   }
 
-  function logout() {
+  function logout(showToast = true) {
+    const role = user?.role;
     setUser(null);
     setToken(null);
     clearAllAuthStorage();
+    if (showToast) {
+      if (role === 'ADMIN') {
+        toast.success('Signed out of Admin Panel successfully.');
+      } else {
+        toast('You have been signed out. Come back soon!', { icon: '👋' });
+      }
+    }
   }
 
   // Validate token on mount

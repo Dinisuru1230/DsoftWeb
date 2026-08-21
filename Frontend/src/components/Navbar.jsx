@@ -16,6 +16,7 @@ export default function Navbar() {
   const searchInputRef = useRef(null);
 
   const navLinks = [
+    { label: 'Home', to: '/' },
     { label: 'Shop', to: '/shop' },
     { label: 'Our Story', to: '/our-story' },
     { label: 'Contact Us', to: '/contact' },
@@ -57,24 +58,26 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-background shadow-ambient w-full">
-      <nav className="flex justify-between items-center w-full px-4 sm:px-8 md:px-12 py-4 max-w-[1600px] mx-auto">
-        {/* Brand Logo */}
-        <Link
-          to="/"
-          className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight"
-        >
-          Malmalee Creations
-        </Link>
+      <nav className="flex justify-between items-center w-full px-4 sm:px-8 md:px-12 py-3.5 max-w-[1600px] mx-auto">
+        {/* Left: Brand Logo (Single Line, Larger Font) */}
+        <div className="flex-1 flex justify-start">
+          <Link
+            to="/"
+            className="font-display-lg text-2xl sm:text-[28px] md:text-[32px] text-primary tracking-tight font-bold whitespace-nowrap group hover:opacity-90 transition-opacity"
+          >
+            Malmalee Creations
+          </Link>
+        </div>
 
-        {/* Desktop Nav Links */}
-        <ul className="hidden md:flex space-x-6 items-center font-label-md text-label-md">
+        {/* Center: Desktop Nav Links */}
+        <ul className="hidden md:flex justify-center items-center space-x-8 font-label-md text-label-md flex-shrink-0">
           {navLinks.map((link) => (
             <li key={link.to}>
               <Link
                 to={link.to}
                 className={`pb-1 transition-colors duration-300 ${
                   isActive(link.to)
-                    ? 'text-primary border-b-2 border-primary'
+                    ? 'text-primary border-b-2 border-primary font-bold'
                     : 'text-on-surface-variant hover:text-primary'
                 }`}
               >
@@ -84,12 +87,12 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Trailing Icons */}
-        <div className="flex items-center space-x-4">
+        {/* Right: Trailing Action Icons */}
+        <div className="flex-1 flex justify-end items-center space-x-4">
           {/* Search Toggle Button */}
           <button
             onClick={() => setSearchOpen(!searchOpen)}
-            className="text-primary hover:opacity-80 transition-all p-1"
+            className="text-primary hover:opacity-80 transition-all p-1 cursor-pointer"
             aria-label="Search"
           >
             <span className="material-symbols-outlined">{searchOpen ? 'close' : 'search'}</span>
@@ -98,7 +101,7 @@ export default function Navbar() {
           {/* Cart Button */}
           <button
             onClick={() => navigate('/cart')}
-            className="relative text-primary hover:opacity-80 transition-all p-1"
+            className="relative text-primary hover:opacity-80 transition-all p-1 cursor-pointer"
             aria-label="Cart"
           >
             <span className="material-symbols-outlined">shopping_bag</span>
@@ -133,7 +136,7 @@ export default function Navbar() {
           ) : (
             <Link
               to="/login"
-              className="hidden md:flex font-label-md text-label-md text-primary hover:opacity-80 transition-all"
+              className="hidden md:flex font-label-md text-label-md text-primary hover:opacity-80 transition-all font-bold"
             >
               Login
             </Link>
@@ -142,7 +145,7 @@ export default function Navbar() {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-primary hover:opacity-80 transition-all p-1"
+            className="md:hidden text-primary hover:opacity-80 transition-all p-1 cursor-pointer"
             aria-label="Menu"
           >
             <span className="material-symbols-outlined">{mobileOpen ? 'close' : 'menu'}</span>
@@ -255,13 +258,30 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link
-            to="/login"
-            onClick={() => setMobileOpen(false)}
-            className="font-label-md text-label-md text-primary py-2"
-          >
-            Login / Register
-          </Link>
+          {user ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                if (user.role === 'ADMIN') navigate('/admin');
+                else navigate('/account/profile');
+              }}
+              className="font-label-md text-label-md text-primary py-2 text-left flex items-center gap-2 cursor-pointer font-bold border-t border-outline-variant/30 pt-3"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {user.role === 'ADMIN' ? 'admin_panel_settings' : 'person'}
+              </span>
+              {user.role === 'ADMIN' ? 'Admin Dashboard' : `My Account (${user.name})`}
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              onClick={() => setMobileOpen(false)}
+              className="font-label-md text-label-md text-primary py-2 font-bold border-t border-outline-variant/30 pt-3"
+            >
+              Login / Register
+            </Link>
+          )}
         </div>
       )}
     </header>
