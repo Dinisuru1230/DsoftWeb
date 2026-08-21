@@ -298,6 +298,39 @@ async function updateOrderStatus(req, res) {
   }
 }
 
+// GET /api/orders/track/:orderNumber (Public tracking for customers)
+async function trackOrder(req, res) {
+  try {
+    const { orderNumber } = req.params;
+    if (!orderNumber || !orderNumber.trim()) {
+      return res.status(400).json({ error: 'Order number is required' });
+    }
+
+    const trimmed = orderNumber.trim();
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { orderNumber: trimmed },
+          { id: trimmed },
+        ],
+      },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: `Order #${trimmed} not found. Please verify your order number and try again.` });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = {
   createOrder,
   uploadBankSlip,
@@ -305,4 +338,5 @@ module.exports = {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  trackOrder,
 };

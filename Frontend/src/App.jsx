@@ -166,11 +166,13 @@ export default function App() {
             <Route path="/checkout/failed" element={<CustomerLayout><PaymentUnsuccessful /></CustomerLayout>} />
             <Route path="/our-story" element={<CustomerLayout><OurStory /></CustomerLayout>} />
             <Route path="/contact" element={<CustomerLayout><ContactUs /></CustomerLayout>} />
+            <Route path="/track-order" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
+            <Route path="/track" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
 
             {/* ── Protected Customer Account Pages ── */}
             <Route path="/account" element={<CustomerAccountRoute><MyAccount /></CustomerAccountRoute>} />
             <Route path="/account/profile" element={<CustomerAccountRoute><MyProfile /></CustomerAccountRoute>} />
-            <Route path="/account/track" element={<CustomerAccountRoute><TrackOrder /></CustomerAccountRoute>} />
+            <Route path="/account/track" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
 
             {/* ── Protected Admin Panel Pages ── */}
             <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
