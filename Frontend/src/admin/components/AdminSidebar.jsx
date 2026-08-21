@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 const API_BASE = 'http://localhost:5050/api';
 
-const navItems = [
+export const navItems = [
   { to: '/admin', label: 'Dashboard', icon: 'dashboard', end: true },
   { to: '/admin/products', label: 'Products', icon: 'inventory_2' },
   { to: '/admin/add-product', label: 'Add Product', icon: 'add_box' },
@@ -18,7 +18,7 @@ const navItems = [
   { to: '/admin/profile', label: 'Admin Profile', icon: 'account_circle' },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ onClose }) {
   const navigate = useNavigate();
   const { logout, token } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -45,31 +45,43 @@ export default function AdminSidebar() {
   }, [token]);
 
   function handleLogout() {
+    if (onClose) onClose();
     logout();
     navigate('/login', { replace: true });
   }
 
   return (
-    <aside className="hidden md:flex flex-col h-screen w-64 bg-surface-container-lowest border-r border-outline-variant shadow-sm p-6 space-y-4 flex-shrink-0 sticky top-0">
-      {/* Brand */}
-      <div className="mb-6">
-        <h2 className="font-display-lg text-primary tracking-tight" style={{ fontSize: '28px' }}>
-          Malmalee
-        </h2>
-        <p className="font-label-sm text-label-sm text-on-surface-variant mt-1">Admin Panel</p>
+    <aside className="flex flex-col h-full w-64 bg-surface-container-lowest border-r border-outline-variant shadow-sm p-6 space-y-4 flex-shrink-0">
+      {/* Brand & Optional Close */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="font-display-lg text-primary tracking-tight font-bold" style={{ fontSize: '26px' }}>
+            Malmalee
+          </h2>
+          <p className="font-label-sm text-label-sm text-on-surface-variant">Admin Panel</p>
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="md:hidden p-1.5 rounded-full hover:bg-surface-container text-on-surface-variant hover:text-primary cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 flex flex-col space-y-1">
+      <nav className="flex-1 flex flex-col space-y-1 overflow-y-auto pr-1">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.end}
+            onClick={() => { if (onClose) onClose(); }}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-md text-label-md transition-all duration-200 ${
                 isActive
-                  ? 'text-primary font-bold bg-primary-container'
+                  ? 'text-primary font-bold bg-primary-container shadow-sm'
                   : 'text-on-surface-variant hover:bg-surface-container hover:text-primary hover:translate-x-1'
               }`
             }
@@ -86,16 +98,15 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="pt-4 border-t border-outline-variant">
+      <div className="pt-3 border-t border-outline-variant">
         <button
           onClick={handleLogout}
-          className="w-full py-3 px-4 bg-error-container/20 border border-error/30 text-error font-label-md text-label-md rounded-lg hover:bg-error-container/40 transition-colors flex items-center justify-center gap-2 font-bold cursor-pointer"
+          className="w-full py-2.5 px-4 bg-error-container/20 border border-error/30 text-error font-label-md text-label-md rounded-lg hover:bg-error-container/40 transition-colors flex items-center justify-center gap-2 font-bold cursor-pointer"
         >
-          <span className="material-symbols-outlined">logout</span>
+          <span className="material-symbols-outlined text-[18px]">logout</span>
           Log Out
         </button>
       </div>
     </aside>
   );
 }
-
