@@ -2,7 +2,15 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
-import { ALL_PRODUCTS } from '../data/productsData';
+
+const API_BASE = 'http://localhost:5050/api';
+
+function imgUrl(path) {
+  if (!path) return '/14_blush_silk_ribbon_bow.jpg';
+  if (path.startsWith('http')) return path;
+  if (path.startsWith('/uploads')) return `http://localhost:5050${path}`;
+  return path;
+}
 
 export default function Navbar() {
   const location = useLocation();
@@ -13,6 +21,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [realProducts, setRealProducts] = useState([]);
   const searchInputRef = useRef(null);
 
   const navLinks = [
@@ -24,20 +33,40 @@ export default function Navbar() {
 
   const isActive = (path) => location.pathname === path;
 
-  // Auto-focus input when search opens
+  // Auto-focus input when search opens & fetch latest products
   useEffect(() => {
-    if (searchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
+    if (searchOpen) {
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+      fetch(`${API_BASE}/products`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (Array.isArray(data)) setRealProducts(data);
+        })
+        .catch(() => {});
     }
   }, [searchOpen]);
 
-  // Live filter products as user types (even single letter)
+  // Initial load of products for instant search
+  useEffect(() => {
+    fetch(`${API_BASE}/products`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setRealProducts(data);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Live filter real products as user types
   const searchResults = searchQuery.trim().length > 0
-    ? ALL_PRODUCTS.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? realProducts.filter((p) => {
+        const q = searchQuery.toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        const category = (p.categoryName || '').toLowerCase();
+        const desc = (p.description || '').toLowerCase();
+        return name.includes(q) || category.includes(q) || desc.includes(q);
+      })
     : [];
 
   function handleSelectProduct(productId) {
@@ -203,7 +232,7 @@ export default function Navbar() {
                       >
                         <div className="flex items-center gap-3.5">
                           <img
-                            src={product.image}
+                            src={imgUrl(product.image)}
                             alt={product.name}
                             className="w-12 h-12 rounded-lg object-cover border border-outline-variant/30 shrink-0"
                           />
@@ -212,14 +241,14 @@ export default function Navbar() {
                               {product.name}
                             </h4>
                             <span className="font-label-sm text-xs text-on-surface-variant">
-                              {product.category}
+                              {product.categoryName || product.category || 'Boutique Item'}
                             </span>
                           </div>
                         </div>
 
                         <div className="text-right shrink-0">
                           <span className="font-title-sm text-sm font-bold text-primary">
-                            Rs. {product.price.toLocaleString()}
+                            Rs. {Number(product.price || 0).toLocaleString()}
                           </span>
                           {product.badge && (
                             <span className="block text-[10px] bg-primary-container text-on-background px-2 py-0.5 rounded-full font-bold mt-0.5">

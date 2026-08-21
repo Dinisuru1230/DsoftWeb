@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 
 const API_BASE = 'http://localhost:5050/api';
@@ -30,8 +30,136 @@ function GridSkeleton() {
   );
 }
 
+// ── Standalone Sidebar Filters Component (Defined outside so input never loses focus) ──
+function SidebarFilters({
+  searchQuery,
+  setSearchQuery,
+  selectedCategory,
+  setSelectedCategory,
+  dbCategories,
+  catLoading,
+  priceRange,
+  setPriceRange,
+  sortBy,
+  setSortBy,
+}) {
+  return (
+    <div className="space-y-8">
+      {/* Live Search Input Box */}
+      <div>
+        <h3 className="font-label-md text-label-md text-primary mb-2 font-bold">Search Catalog</h3>
+        <div className="relative">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Type to filter..."
+            className="w-full bg-surface-container-low border border-outline-variant/50 focus:border-primary rounded-lg pl-9 pr-8 py-2 font-body-md text-sm outline-none transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-primary cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">cancel</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Categories from DB */}
+      <div>
+        <h3 className="font-label-md text-label-md text-primary mb-3 font-bold">Category</h3>
+        <div className="flex flex-col gap-1">
+          {/* All Products */}
+          <button
+            onClick={() => setSelectedCategory('All Products')}
+            className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${
+              selectedCategory === 'All Products'
+                ? 'text-primary font-bold bg-primary-container/40'
+                : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">grid_view</span>
+            All Products
+          </button>
+          {catLoading ? (
+            <div className="flex items-center gap-2 p-2 text-on-surface-variant">
+              <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
+              <span className="text-xs font-label-md">Loading...</span>
+            </div>
+          ) : (
+            dbCategories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.name)}
+                className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${
+                  selectedCategory === cat.name
+                    ? 'text-primary font-bold bg-primary-container/40'
+                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">{cat.icon || 'category'}</span>
+                {cat.name}
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Price Range */}
+      <div className="pt-4 border-t border-outline-variant/40">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-label-md text-label-md text-primary font-bold">Price Range</h3>
+          <span className="font-label-sm text-label-sm text-on-surface-variant font-bold">
+            Rs. {priceRange.toLocaleString()}
+          </span>
+        </div>
+        <div className="flex justify-between text-xs text-outline mb-1 font-body-md">
+          <span>Rs. 0</span>
+          <span>Rs. 20,000</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="20000"
+          step="500"
+          value={priceRange}
+          onChange={(e) => setPriceRange(Number(e.target.value))}
+          className="w-full accent-primary cursor-pointer"
+        />
+      </div>
+
+      {/* Sort By */}
+      <div className="pt-4 border-t border-outline-variant/40">
+        <h3 className="font-label-md text-label-md text-primary font-bold mb-3">Sort By</h3>
+        <div className="flex flex-col gap-1">
+          {[
+            { value: 'newest', label: 'Newest First' },
+            { value: 'price-asc', label: 'Price: Low to High' },
+            { value: 'price-desc', label: 'Price: High to Low' },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setSortBy(opt.value)}
+              className={`p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${
+                sortBy === opt.value
+                  ? 'text-primary font-bold bg-primary-container/40'
+                  : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ShopAll() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const catParam = searchParams.get('cat');
   const searchParam = searchParams.get('search') || '';
 
@@ -112,121 +240,18 @@ export default function ShopAll() {
     return () => clearTimeout(timer);
   }, [fetchProducts]);
 
-  const CATEGORIES = ['All Products', ...dbCategories.map((c) => c.name)];
-
-  const SidebarFilters = () => (
-    <div className="space-y-8">
-      {/* Live Search Input Box */}
-      <div>
-        <h3 className="font-label-md text-label-md text-primary mb-2 font-bold">Search Catalog</h3>
-        <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Type to filter..."
-            className="w-full bg-surface-container-low border border-outline-variant/50 focus:border-primary rounded-lg pl-9 pr-8 py-2 font-body-md text-sm outline-none transition-colors"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-primary"
-            >
-              <span className="material-symbols-outlined text-[16px]">cancel</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Categories from DB */}
-      <div>
-        <h3 className="font-label-md text-label-md text-primary mb-3 font-bold">Category</h3>
-        <div className="flex flex-col gap-1">
-          {/* All Products */}
-          <button
-            onClick={() => setSelectedCategory('All Products')}
-            className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors ${
-              selectedCategory === 'All Products'
-                ? 'text-primary font-bold bg-primary-container/40'
-                : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">grid_view</span>
-            All Products
-          </button>
-          {catLoading ? (
-            <div className="flex items-center gap-2 p-2 text-on-surface-variant">
-              <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
-              <span className="text-xs font-label-md">Loading...</span>
-            </div>
-          ) : (
-            dbCategories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.name)}
-                className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors ${
-                  selectedCategory === cat.name
-                    ? 'text-primary font-bold bg-primary-container/40'
-                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">{cat.icon || 'category'}</span>
-                {cat.name}
-              </button>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Price Range */}
-      <div className="pt-4 border-t border-outline-variant/40">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="font-label-md text-label-md text-primary font-bold">Price Range</h3>
-          <span className="font-label-sm text-label-sm text-on-surface-variant font-bold">
-            Rs. {priceRange.toLocaleString()}
-          </span>
-        </div>
-        <div className="flex justify-between text-xs text-outline mb-1 font-body-md">
-          <span>Rs. 0</span>
-          <span>Rs. 20,000</span>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="20000"
-          step="500"
-          value={priceRange}
-          onChange={(e) => setPriceRange(Number(e.target.value))}
-          className="w-full accent-primary cursor-pointer"
-        />
-      </div>
-
-      {/* Sort By */}
-      <div className="pt-4 border-t border-outline-variant/40">
-        <h3 className="font-label-md text-label-md text-primary font-bold mb-3">Sort By</h3>
-        <div className="flex flex-col gap-1">
-          {[
-            { value: 'newest', label: 'Newest First' },
-            { value: 'price-asc', label: 'Price: Low to High' },
-            { value: 'price-desc', label: 'Price: High to Low' },
-          ].map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setSortBy(opt.value)}
-              className={`p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors ${
-                sortBy === opt.value
-                  ? 'text-primary font-bold bg-primary-container/40'
-                  : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  const filterProps = {
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    dbCategories,
+    catLoading,
+    priceRange,
+    setPriceRange,
+    sortBy,
+    setSortBy,
+  };
 
   return (
     <main className="flex-grow w-full max-w-[1600px] mx-auto px-4 sm:px-8 md:px-12 py-12">
@@ -242,7 +267,7 @@ export default function ShopAll() {
         </div>
         <button
           onClick={() => setMobileFilterOpen(true)}
-          className="md:hidden flex items-center justify-center gap-2 py-2.5 px-4 bg-primary-container text-on-background rounded-full font-label-md text-label-md"
+          className="md:hidden flex items-center justify-center gap-2 py-2.5 px-4 bg-primary-container text-on-background rounded-full font-label-md text-label-md cursor-pointer"
         >
           <span className="material-symbols-outlined text-[18px]">tune</span> Filter &amp; Sort
         </button>
@@ -251,7 +276,7 @@ export default function ShopAll() {
       <div className="flex gap-8 lg:gap-12">
         {/* ── Desktop Sidebar ── */}
         <aside className="hidden md:block w-64 flex-shrink-0 sticky top-[100px] self-start max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
-          <SidebarFilters />
+          <SidebarFilters {...filterProps} />
         </aside>
 
         {/* ── Product Grid ── */}
@@ -265,7 +290,7 @@ export default function ShopAll() {
               <p className="font-body-md text-body-md">{productsError}</p>
               <button
                 onClick={fetchProducts}
-                className="mt-2 bg-primary-container text-on-background font-label-md px-6 py-3 rounded-full hover:bg-primary hover:text-white transition-all"
+                className="mt-2 bg-primary-container text-on-background font-label-md px-6 py-3 rounded-full hover:bg-primary hover:text-white transition-all cursor-pointer"
               >
                 Retry
               </button>
@@ -306,12 +331,12 @@ export default function ShopAll() {
           <div className="flex-grow bg-black/40" onClick={() => setMobileFilterOpen(false)} />
           <div className="w-80 bg-surface-container-lowest shadow-2xl h-full overflow-y-auto p-6 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-title-sm text-title-sm text-primary">Filters &amp; Sort</h2>
+              <h2 className="font-title-sm text-title-sm text-primary font-bold">Filters &amp; Sort</h2>
               <button onClick={() => setMobileFilterOpen(false)} className="text-on-surface-variant hover:text-primary cursor-pointer">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            <SidebarFilters />
+            <SidebarFilters {...filterProps} />
           </div>
         </div>
       )}

@@ -10,41 +10,84 @@ export default function Footer() {
             Malmalee Creations
           </span>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-xs">
-            Handcrafted accessories bringing a touch of quiet luxury and nostalgia to your everyday life.
+            Handcrafted accessories bringing a touch of quiet luxury and
+            nostalgia to your everyday life.
           </p>
         </div>
 
         {/* Shop Links */}
         <div className="flex flex-col gap-3">
-          <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">Shop</h3>
-          <Link to="/shop" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">All Products</Link>
-          <Link to="/shop?cat=bows" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Bows & Ribbons</Link>
-          <Link to="/shop?cat=scrunchies" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Scrunchies</Link>
-          <Link to="/shop?cat=headbands" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Headbands</Link>
+          <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">
+            Shop
+          </h3>
+          <Link
+            to="/shop"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+          >
+            All Products
+          </Link>
         </div>
 
         {/* Company Links */}
         <div className="flex flex-col gap-3">
-          <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">Company</h3>
-          <Link to="/our-story" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Our Story</Link>
-          <Link to="/contact" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Contact Us</Link>
-          <a href="#" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Facebook</a>
-          <a href="#" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Pinterest</a>
+          <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">
+            Company
+          </h3>
+          <Link
+            to="/our-story"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+          >
+            Our Story
+          </Link>
+          <Link
+            to="/contact"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+          >
+            Contact Us
+          </Link>
+          <a
+            href="https://www.facebook.com/share/19BFB5mDyC/"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Facebook
+          </a>
         </div>
 
         {/* Help Links */}
         <div className="flex flex-col gap-3">
-          <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">Help</h3>
-          <a href="#" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Shipping Policy</a>
-          <a href="#" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Returns & Exchanges</a>
-          <Link to="/account/track" className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors">Track My Order</Link>
+          <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">
+            Help
+          </h3>
+          <a
+            href="#"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+          >
+            Shipping Policy
+          </a>
+          <a
+            href="#"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+          >
+            Returns & Exchanges
+          </a>
+          <Link
+            to="/account/track"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+          >
+            Track My Order
+          </Link>
         </div>
       </div>
 
       {/* Copyright */}
       <div className="border-t border-outline-variant/30 px-4 sm:px-8 md:px-12 py-5 flex items-center justify-center gap-3.5 text-center max-w-[1400px] mx-auto flex-wrap">
         <p className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 flex-wrap justify-center">
-          <span>© 2026 Malmalee Creations. All Rights Reserved. | Website Developed by</span>
+          <span>
+            © 2026 Malmalee Creations. All Rights Reserved. | Website Developed
+            by
+          </span>
           <a
             href="https://fuchsius.com/"
             target="_blank"
@@ -54,7 +97,11 @@ export default function Footer() {
             Fuchsius
           </a>
         </p>
-        <img src="/Logo.png" alt="Malmalee Creations Logo" className="h-9 w-auto object-contain shrink-0" />
+        <img
+          src="/Logo.png"
+          alt="Malmalee Creations Logo"
+          className="h-9 w-auto object-contain shrink-0"
+        />
       </div>
     </footer>
   );
