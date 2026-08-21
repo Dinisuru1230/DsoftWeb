@@ -8,6 +8,7 @@ const {
   getOrderById,
   updateOrderStatus,
   trackOrder,
+  getDashboardStats,
 } = require('../controllers/orderController');
 const { authenticateToken, optionalAuth, requireAdmin } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -15,6 +16,7 @@ const upload = require('../middleware/uploadMiddleware');
 router.post('/', optionalAuth, createOrder);
 router.post('/:id/bank-slip', upload.single('bankSlip'), uploadBankSlip);
 router.get('/my-orders', authenticateToken, getMyOrders);
+router.get('/dashboard-stats', authenticateToken, requireAdmin, getDashboardStats);
 router.get('/track/:orderNumber', trackOrder);
 router.get('/', authenticateToken, requireAdmin, getAllOrders);
 router.get('/:id', authenticateToken, requireAdmin, getOrderById);

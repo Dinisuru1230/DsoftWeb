@@ -331,6 +331,64 @@ async function trackOrder(req, res) {
   }
 }
 
+// GET /api/orders/dashboard-stats (Admin only)
+async function getDashboardStats(req, res) {
+  try {
+    const [
+      totalOrders,
+      orders,
+      totalProducts,
+      lowStockProducts,
+      totalCustomers,
+      unreadMessages,
+      recentOrders,
+    ] = await Promise.all([
+      prisma.order.count(),
+      prisma.order.findMany({
+        where: { orderStatus: { not: 'CANCELLED' } },
+        select: { totalAmount: true, orderStatus: true },
+      }),
+      prisma.product.count(),
+      prisma.product.findMany({
+        where: { stock: { lte: 5 } },
+        select: { id: true, name: true, stock: true, image: true, categoryName: true },
+        take: 6,
+      }),
+      prisma.user.count({ where: { role: 'CUSTOMER' } }),
+      prisma.contactMessage.count({ where: { status: 'UNREAD' } }),
+      prisma.order.findMany({
+        take: 8,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          items: {
+            include: { product: true },
+          },
+        },
+      }),
+    ]);
+
+    const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const pendingOrders = orders.filter(
+      (o) => o.orderStatus === 'PENDING' || o.orderStatus === 'BANK_SLIP_PENDING' || o.orderStatus === 'PROCESSING'
+    ).length;
+
+    res.json({
+      totalOrders,
+      totalRevenue,
+      pendingOrders,
+      lowStockCount: lowStockProducts.length,
+      totalProducts,
+      totalCustomers,
+      unreadMessages,
+      lowStockProducts,
+      recentOrders,
+    });
+  } catch (error) {
+    console.error('getDashboardStats error:', error);
+    res.status(500).json({ error: 'Failed to load dashboard statistics' });
+  }
+}
+
 module.exports = {
   createOrder,
   uploadBankSlip,
@@ -339,4 +397,5 @@ module.exports = {
   getOrderById,
   updateOrderStatus,
   trackOrder,
+  getDashboardStats,
 };
