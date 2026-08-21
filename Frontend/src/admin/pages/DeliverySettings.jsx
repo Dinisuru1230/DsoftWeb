@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -41,13 +42,27 @@ export default function DeliverySettings() {
     const express = parseFloat(form.expressShipping);
     const freeOver = parseFloat(form.freeShippingOver);
 
-    if (isNaN(standard) || standard < 0) return setError('Standard fee must be a valid number ≥ 0.');
-    if (isNaN(express) || express < 0) return setError('Express fee must be a valid number ≥ 0.');
-    if (express <= standard) return setError('Express fee must be higher than standard fee.');
-    if (isNaN(freeOver) || freeOver < 0) return setError('Free shipping threshold must be a valid number ≥ 0.');
+    if (isNaN(standard) || standard < 0) {
+      toast.error('Standard delivery fee must be a valid number (Rs. 0 or more).');
+      return setError('Standard fee must be a valid number ≥ 0.');
+    }
+    if (isNaN(express) || express < 0) {
+      toast.error('Express delivery fee must be a valid number (Rs. 0 or more).');
+      return setError('Express fee must be a valid number ≥ 0.');
+    }
+    if (express <= standard) {
+      toast.error('Express delivery fee must be higher than standard delivery fee.');
+      return setError('Express fee must be higher than standard fee.');
+    }
+    if (isNaN(freeOver) || freeOver < 0) {
+      toast.error('Free shipping threshold must be a valid number (Rs. 0 or more).');
+      return setError('Free shipping threshold must be a valid number ≥ 0.');
+    }
 
     setSaving(true);
     setError('');
+    const toastId = toast.loading('Updating store delivery fees...');
+
     try {
       const res = await fetch(`${API_BASE}/settings`, {
         method: 'PUT',
@@ -59,10 +74,13 @@ export default function DeliverySettings() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save settings.');
+      if (!res.ok) throw new Error(data.error || 'Failed to save delivery settings.');
       setSaved(true);
+      toast.success('Default delivery rates updated successfully!', { id: toastId });
     } catch (err) {
-      setError(err.message);
+      const msg = err.message || 'Could not save delivery settings. Please try again.';
+      setError(msg);
+      toast.error(msg, { id: toastId });
     } finally {
       setSaving(false);
     }

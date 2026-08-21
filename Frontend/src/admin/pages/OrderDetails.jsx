@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -58,6 +59,7 @@ export default function OrderDetails() {
   async function updateStatus(newStatus) {
     if (!token || !order) return;
     setUpdating(true);
+    const toastId = toast.loading(`Updating order to ${STATUS_LABELS[newStatus] || newStatus}...`);
     try {
       const res = await fetch(`${API_BASE}/orders/${order.id}/status`, {
         method: 'PUT',
@@ -70,8 +72,13 @@ export default function OrderDetails() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update order status');
       setOrder(data.order);
+      if (newStatus === 'CANCELLED') {
+        toast.success(`Order ${order.orderNumber} marked as Cancelled. Stock restored!`, { id: toastId });
+      } else {
+        toast.success(`Order ${order.orderNumber} status changed to ${STATUS_LABELS[newStatus] || newStatus}`, { id: toastId });
+      }
     } catch (err) {
-      alert(err.message || 'Error updating order status');
+      toast.error(err.message || 'Error updating order status', { id: toastId });
     } finally {
       setUpdating(false);
     }

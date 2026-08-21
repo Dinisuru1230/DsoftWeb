@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 function validateProfileForm(data) {
   const errors = {};
@@ -100,11 +101,13 @@ export default function AdminProfile() {
     const errors = validateProfileForm(formData);
     if (Object.keys(errors).length > 0) {
       setProfileErrors(errors);
+      toast.error('Please check personal information errors.');
       return;
     }
 
     setSavingProfile(true);
     setProfileFormError('');
+    const toastId = toast.loading('Saving profile updates...');
 
     const formattedPhone = formData.phone ? `+94${formData.phone}` : '';
     const res = await updateUser({
@@ -116,9 +119,12 @@ export default function AdminProfile() {
     setSavingProfile(false);
     if (res.success) {
       setProfileSaved(true);
+      toast.success('Your profile details have been saved!', { id: toastId });
       setTimeout(() => setProfileSaved(false), 3000);
     } else {
-      setProfileFormError(res.error || 'Failed to update profile changes.');
+      const msg = res.error || 'Failed to update profile changes.';
+      setProfileFormError(msg);
+      toast.error(msg, { id: toastId });
     }
   }
 
@@ -127,11 +133,13 @@ export default function AdminProfile() {
     const errors = validatePasswordForm(passwords);
     if (Object.keys(errors).length > 0) {
       setPassErrors(errors);
+      toast.error('Please check password errors.');
       return;
     }
 
     setSavingPass(true);
     setPassFormError('');
+    const toastId = toast.loading('Updating security credentials...');
 
     const res = await changePassword({
       currentPassword: passwords.currentPassword,
@@ -142,9 +150,12 @@ export default function AdminProfile() {
     if (res.success) {
       setPassSaved(true);
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast.success('Password changed successfully!', { id: toastId });
       setTimeout(() => setPassSaved(false), 3000);
     } else {
-      setPassFormError(res.error || 'Failed to update password.');
+      const msg = res.error || 'Failed to update password.';
+      setPassFormError(msg);
+      toast.error(msg, { id: toastId });
     }
   }
 

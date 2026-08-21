@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -294,12 +295,14 @@ export default function AddProduct() {
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
+      toast.error('Please fix the highlighted errors before saving.', { id: 'validate-err' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
     setSubmitting(true);
     setServerError('');
+    const toastId = toast.loading('Saving and publishing product...');
 
     try {
       // 1. Upload main image
@@ -355,15 +358,20 @@ export default function AddProduct() {
 
       const data = await res.json();
       if (!res.ok) {
-        setServerError(data.error || 'Failed to create product. Please try again.');
+        const errorMsg = data.error || 'Failed to create product. Please try again.';
+        setServerError(errorMsg);
+        toast.error(errorMsg, { id: toastId });
         setSubmitting(false);
         return;
       }
 
-      // Success → go to products list
+      // Success → toast & navigate
+      toast.success(`"${data.name || form.name}" has been published successfully!`, { id: toastId });
       navigate('/admin/products', { state: { created: data.name } });
     } catch (err) {
-      setServerError(err.message || 'Unexpected error. Please try again.');
+      const errorMsg = err.message || 'Unexpected network error. Please check your connection and try again.';
+      setServerError(errorMsg);
+      toast.error(errorMsg, { id: toastId });
       setSubmitting(false);
     }
   }

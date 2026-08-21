@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -43,13 +44,27 @@ export default function BankDetailsSettings() {
 
   async function handleSave(e) {
     e.preventDefault();
-    if (!form.bankName.trim()) return setError('Bank Name is required.');
-    if (!form.accountName.trim()) return setError('Account Name is required.');
-    if (!form.accountNumber.trim()) return setError('Account Number is required.');
-    if (!form.branchName.trim()) return setError('Branch Name is required.');
+    if (!form.bankName.trim()) {
+      toast.error('Bank Name is required.');
+      return setError('Bank Name is required.');
+    }
+    if (!form.accountName.trim()) {
+      toast.error('Account Holder Name is required.');
+      return setError('Account Name is required.');
+    }
+    if (!form.accountNumber.trim()) {
+      toast.error('Account Number is required.');
+      return setError('Account Number is required.');
+    }
+    if (!form.branchName.trim()) {
+      toast.error('Branch Name is required.');
+      return setError('Branch Name is required.');
+    }
 
     setSaving(true);
     setError('');
+    const toastId = toast.loading('Saving company bank credentials...');
+
     try {
       const res = await fetch(`${API_BASE}/settings`, {
         method: 'PUT',
@@ -59,8 +74,11 @@ export default function BankDetailsSettings() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to save bank details.');
       setSaved(true);
+      toast.success('Bank details updated successfully!', { id: toastId });
     } catch (err) {
-      setError(err.message);
+      const msg = err.message || 'Could not save bank details. Please try again.';
+      setError(msg);
+      toast.error(msg, { id: toastId });
     } finally {
       setSaving(false);
     }

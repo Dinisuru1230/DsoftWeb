@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -81,39 +82,59 @@ export default function CategoryManagement() {
   // ── Create ──
   async function handleCreate(e) {
     e.preventDefault();
-    if (!newForm.name.trim()) { setCreateError('Category name is required.'); return; }
+    if (!newForm.name.trim()) {
+      toast.error('Category name is required.');
+      setCreateError('Category name is required.');
+      return;
+    }
     setCreating(true);
     setCreateError('');
-    const res = await fetch(`${API_BASE}/categories`, {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({ name: newForm.name.trim(), icon: newForm.icon }),
-    });
-    const data = await res.json();
-    setCreating(false);
-    if (res.ok) {
-      setCategories((prev) => [...prev, data.category]);
-      setNewForm({ name: '', icon: 'auto_awesome' });
-      setAdding(false);
-    } else {
-      setCreateError(data.error || 'Failed to create category');
+    const toastId = toast.loading('Creating category...');
+    try {
+      const res = await fetch(`${API_BASE}/categories`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ name: newForm.name.trim(), icon: newForm.icon }),
+      });
+      const data = await res.json();
+      setCreating(false);
+      if (res.ok) {
+        setCategories((prev) => [...prev, data.category]);
+        setNewForm({ name: '', icon: 'auto_awesome' });
+        setAdding(false);
+        toast.success(`Category "${data.category.name}" created successfully!`, { id: toastId });
+      } else {
+        const msg = data.error || 'Failed to create category';
+        setCreateError(msg);
+        toast.error(msg, { id: toastId });
+      }
+    } catch (err) {
+      setCreating(false);
+      toast.error('Network error. Could not create category.', { id: toastId });
     }
   }
 
   // ── Toggle Active ──
   async function toggleActive(cat) {
-    const res = await fetch(`${API_BASE}/categories/${cat.id}`, {
-      method: 'PUT',
-      headers: authHeaders,
-      body: JSON.stringify({ active: !cat.active }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setCategories((prev) =>
-        prev.map((c) => (c.id === cat.id ? { ...c, active: !c.active } : c))
-      );
-    } else {
-      setError(data.error || 'Failed to update category');
+    const nextActive = !cat.active;
+    const toastId = toast.loading(`${nextActive ? 'Activating' : 'Deactivating'} category...`);
+    try {
+      const res = await fetch(`${API_BASE}/categories/${cat.id}`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify({ active: nextActive }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setCategories((prev) =>
+          prev.map((c) => (c.id === cat.id ? { ...c, active: nextActive } : c))
+        );
+        toast.success(`"${cat.name}" is now ${nextActive ? 'Active' : 'Inactive'}`, { id: toastId });
+      } else {
+        toast.error(data.error || 'Failed to update category', { id: toastId });
+      }
+    } catch {
+      toast.error('Could not update category status.', { id: toastId });
     }
   }
 
@@ -127,23 +148,36 @@ export default function CategoryManagement() {
   // ── Save Edit ──
   async function handleEditSave(e) {
     e.preventDefault();
-    if (!editForm.name.trim()) { setEditError('Category name is required.'); return; }
+    if (!editForm.name.trim()) {
+      toast.error('Category name is required.');
+      setEditError('Category name is required.');
+      return;
+    }
     setEditSaving(true);
     setEditError('');
-    const res = await fetch(`${API_BASE}/categories/${editingId}`, {
-      method: 'PUT',
-      headers: authHeaders,
-      body: JSON.stringify({ name: editForm.name.trim(), icon: editForm.icon }),
-    });
-    const data = await res.json();
-    setEditSaving(false);
-    if (res.ok) {
-      setCategories((prev) =>
-        prev.map((c) => (c.id === editingId ? { ...c, name: data.category.name, icon: data.category.icon, slug: data.category.slug } : c))
-      );
-      setEditingId(null);
-    } else {
-      setEditError(data.error || 'Failed to update category');
+    const toastId = toast.loading('Saving category changes...');
+    try {
+      const res = await fetch(`${API_BASE}/categories/${editingId}`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify({ name: editForm.name.trim(), icon: editForm.icon }),
+      });
+      const data = await res.json();
+      setEditSaving(false);
+      if (res.ok) {
+        setCategories((prev) =>
+          prev.map((c) => (c.id === editingId ? { ...c, name: data.category.name, icon: data.category.icon, slug: data.category.slug } : c))
+        );
+        setEditingId(null);
+        toast.success(`Category updated to "${data.category.name}"!`, { id: toastId });
+      } else {
+        const msg = data.error || 'Failed to update category';
+        setEditError(msg);
+        toast.error(msg, { id: toastId });
+      }
+    } catch {
+      setEditSaving(false);
+      toast.error('Network error. Could not update category.', { id: toastId });
     }
   }
 
@@ -151,17 +185,27 @@ export default function CategoryManagement() {
   async function handleDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
-    const res = await fetch(`${API_BASE}/categories/${deleteTarget.id}`, {
-      method: 'DELETE',
-      headers: authHeaders,
-    });
-    const data = await res.json();
-    setDeleting(false);
-    if (res.ok) {
-      setCategories((prev) => prev.filter((c) => c.id !== deleteTarget.id));
-      setDeleteTarget(null);
-    } else {
-      setError(data.error || 'Failed to delete category');
+    const toastId = toast.loading(`Deleting "${deleteTarget.name}"...`);
+    try {
+      const res = await fetch(`${API_BASE}/categories/${deleteTarget.id}`, {
+        method: 'DELETE',
+        headers: authHeaders,
+      });
+      const data = await res.json();
+      setDeleting(false);
+      if (res.ok) {
+        setCategories((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+        toast.success(`Category "${deleteTarget.name}" deleted.`, { id: toastId });
+        setDeleteTarget(null);
+      } else {
+        const msg = data.error || 'Failed to delete category';
+        setError(msg);
+        toast.error(msg, { id: toastId });
+        setDeleteTarget(null);
+      }
+    } catch {
+      setDeleting(false);
+      toast.error('Network error. Could not delete category.', { id: toastId });
       setDeleteTarget(null);
     }
   }

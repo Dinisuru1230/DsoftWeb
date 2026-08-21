@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -61,6 +62,10 @@ export default function OrderManagement() {
 
   async function updateStatus(id, newStatus) {
     if (!token) return;
+    const targetOrder = orders.find((o) => o.id === id || o.orderNumber === id);
+    const orderNum = targetOrder?.orderNumber || id;
+    const toastId = toast.loading(`Updating order ${orderNum}...`);
+
     setActionLoading(true);
     try {
       const res = await fetch(`${API_BASE}/orders/${id}/status`, {
@@ -79,12 +84,21 @@ export default function OrderManagement() {
         if (viewingSlipOrder && (viewingSlipOrder.id === id || viewingSlipOrder.orderNumber === id)) {
           setViewingSlipOrder(null);
         }
+
+        if (newStatus === 'CONFIRMED') {
+          toast.success(`Order ${orderNum} approved and confirmed!`, { id: toastId });
+        } else if (newStatus === 'CANCELLED') {
+          toast.success(`Order ${orderNum} cancelled. Product stocks restored!`, { id: toastId });
+        } else {
+          toast.success(`Order ${orderNum} updated to ${STATUS_LABELS[newStatus] || newStatus}`, { id: toastId });
+        }
       } else {
-        alert(data.error || 'Failed to update order status');
+        const errorMsg = data.error || 'Failed to update order status.';
+        toast.error(errorMsg, { id: toastId });
       }
     } catch (err) {
       console.error('Error updating order status:', err);
-      alert('Could not update order status.');
+      toast.error('Network error. Could not update order status.', { id: toastId });
     } finally {
       setActionLoading(false);
     }

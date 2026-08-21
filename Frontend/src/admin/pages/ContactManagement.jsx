@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -112,9 +113,14 @@ export default function ContactManagement() {
 
   async function handleReply(e) {
     e.preventDefault();
-    if (!replyText.trim()) { setReplyError('Please write a reply.'); return; }
+    if (!replyText.trim()) {
+      toast.error('Please write a reply message.');
+      setReplyError('Please write a reply.');
+      return;
+    }
     setReplying(true);
     setReplyError('');
+    const toastId = toast.loading('Sending reply...');
     const sentBody = replyText.trim();
     const sentEmail = selected.email;
     const sentName = selected.name;
@@ -136,16 +142,21 @@ export default function ContactManagement() {
         await refreshSelected(selected.id);
         // Store email info for mailto prompt
         setLastRepliedEmail({ email: sentEmail, name: sentName, subject: sentSubject, body: sentBody });
+        toast.success(`Reply saved for ${sentName}!`, { id: toastId });
       } else {
-        setReplyError(data.error || 'Failed to send reply');
+        const msg = data.error || 'Failed to send reply';
+        setReplyError(msg);
+        toast.error(msg, { id: toastId });
       }
     } catch {
       setReplyError('Network error');
+      toast.error('Could not send reply. Network error.', { id: toastId });
     }
     setReplying(false);
   }
 
   async function handleStatusChange(msgId, newStatus) {
+    const toastId = toast.loading('Updating status...');
     try {
       const res = await fetch(`${API_BASE}/contact/${msgId}/status`, {
         method: 'PUT',
@@ -156,13 +167,19 @@ export default function ContactManagement() {
         setMessages((prev) => prev.map((m) => m.id === msgId ? { ...m, status: newStatus } : m));
         if (selected?.id === msgId) setSelected((prev) => ({ ...prev, status: newStatus }));
         fetchStats();
+        toast.success(`Message status marked as ${newStatus}!`, { id: toastId });
+      } else {
+        toast.error('Failed to update status.', { id: toastId });
       }
-    } catch {}
+    } catch {
+      toast.error('Network error updating status.', { id: toastId });
+    }
   }
 
   async function handleDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
+    const toastId = toast.loading('Deleting message...');
     try {
       const res = await fetch(`${API_BASE}/contact/${deleteTarget.id}`, {
         method: 'DELETE',
@@ -172,8 +189,13 @@ export default function ContactManagement() {
         setMessages((prev) => prev.filter((m) => m.id !== deleteTarget.id));
         if (selected?.id === deleteTarget.id) setSelected(null);
         fetchStats();
+        toast.success('Message deleted successfully.', { id: toastId });
+      } else {
+        toast.error('Failed to delete message.', { id: toastId });
       }
-    } catch {}
+    } catch {
+      toast.error('Network error deleting message.', { id: toastId });
+    }
     setDeleting(false);
     setDeleteTarget(null);
   }

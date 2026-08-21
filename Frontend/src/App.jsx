@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
@@ -116,6 +117,34 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#ffffff',
+                color: '#2d1527',
+                border: '1px solid rgba(224, 185, 203, 0.5)',
+                padding: '14px 18px',
+                borderRadius: '14px',
+                boxShadow: '0 10px 30px rgba(74, 25, 66, 0.12)',
+                fontSize: '14px',
+                fontWeight: '500',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#852e69',
+                  secondary: '#ffffff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ba1a1a',
+                  secondary: '#ffffff',
+                },
+              },
+            }}
+          />
           <Routes>
             {/* ── Customer Auth Pages (No Navbar/Footer) ── */}
             <Route path="/login" element={<div className="flex flex-col min-h-screen"><Login /></div>} />

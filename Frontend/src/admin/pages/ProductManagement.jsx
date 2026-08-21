@@ -1,36 +1,99 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
-const PRODUCTS = [
-  { id: 1, name: 'Blush Silk Ribbon Bow', sku: 'RB-001', category: 'Bows', price: 12.00, stock: 48, image: '/14_blush_silk_ribbon_bow.jpg', featured: true },
-  { id: 2, name: 'Pearl Satin Scrunchie', sku: 'SC-002', category: 'Scrunchies', price: 15.00, stock: 32, image: '/18_silk_scrunchie.jpg', featured: false },
-  { id: 3, name: 'Woven Floral Headband', sku: 'HB-003', category: 'Headbands', price: 22.00, stock: 4, image: '/17_woven_floral_headband.jpg', featured: true },
-  { id: 4, name: 'Handmade Hair Bows Set', sku: 'HB-004', category: 'Bows', price: 28.00, stock: 20, image: '/16_flat_lay_hair_bows.jpg', featured: false },
-  { id: 5, name: 'Artisan Silk Ribbon', sku: 'RB-005', category: 'Ribbons', price: 18.00, stock: 0, image: '/13_studio_table_ribbons.jpg', featured: false },
-  { id: 6, name: 'Cream Linen Bow', sku: 'RB-006', category: 'Bows', price: 14.00, stock: 15, image: '/01_cream_linen_fabrics.jpg', featured: false },
-];
-
-const CATS = ['All Products', 'Bows', 'Scrunchies', 'Headbands', 'Ribbons'];
+const API_BASE = 'http://localhost:5050/api';
 
 export default function ProductManagement() {
+  const { token } = useAuth();
+  const location = useLocation();
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('All Products');
-  const [products, setProducts] = useState(PRODUCTS);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
-  const filtered = products.filter((p) =>
-    (catFilter === 'All Products' || p.category === catFilter) &&
-    (p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase()))
-  );
+  useEffect(() => {
+    fetchProducts();
+    if (location.state?.created) {
+      toast.success(`Product "${location.state.created}" was added to catalog!`);
+    }
+  }, [location.state]);
 
-  function toggleFeatured(id) {
-    setProducts((prev) => prev.map((p) => p.id === id ? { ...p, featured: !p.featured } : p));
-  }
-
-  function deleteProduct(id) {
-    if (confirm('Delete this product?')) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+  async function fetchProducts() {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/products`);
+      const data = await res.json();
+      if (res.ok) {
+        setProducts(data);
+      }
+    } catch (err) {
+      toast.error('Could not load products. Please check connection.');
+    } finally {
+      setLoading(false);
     }
   }
+
+  async function toggleFeatured(id, currentStatus) {
+    if (!token) return;
+    const newStatus = !currentStatus;
+    const target = products.find((p) => p.id === id);
+    const toastId = toast.loading('Updating product...');
+
+    try {
+      const res = await fetch(`${API_BASE}/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ featured: newStatus }),
+      });
+      if (!res.ok) throw new Error('Failed to update product');
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, featured: newStatus } : p))
+      );
+      toast.success(`"${target?.name}" is now ${newStatus ? 'Featured' : 'Standard'}!`, { id: toastId });
+    } catch (err) {
+      toast.error('Failed to update featured status.', { id: toastId });
+    }
+  }
+
+  async function handleDelete(id, name) {
+    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+    if (!token) return;
+
+    setDeletingId(id);
+    const toastId = toast.loading(`Deleting "${name}"...`);
+
+    try {
+      const res = await fetch(`${API_BASE}/products/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete product');
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      toast.success(`"${name}" has been deleted from the catalog.`, { id: toastId });
+    } catch (err) {
+      toast.error(err.message || 'Could not delete product.', { id: toastId });
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  const categories = ['All Products', ...new Set(products.map((p) => p.categoryName || p.category).filter(Boolean))];
+
+  const filtered = products.filter((p) => {
+    const category = p.categoryName || p.category || '';
+    const matchesCat = catFilter === 'All Products' || category === catFilter;
+    const matchesSearch =
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(search.toLowerCase()));
+    return matchesCat && matchesSearch;
+  });
 
   return (
     <div className="p-6 md:p-10 w-full">
@@ -42,7 +105,7 @@ export default function ProductManagement() {
         </div>
         <Link
           to="/admin/add-product"
-          className="bg-primary-container text-on-background font-label-md text-label-md py-3 px-6 rounded-lg hover:bg-primary hover:text-white transition-all duration-300 flex items-center gap-2 shadow-ambient"
+          className="bg-primary-container text-on-background font-label-md text-label-md py-3 px-6 rounded-lg hover:bg-primary hover:text-white transition-all duration-300 flex items-center gap-2 shadow-ambient font-bold"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           Add New Product
@@ -50,7 +113,7 @@ export default function ProductManagement() {
       </div>
 
       {/* Search + Filter */}
-      <div className="bg-surface-container-lowest rounded-lg p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between shadow-ambient">
+      <div className="bg-surface-container-lowest rounded-lg p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between shadow-ambient border border-outline-variant/30">
         <div className="relative w-full md:w-96">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
           <input
@@ -58,17 +121,17 @@ export default function ProductManagement() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search products..."
-            className="w-full bg-surface border-b-2 border-outline-variant focus:border-primary pl-10 pr-4 py-2 font-body-md text-body-md text-on-surface focus:ring-0 outline-none transition-colors"
+            className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary pl-10 pr-4 py-2 font-body-md text-body-md text-on-surface outline-none transition-colors"
           />
         </div>
-        <div className="flex gap-2 flex-wrap">
-          {CATS.map((cat) => (
+        <div className="flex gap-2 flex-wrap overflow-x-auto">
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setCatFilter(cat)}
-              className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-colors ${
+              className={`px-4 py-1.5 rounded-full font-label-sm text-label-sm transition-colors cursor-pointer whitespace-nowrap ${
                 catFilter === cat
-                  ? 'bg-primary-container text-on-background'
+                  ? 'bg-primary text-white font-bold'
                   : 'border border-outline-variant text-on-surface-variant hover:bg-surface-container'
               }`}
             >
@@ -79,88 +142,83 @@ export default function ProductManagement() {
       </div>
 
       {/* Table */}
-      <div className="bg-surface-container-lowest rounded-xl shadow-ambient overflow-hidden">
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left">
+      <div className="bg-surface-container-lowest rounded-xl shadow-ambient border border-outline-variant/30 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-outline-variant bg-surface-container-low">
+              <tr className="border-b border-outline-variant/30 bg-surface-container-low">
                 {['Product', 'Category', 'Price', 'Stock', 'Featured', 'Actions'].map((h) => (
                   <th key={h} className={`p-4 font-label-md text-label-md text-on-surface-variant ${h === 'Actions' ? 'text-right' : ''}`}>{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant">
-              {filtered.map((p) => (
-                <tr key={p.id} className="hover:bg-surface-container-low transition-colors group">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-surface-container flex-shrink-0">
-                        <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="font-title-sm text-title-sm text-on-surface group-hover:text-primary transition-colors">{p.name}</p>
-                        <p className="font-label-sm text-label-sm text-on-surface-variant">SKU: {p.sku}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <span className="px-3 py-1 rounded-full bg-primary-container text-on-background font-label-sm text-label-sm">{p.category}</span>
-                  </td>
-                  <td className="p-4 font-body-md text-body-md text-on-surface">Rs. {p.price.toLocaleString()}</td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${p.stock === 0 ? 'bg-error' : p.stock < 5 ? 'bg-tertiary' : 'bg-secondary'}`} />
-                      <span className="font-body-md text-body-md text-on-surface">{p.stock === 0 ? 'Out of Stock' : `${p.stock} units`}</span>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <button
-                      onClick={() => toggleFeatured(p.id)}
-                      className={`font-label-sm text-label-sm px-3 py-1 rounded-full transition-colors ${
-                        p.featured ? 'bg-secondary-container text-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-secondary-container/50'
-                      }`}
-                    >
-                      {p.featured ? '★ Featured' : 'Feature'}
-                    </button>
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">edit</span>
-                      </button>
-                      <button
-                        onClick={() => deleteProduct(p.id)}
-                        className="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/30 rounded-lg transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
-                      </button>
-                    </div>
+            <tbody className="divide-y divide-outline-variant/20 font-body-md text-on-surface">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-on-surface-variant">
+                    <span className="material-symbols-outlined animate-spin text-2xl text-primary mb-2">sync</span>
+                    <p>Loading products catalog...</p>
                   </td>
                 </tr>
-              ))}
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-on-surface-variant">
+                    <span className="material-symbols-outlined text-4xl text-outline mb-2">inventory_2</span>
+                    <p>No products found matching your filter.</p>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((p) => (
+                  <tr key={p.id} className="hover:bg-surface-container-low/50 transition-colors group">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 border border-outline-variant/30">
+                          <img src={p.image || '/14_blush_silk_ribbon_bow.jpg'} alt={p.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <p className="font-title-sm text-title-sm text-on-surface group-hover:text-primary transition-colors font-bold">{p.name}</p>
+                          <p className="font-label-sm text-label-sm text-on-surface-variant text-xs">{p.colors?.length ? `${p.colors.length} color variants` : 'Single Item'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span className="px-3 py-1 rounded-full bg-primary-container text-on-background font-label-sm text-label-sm font-bold">
+                        {p.categoryName || p.category || 'General'}
+                      </span>
+                    </td>
+                    <td className="p-4 font-body-md text-body-md text-on-surface font-bold">Rs. {Number(p.price || 0).toLocaleString()}</td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${p.stock === 0 ? 'bg-error' : p.stock < 5 ? 'bg-tertiary' : 'bg-secondary'}`} />
+                        <span className="font-body-md text-body-md text-on-surface font-medium">{p.stock === 0 ? 'Out of Stock' : `${p.stock} units`}</span>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => toggleFeatured(p.id, p.featured)}
+                        className={`font-label-sm text-label-sm px-3 py-1 rounded-full transition-colors cursor-pointer ${
+                          p.featured ? 'bg-secondary-container text-secondary font-bold' : 'bg-surface-container text-on-surface-variant hover:bg-secondary-container/50'
+                        }`}
+                      >
+                        {p.featured ? '★ Featured' : '☆ Standard'}
+                      </button>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button
+                        type="button"
+                        disabled={deletingId === p.id}
+                        onClick={() => handleDelete(p.id, p.name)}
+                        className="text-error hover:text-error/80 p-1.5 rounded-lg hover:bg-error-container/30 transition-colors cursor-pointer disabled:opacity-50"
+                        title="Delete product"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-        </div>
-
-        {/* Mobile Cards */}
-        <div className="md:hidden divide-y divide-outline-variant">
-          {filtered.map((p) => (
-            <div key={p.id} className="p-4 flex items-center gap-4">
-              <img src={p.image} alt={p.name} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
-              <div className="flex-grow">
-                <p className="font-title-sm text-title-sm text-on-surface">{p.name}</p>
-                <p className="font-body-md text-body-md text-on-surface-variant">Rs. {p.price.toLocaleString()} · {p.stock} units</p>
-              </div>
-              <div className="flex gap-1">
-                <button className="p-2 text-primary hover:bg-surface-container rounded-lg">
-                  <span className="material-symbols-outlined text-[18px]">edit</span>
-                </button>
-                <button onClick={() => deleteProduct(p.id)} className="p-2 text-error hover:bg-error-container/30 rounded-lg">
-                  <span className="material-symbols-outlined text-[18px]">delete</span>
-                </button>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>
