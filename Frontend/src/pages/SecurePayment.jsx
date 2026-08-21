@@ -1,15 +1,20 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+
+const API_BASE = 'http://localhost:5050/api';
 
 export default function SecurePayment() {
   const [form, setForm] = useState({ name: 'Jane Doe', cardNumber: '4532 8492 1039 4829', expiry: '12/28', cvc: '849' });
   const { cartSubtotal, cartItems, clearCart } = useCart();
+  const { token } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
 
-  // Dynamic Total Amount calculation (from Checkout state -> Cart subtotal + Rs. 450 delivery)
+  // Dynamic Total Amount calculation
   const numericTotal = location.state?.total
     ? Number(location.state.total)
     : cartSubtotal > 0
@@ -22,13 +27,53 @@ export default function SecurePayment() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setProcessing(true);
-    setTimeout(() => {
+    setError('');
+
+    try {
+      const orderPayload = {
+        customerName: location.state?.customerDetails?.customerName || form.name || 'Customer',
+        email: location.state?.customerDetails?.email || 'customer@example.com',
+        phone: location.state?.customerDetails?.phone || '+94 77 123 4567',
+        address: location.state?.customerDetails?.address || '42 Flower Lane, Colombo 03, Sri Lanka',
+        totalAmount: numericTotal,
+        shippingCost: location.state?.shippingCost || 0,
+        paymentMethod: 'CARD',
+        items: (location.state?.items || cartItems || []).map((i) => ({
+          productId: i.id || i.productId,
+          colorName: i.color || i.colorName || null,
+          quantity: i.quantity || 1,
+          price: i.price,
+        })),
+      };
+
+      const res = await fetch(`${API_BASE}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Payment processing failed.');
+
       clearCart();
-      navigate('/checkout/success');
-    }, 1800);
+      navigate('/checkout/success', {
+        state: {
+          order: data.order,
+          paymentMethod: 'card',
+          refNumber: data.order?.orderNumber,
+          totalAmount: numericTotal,
+        },
+      });
+    } catch (err) {
+      setError(err.message || 'Payment processing error. Please try again.');
+      setProcessing(false);
+    }
   }
 
   return (

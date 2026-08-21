@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -8,6 +9,7 @@ export default function BankSlipUpload() {
   const location = useLocation();
   const navigate = useNavigate();
   const { clearCart, cartSubtotal } = useCart();
+  const { token } = useAuth();
 
   const totalAmount = location.state?.total || cartSubtotal || 55.00;
 
@@ -59,7 +61,7 @@ export default function BankSlipUpload() {
     }
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!selectedFile) {
       setError('Please select and upload your bank deposit slip / receipt before proceeding.');
@@ -67,19 +69,71 @@ export default function BankSlipUpload() {
     }
 
     setIsSubmitting(true);
+    setError('');
 
-    setTimeout(() => {
+    try {
+      // 1. Create the order in the database
+      const orderPayload = {
+        customerName: location.state?.customerDetails?.customerName || 'Customer',
+        email: location.state?.customerDetails?.email || 'customer@example.com',
+        phone: location.state?.customerDetails?.phone || '+94 77 123 4567',
+        address: location.state?.customerDetails?.address || '42 Flower Lane, Colombo 03, Sri Lanka',
+        totalAmount: totalAmount,
+        shippingCost: location.state?.shippingCost || 0,
+        paymentMethod: 'BANK_TRANSFER',
+        items: (location.state?.items || []).map((i) => ({
+          productId: i.id || i.productId,
+          colorName: i.color || i.colorName || null,
+          quantity: i.quantity || 1,
+          price: i.price,
+        })),
+      };
+
+      const orderRes = await fetch(`${API_BASE}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) throw new Error(orderData.error || 'Failed to create order.');
+
+      const createdOrder = orderData.order;
+
+      // 2. Upload the bank slip attachment to the order
+      const formData = new FormData();
+      formData.append('bankSlip', selectedFile);
+      if (refNumber.trim()) {
+        formData.append('depositRef', refNumber.trim());
+      }
+
+      const uploadRes = await fetch(`${API_BASE}/orders/${createdOrder.id}/bank-slip`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+      const finalOrder = uploadData.order || createdOrder;
+
+      // 3. Clear cart and redirect to success
       clearCart();
-      setIsSubmitting(false);
       navigate('/checkout/success', {
         state: {
+          order: finalOrder,
           paymentMethod: 'bank_transfer',
           status: 'Processing / Pending Verification',
-          refNumber: refNumber || 'REF-892103',
+          refNumber: refNumber.trim() || finalOrder.orderNumber,
           totalAmount: totalAmount,
         },
       });
-    }, 1200);
+    } catch (err) {
+      setError(err.message || 'An error occurred while submitting your payment slip. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (

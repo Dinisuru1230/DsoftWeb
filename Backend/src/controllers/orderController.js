@@ -1,5 +1,74 @@
 const prisma = require('../config/prisma');
 
+// Helper to deduct stock for order items
+async function deductStock(items) {
+  for (const item of items) {
+    const pId = item.productId || item.id;
+    const qty = parseInt(item.quantity || 1);
+    if (!pId) continue;
+
+    try {
+      const product = await prisma.product.findUnique({ where: { id: pId } });
+      if (product) {
+        await prisma.product.update({
+          where: { id: pId },
+          data: { stock: Math.max(0, product.stock - qty) },
+        });
+      }
+
+      const colorName = item.colorName || item.color;
+      if (colorName) {
+        const colorVariant = await prisma.productColor.findFirst({
+          where: { productId: pId, name: colorName },
+        });
+        if (colorVariant) {
+          await prisma.productColor.update({
+            where: { id: colorVariant.id },
+            data: { stock: Math.max(0, colorVariant.stock - qty) },
+          });
+        }
+      }
+    } catch (err) {
+      console.error(`Error deducting stock for product ${pId}:`, err);
+    }
+  }
+}
+
+// Helper to restore (re-increment) stock for cancelled orders
+async function restoreStock(items) {
+  for (const item of items) {
+    const pId = item.productId || item.id;
+    const qty = parseInt(item.quantity || 1);
+    if (!pId) continue;
+
+    try {
+      const product = await prisma.product.findUnique({ where: { id: pId } });
+      if (product) {
+        await prisma.product.update({
+          where: { id: pId },
+          data: { stock: product.stock + qty },
+        });
+      }
+
+      const colorName = item.colorName || item.color;
+      if (colorName) {
+        const colorVariant = await prisma.productColor.findFirst({
+          where: { productId: pId, name: colorName },
+        });
+        if (colorVariant) {
+          await prisma.productColor.update({
+            where: { id: colorVariant.id },
+            data: { stock: colorVariant.stock + qty },
+          });
+        }
+      }
+    } catch (err) {
+      console.error(`Error restoring stock for product ${pId}:`, err);
+    }
+  }
+}
+
+// POST /api/orders
 async function createOrder(req, res) {
   try {
     const { customerName, email, phone, address, totalAmount, shippingCost, paymentMethod, items } = req.body;
@@ -36,9 +105,9 @@ async function createOrder(req, res) {
         items: {
           create: items.map((item) => ({
             productId: item.productId || item.id,
-            colorName: item.colorName || item.color,
+            colorName: item.colorName || item.color || null,
             quantity: parseInt(item.quantity || 1),
-            price: parseFloat(item.price),
+            price: parseFloat(item.price || 0),
           })),
         },
       },
@@ -51,12 +120,16 @@ async function createOrder(req, res) {
       },
     });
 
+    // Automatically deduct stock for purchased items
+    await deductStock(items);
+
     res.status(201).json({ message: 'Order created successfully', order });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
 
+// POST /api/orders/:id/bank-slip
 async function uploadBankSlip(req, res) {
   try {
     const { id } = req.params;
@@ -68,14 +141,29 @@ async function uploadBankSlip(req, res) {
 
     const bankSlipUrl = `/uploads/${req.file.filename}`;
 
-    const order = await prisma.order.update({
-      where: { id },
+    // Look up by id or orderNumber
+    let order = await prisma.order.findFirst({
+      where: {
+        OR: [{ id }, { orderNumber: id }],
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    order = await prisma.order.update({
+      where: { id: order.id },
       data: {
         bankSlipUrl,
-        depositRef,
+        depositRef: depositRef || order.depositRef,
         orderStatus: 'BANK_SLIP_PENDING',
       },
-      include: { items: true },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
     });
 
     res.json({ message: 'Bank deposit slip uploaded successfully', order });
@@ -84,6 +172,7 @@ async function uploadBankSlip(req, res) {
   }
 }
 
+// GET /api/orders/my-orders
 async function getMyOrders(req, res) {
   try {
     if (!req.user) {
@@ -106,6 +195,7 @@ async function getMyOrders(req, res) {
   }
 }
 
+// GET /api/orders (Admin only)
 async function getAllOrders(req, res) {
   try {
     const { status } = req.query;
@@ -131,6 +221,36 @@ async function getAllOrders(req, res) {
   }
 }
 
+// GET /api/orders/:id (Admin or Owner)
+async function getOrderById(req, res) {
+  try {
+    const { id } = req.params;
+
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [{ id }, { orderNumber: id }],
+      },
+      include: {
+        items: {
+          include: { product: true },
+        },
+        user: {
+          select: { id: true, name: true, email: true, phone: true },
+        },
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// PUT /api/orders/:id/status (Admin only)
 async function updateOrderStatus(req, res) {
   try {
     const { id } = req.params;
@@ -140,13 +260,39 @@ async function updateOrderStatus(req, res) {
       return res.status(400).json({ error: 'Order status is required' });
     }
 
-    const order = await prisma.order.update({
-      where: { id },
-      data: { orderStatus },
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        OR: [{ id }, { orderNumber: id }],
+      },
       include: { items: true },
     });
 
-    res.json({ message: 'Order status updated successfully', order });
+    if (!existingOrder) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const prevStatus = existingOrder.orderStatus;
+    const newStatus = orderStatus;
+
+    // Handle stock restoration on cancellation
+    if (prevStatus !== 'CANCELLED' && newStatus === 'CANCELLED') {
+      await restoreStock(existingOrder.items);
+    } else if (prevStatus === 'CANCELLED' && newStatus !== 'CANCELLED') {
+      // Re-deduct stock if un-cancelling
+      await deductStock(existingOrder.items);
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: { id: existingOrder.id },
+      data: { orderStatus: newStatus },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
+
+    res.json({ message: 'Order status updated successfully', order: updatedOrder });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -157,5 +303,6 @@ module.exports = {
   uploadBankSlip,
   getMyOrders,
   getAllOrders,
+  getOrderById,
   updateOrderStatus,
 };

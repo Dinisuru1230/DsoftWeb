@@ -16,8 +16,9 @@ const API_BASE = 'http://localhost:5050/api';
 
 export default function Checkout() {
   const { cartItems, cartSubtotal, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   // Fetch global delivery fee defaults from admin settings
   const [settings, setSettings] = useState({
@@ -42,13 +43,13 @@ export default function Checkout() {
   const [isCustomAddress, setIsCustomAddress] = useState(false);
 
   const [form, setForm] = useState({
-    firstName: user?.firstName || 'Amara',
-    lastName: user?.lastName || 'Perera',
-    email: user?.email || 'amara@malmalee.lk',
+    firstName: user?.name ? user.name.split(' ')[0] : 'Amara',
+    lastName: user?.name ? user.name.split(' ').slice(1).join(' ') : 'Perera',
+    email: user?.email || 'amara@example.com',
     phone: user?.phone || '+94 77 123 4567',
     address: user?.address || '42 Flower Lane, Suite 4',
     city: user?.city || 'Colombo 03',
-    district: user?.state || 'Western Province',
+    district: user?.district || 'Western Province',
     postalCode: user?.postalCode || '00300',
   });
 
@@ -88,25 +89,26 @@ export default function Checkout() {
   // 1. Fee calculation for default items package
   const hasDefaultItems = defaultItems.length > 0;
   const isFreeDefaultShipping =
-    settings.freeShippingOver > 0 && totalPrice >= settings.freeShippingOver;
-  const defaultStandardFee = isFreeDefaultShipping ? 0 : Number(settings.standardShipping ?? 450);
-  const defaultExpressFee = Number(settings.expressShipping ?? 1200);
-  const defaultShippingCost = hasDefaultItems
-    ? defaultShippingMethod === 'express'
-      ? defaultExpressFee
-      : defaultStandardFee
-    : 0;
+    hasDefaultItems && totalPrice >= (settings.freeShippingOver || 15000);
+  const defaultStandardFee = isFreeDefaultShipping ? 0 : (settings.standardShipping || 450);
+  const defaultExpressFee = settings.expressShipping || 1200;
+
+  const defaultShippingCost = !hasDefaultItems
+    ? 0
+    : defaultShippingMethod === 'express'
+    ? defaultExpressFee
+    : defaultStandardFee;
 
   // 2. Fee calculation for each specific item
   const specificShippingCalculations = specificItems.map((item, idx) => {
-    const key = item.id || `specific-${idx}`;
-    const selectedMethod = specificShippingMethods[key] || 'standard';
-    const standardFee = Number(item.standardShipping ?? settings.standardShipping ?? 450);
-    const expressFee = Number(item.expressShipping ?? settings.expressShipping ?? 1200);
+    const itemKey = item.id || `specific-${idx}`;
+    const selectedMethod = specificShippingMethods[itemKey] || 'standard';
+    const standardFee = item.standardShipping ?? (settings.standardShipping || 450);
+    const expressFee = item.expressShipping ?? (settings.expressShipping || 1200);
     const cost = selectedMethod === 'express' ? expressFee : standardFee;
     return {
-      key,
       item,
+      key: itemKey,
       selectedMethod,
       standardFee,
       expressFee,
@@ -115,26 +117,103 @@ export default function Checkout() {
   });
 
   const specificShippingTotal = specificShippingCalculations.reduce(
-    (sum, c) => sum + c.cost,
+    (sum, calc) => sum + calc.cost,
     0
   );
 
   const shippingCost = defaultShippingCost + specificShippingTotal;
   const finalTotal = totalPrice + shippingCost;
 
-  const activeAddress = isCustomAddress
-    ? `${form.address}, ${form.city}, ${form.district} ${form.postalCode}`
-    : user?.address || '42 Flower Lane, Suite 4, Colombo 03';
+  const customerName = !isCustomAddress && user?.name
+    ? user.name
+    : `${form.firstName || ''} ${form.lastName || ''}`.trim() || 'Customer';
 
-  function handleButtonClick(e) {
+  const customerEmail = !isCustomAddress && user?.email
+    ? user.email
+    : form.email || 'customer@example.com';
+
+  const customerPhone = !isCustomAddress && user?.phone
+    ? user.phone
+    : form.phone || '+94 77 123 4567';
+
+  const customerAddress = isCustomAddress
+    ? `${form.address}, ${form.city}, ${form.district} ${form.postalCode}`
+    : user?.address || '42 Flower Lane, Colombo 03, Sri Lanka';
+
+  async function handleButtonClick(e) {
     if (e) e.preventDefault();
+
+    const customerDetails = {
+      customerName,
+      email: customerEmail,
+      phone: customerPhone,
+      address: customerAddress,
+    };
+
     if (paymentMethod === 'card') {
-      navigate('/checkout/payment', { state: { total: finalTotal } });
+      navigate('/checkout/payment', {
+        state: {
+          total: finalTotal,
+          items,
+          shippingCost,
+          customerDetails,
+        },
+      });
     } else if (paymentMethod === 'bank_transfer') {
-      navigate('/checkout/bank-slip', { state: { total: finalTotal, items, shippingCost, savedAddress: activeAddress } });
+      navigate('/checkout/bank-slip', {
+        state: {
+          total: finalTotal,
+          items,
+          shippingCost,
+          customerDetails,
+        },
+      });
     } else {
-      clearCart();
-      navigate('/checkout/success', { state: { paymentMethod: 'cod' } });
+      // Cash on Delivery (COD) — create real order immediately
+      setIsPlacingOrder(true);
+      try {
+        const orderPayload = {
+          customerName: customerDetails.customerName,
+          email: customerDetails.email,
+          phone: customerDetails.phone,
+          address: customerDetails.address,
+          totalAmount: finalTotal,
+          shippingCost: shippingCost,
+          paymentMethod: 'COD',
+          items: items.map((i) => ({
+            productId: i.id || i.productId,
+            colorName: i.color || i.colorName || null,
+            quantity: i.quantity || 1,
+            price: i.price,
+          })),
+        };
+
+        const res = await fetch(`${API_BASE}/orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(orderPayload),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to place order');
+
+        clearCart();
+        navigate('/checkout/success', {
+          state: {
+            order: data.order,
+            paymentMethod: 'cod',
+            refNumber: data.order?.orderNumber,
+            totalAmount: finalTotal,
+          },
+        });
+      } catch (err) {
+        alert(err.message || 'Could not create order. Please try again.');
+      } finally {
+        setIsPlacingOrder(false);
+      }
     }
   }
 
