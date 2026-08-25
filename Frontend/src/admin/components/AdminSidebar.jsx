@@ -10,6 +10,7 @@ export const navItems = [
   { to: '/admin/add-product', label: 'Add Product', icon: 'add_box' },
   { to: '/admin/categories', label: 'Categories', icon: 'category' },
   { to: '/admin/orders', label: 'Orders', icon: 'shopping_cart' },
+  { to: '/admin/reviews', label: 'Reviews', icon: 'rate_review' },
   { to: '/admin/customers', label: 'Customers', icon: 'group' },
   { to: '/admin/messages', label: 'Messages', icon: 'inbox', badgeKey: 'unread' },
   { to: '/admin/our-story', label: 'Our Story', icon: 'auto_stories' },

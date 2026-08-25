@@ -180,9 +180,12 @@ export default function ProductDetail() {
   const [activeTab, setActiveTab] = useState('description');
   const [warrantyPrice, setWarrantyPrice] = useState(0);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewerName, setReviewerName] = useState('');
   const [userReview, setUserReview] = useState('');
   const [userRating, setUserRating] = useState(5);
   const [reviewsList, setReviewsList] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   const { addToCart } = useCart();
   const { user } = useAuth();
@@ -221,6 +224,17 @@ export default function ProductDetail() {
         setError(err.message);
         setLoading(false);
       });
+
+    // Fetch Product Reviews
+    fetch(`${API_BASE}/products/${id}/reviews`)
+      .then((r) => r.json())
+      .then((resData) => {
+        if (resData && Array.isArray(resData.reviews)) {
+          setReviewsList(resData.reviews);
+          setAverageRating(resData.averageRating || 0);
+        }
+      })
+      .catch(() => {});
   }, [id]);
 
   function handleAddToCart() {
@@ -247,18 +261,43 @@ export default function ProductDetail() {
   function handleAddReview(e) {
     e.preventDefault();
     if (!userReview.trim()) return;
-    setReviewsList([
-      ...reviewsList,
-      {
-        id: Date.now(),
-        author: user?.fullName || 'Verified Customer',
-        rating: userRating,
-        text: userReview,
-        date: 'Just now',
-      },
-    ]);
-    setUserReview('');
+
+    // Immediately close the modal form upon submitting
     setShowReviewModal(false);
+
+    const authorName = reviewerName.trim() || user?.fullName || user?.name || 'Verified Customer';
+
+    fetch(`${API_BASE}/products/${id}/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userName: authorName,
+        userEmail: user?.email || '',
+        rating: userRating,
+        comment: userReview,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to submit review');
+        return res.json();
+      })
+      .then(() => {
+        toast.success('Thank you for your review!');
+        setUserReview('');
+        setReviewerName('');
+        fetch(`${API_BASE}/products/${id}/reviews`)
+          .then((r) => r.json())
+          .then((resData) => {
+            if (resData && Array.isArray(resData.reviews)) {
+              setReviewsList(resData.reviews);
+              setAverageRating(resData.averageRating || 0);
+            }
+          });
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error('Failed to submit review');
+      });
   }
 
   if (loading) return <ProductSkeleton />;
@@ -412,12 +451,14 @@ export default function ProductDetail() {
                 <div>
                   <h4 className="font-bold text-on-surface">Customer Reviews</h4>
                   <p className="text-xs text-on-surface-variant">
-                    {reviewsList.length === 0 ? 'Based on 0 reviews.' : `Average rating: 5.0 (${reviewsList.length} reviews)`}
+                    {reviewsList.length === 0
+                      ? 'Based on 0 reviews.'
+                      : `Average rating: ${averageRating} / 5.0 (${reviewsList.length} reviews)`}
                   </p>
                 </div>
                 <button
                   onClick={() => setShowReviewModal(true)}
-                  className="bg-primary text-white text-xs font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+                  className="bg-primary text-white text-xs font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
                 >
                   Write a review
                 </button>
@@ -426,16 +467,43 @@ export default function ProductDetail() {
               {reviewsList.length === 0 ? (
                 <p className="text-sm text-on-surface-variant italic py-4">No reviews yet. Be the first to review this product!</p>
               ) : (
-                <div className="space-y-3">
-                  {reviewsList.map((rev) => (
-                    <div key={rev.id} className="p-3 bg-surface-container rounded-lg border border-outline-variant/40">
-                      <div className="flex justify-between text-xs font-bold text-on-surface mb-1">
-                        <span>{rev.author}</span>
-                        <span className="text-amber-500">{'★'.repeat(rev.rating)}</span>
+                <div className="space-y-4">
+                  <div className={`space-y-3 ${showAllReviews && reviewsList.length > 10 ? 'max-h-[550px] overflow-y-auto pr-2 custom-scrollbar' : ''}`}>
+                    {(showAllReviews ? reviewsList : reviewsList.slice(0, 10)).map((rev) => (
+                      <div key={rev.id} className="p-3.5 bg-surface-container rounded-lg border border-outline-variant/40 space-y-1">
+                        <div className="flex justify-between items-center text-xs font-bold text-on-surface">
+                          <span>{rev.userName || rev.author || 'Verified Customer'}</span>
+                          <div className="flex items-center text-amber-500">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span key={star} className="text-sm">
+                                {star <= rev.rating ? '★' : '☆'}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-on-surface-variant leading-relaxed">{rev.comment || rev.text}</p>
+                        <p className="text-[10px] text-on-surface-variant/60">
+                          {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : 'Recently'}
+                        </p>
                       </div>
-                      <p className="text-xs text-on-surface-variant">{rev.text}</p>
+                    ))}
+                  </div>
+
+                  {reviewsList.length > 10 && (
+                    <div className="text-center pt-2">
+                      <button
+                        onClick={() => setShowAllReviews(!showAllReviews)}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-surface-container-high hover:bg-surface-container-highest text-primary font-bold text-xs rounded-xl transition-all border border-outline-variant/50 cursor-pointer shadow-xs"
+                      >
+                        <span className="material-symbols-outlined text-lg">
+                          {showAllReviews ? 'unfold_less' : 'unfold_more'}
+                        </span>
+                        {showAllReviews
+                          ? 'Collapse to Top 10 Reviews'
+                          : `View All ${reviewsList.length} Reviews (${reviewsList.length - 10} more)`}
+                      </button>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
@@ -443,10 +511,13 @@ export default function ProductDetail() {
 
           {/* Rating Summary Bar */}
           <div className="flex items-center gap-3 text-xs text-on-surface-variant pt-2 border-t border-outline-variant/40">
-            <span className="text-amber-500 tracking-widest text-base">☆☆☆☆☆</span>
-            <span>Based on {reviewsList.length} reviews.</span>
+            <span className="text-amber-500 tracking-widest text-base">
+              {'★'.repeat(Math.round(averageRating || 5))}
+              {'☆'.repeat(5 - Math.round(averageRating || 5))}
+            </span>
+            <span>Based on {reviewsList.length} reviews ({averageRating || 5.0} avg).</span>
             <span>-</span>
-            <button onClick={() => { setActiveTab('reviews'); setShowReviewModal(true); }} className="text-primary underline hover:text-blue-700 font-medium">
+            <button onClick={() => { setActiveTab('reviews'); setShowReviewModal(true); }} className="text-primary underline hover:text-blue-700 font-medium cursor-pointer">
               Write a review
             </button>
           </div>
@@ -469,7 +540,9 @@ export default function ProductDetail() {
                   ✓ IN STOCK
                 </span>
               )}
-              <span className="text-on-surface-variant font-medium">• CID Points: 1</span>
+              {(product.hasCidPoints !== false && product.isCidAvailable !== false) && (
+                <span className="text-on-surface-variant font-bold">• CID Points: 1</span>
+              )}
               <span className="text-amber-700 font-bold">🔥 845 Sold</span>
               <span className="text-on-surface-variant">👁️ 9595 Views</span>
             </div>
@@ -578,46 +651,59 @@ export default function ProductDetail() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-surface p-6 rounded-xl max-w-md w-full border border-outline-variant shadow-2xl space-y-4">
             <h3 className="text-lg font-bold text-on-surface">Write a Product Review</h3>
-            <div>
-              <label className="text-xs font-bold text-on-surface block mb-1">Rating</label>
-              <select
-                value={userRating}
-                onChange={(e) => setUserRating(Number(e.target.value))}
-                className="w-full p-2 border border-outline-variant rounded-md text-sm"
-              >
-                <option value={5}>5 Stars - Excellent</option>
-                <option value={4}>4 Stars - Very Good</option>
-                <option value={3}>3 Stars - Average</option>
-                <option value={2}>2 Stars - Poor</option>
-                <option value={1}>1 Star - Terrible</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-bold text-on-surface block mb-1">Review Message</label>
-              <textarea
-                rows={4}
-                value={userReview}
-                onChange={(e) => setUserReview(e.target.value)}
-                placeholder="Share your experience with this digital product..."
-                className="w-full p-2 border border-outline-variant rounded-md text-sm"
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setShowReviewModal(false)}
-                className="px-4 py-2 text-xs font-bold text-on-surface-variant hover:text-on-surface"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleAddReview}
-                className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-md hover:bg-blue-700"
-              >
-                Submit Review
-              </button>
-            </div>
+            
+            <form onSubmit={handleAddReview} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-on-surface block mb-1">Your Name</label>
+                <input
+                  type="text"
+                  value={reviewerName}
+                  onChange={(e) => setReviewerName(e.target.value)}
+                  placeholder={user?.fullName || user?.name || "e.g. Alex Morgan"}
+                  className="w-full p-2 border border-outline-variant rounded-md text-sm bg-surface-container-lowest"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-on-surface block mb-1">Rating</label>
+                <select
+                  value={userRating}
+                  onChange={(e) => setUserRating(Number(e.target.value))}
+                  className="w-full p-2 border border-outline-variant rounded-md text-sm"
+                >
+                  <option value={5}>5 Stars - Excellent</option>
+                  <option value={4}>4 Stars - Very Good</option>
+                  <option value={3}>3 Stars - Average</option>
+                  <option value={2}>2 Stars - Poor</option>
+                  <option value={1}>1 Star - Terrible</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-on-surface block mb-1">Review Message</label>
+                <textarea
+                  rows={4}
+                  value={userReview}
+                  onChange={(e) => setUserReview(e.target.value)}
+                  placeholder="Share your experience with this digital product..."
+                  className="w-full p-2 border border-outline-variant rounded-md text-sm"
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(false)}
+                  className="px-4 py-2 text-xs font-bold text-on-surface-variant hover:text-on-surface cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-md hover:bg-blue-700 cursor-pointer"
+                >
+                  Submit Review
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

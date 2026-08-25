@@ -268,11 +268,13 @@ async function deleteProductKey(req, res) {
 
 async function createProduct(req, res) {
   try {
-    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping, hasCidPoints, isCidAvailable, cidPoints, cidAvailable } = req.body;
 
     if (!name || !price || !categoryName || !description || !image) {
       return res.status(400).json({ error: 'Missing required product fields' });
     }
+
+    const cidFlag = hasCidPoints !== undefined ? Boolean(hasCidPoints) : isCidAvailable !== undefined ? Boolean(isCidAvailable) : cidPoints !== undefined ? Boolean(cidPoints) : cidAvailable !== undefined ? Boolean(cidAvailable) : true;
 
     // Ensure category exists or create it
     let cat = await prisma.category.findUnique({ where: { name: categoryName } });
@@ -302,6 +304,8 @@ async function createProduct(req, res) {
         featured: Boolean(featured),
         standardShipping: standardShipping != null ? parseFloat(standardShipping) : null,
         expressShipping: expressShipping != null ? parseFloat(expressShipping) : null,
+        hasCidPoints: cidFlag,
+        isCidAvailable: cidFlag,
         ...(colors && Array.isArray(colors) && colors.length > 0 && {
           colors: {
             create: colors.map((c) => ({
@@ -328,12 +332,14 @@ async function createProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping, hasCidPoints, isCidAvailable, cidPoints, cidAvailable } = req.body;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
       return res.status(404).json({ error: 'Product not found' });
     }
+
+    const cidVal = hasCidPoints !== undefined ? hasCidPoints : isCidAvailable !== undefined ? isCidAvailable : cidPoints !== undefined ? cidPoints : cidAvailable;
 
     // Handle updating product
     const product = await prisma.product.update({
@@ -360,6 +366,7 @@ async function updateProduct(req, res) {
         ...(featured !== undefined && { featured: Boolean(featured) }),
         ...(standardShipping !== undefined && { standardShipping: standardShipping != null ? parseFloat(standardShipping) : null }),
         ...(expressShipping !== undefined && { expressShipping: expressShipping != null ? parseFloat(expressShipping) : null }),
+        ...(cidVal !== undefined && { hasCidPoints: Boolean(cidVal), isCidAvailable: Boolean(cidVal) }),
         ...(colors !== undefined && Array.isArray(colors) && {
           colors: {
             deleteMany: {},

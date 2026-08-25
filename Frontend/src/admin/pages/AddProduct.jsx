@@ -175,6 +175,7 @@ export default function AddProduct() {
     featured: false,
     standardShipping: '',
     expressShipping: '',
+    hasCidPoints: true,
   });
 
   const [specs, setSpecs] = useState(INITIAL_SPECS);
@@ -253,6 +254,7 @@ export default function AddProduct() {
           featured: Boolean(p.featured),
           standardShipping: p.standardShipping != null ? String(p.standardShipping) : '',
           expressShipping: p.expressShipping != null ? String(p.expressShipping) : '',
+          hasCidPoints: p.hasCidPoints !== false && p.isCidAvailable !== false,
         });
 
         if (p.standardShipping != null || p.expressShipping != null) {
@@ -596,6 +598,8 @@ export default function AddProduct() {
         featured: form.featured,
         standardShipping: shippingType === 'specific' && form.standardShipping !== '' ? parseFloat(form.standardShipping) : null,
         expressShipping: shippingType === 'specific' && form.expressShipping !== '' ? parseFloat(form.expressShipping) : null,
+        hasCidPoints: Boolean(form.hasCidPoints),
+        isCidAvailable: Boolean(form.hasCidPoints),
         colors: colorPayload,
       };
 
@@ -1400,6 +1404,43 @@ export default function AddProduct() {
               >
                 <span className={`w-2.5 h-2.5 rounded-full ${parseInt(form.stock || 0) === 0 && form.stock !== '' ? 'bg-red-500' : 'bg-neutral-400'}`} />
                 Out of Stock
+              </button>
+            </div>
+          </section>
+
+          {/* CID Points (Confirmation ID Points) Section */}
+          <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-4">
+            <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2 border-b border-outline-variant/30 pb-3">
+              <span className="material-symbols-outlined">confirmation_number</span>
+              Confirmation ID (CID) Points
+            </h2>
+            <p className="text-xs text-on-surface-variant">
+              Specify whether this product awards or requires Confirmation ID (CID) Points for telephone/online activation.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, hasCidPoints: true }))}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
+                  form.hasCidPoints
+                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-400 shadow-xs'
+                    : 'bg-surface-container text-on-surface-variant border-outline-variant/60 hover:border-emerald-300'
+                }`}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${form.hasCidPoints ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'}`} />
+                CID Points Available (1 CID Point)
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, hasCidPoints: false }))}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
+                  !form.hasCidPoints
+                    ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-400 shadow-xs'
+                    : 'bg-surface-container text-on-surface-variant border-outline-variant/60 hover:border-amber-300'
+                }`}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${!form.hasCidPoints ? 'bg-amber-500' : 'bg-neutral-400'}`} />
+                No CID Points (0 CID Points)
               </button>
             </div>
           </section>

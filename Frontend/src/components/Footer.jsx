@@ -70,20 +70,9 @@ export default function Footer() {
       {/* Copyright */}
       <div className="border-t border-outline-variant/30 px-4 sm:px-8 md:px-12 py-5 flex items-center justify-center gap-3.5 text-center max-w-[1400px] mx-auto flex-wrap">
         <p className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 flex-wrap justify-center">
-          <span>
-            © 2026 DSoft Pack. All Rights Reserved. | Website Developed
-            by
-          </span>
-          <a
-            href="https://fuchsius.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary font-bold hover:underline transition-all"
-          >
-            Fuchsius
-          </a>
+          <span>© 2026 DSoft Pack. All Rights Reserved.</span>
         </p>
-        <LogoComponent height="h-8" />
+  
       </div>
     </footer>
   );
