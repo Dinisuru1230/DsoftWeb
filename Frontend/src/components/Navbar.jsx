@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
+import LogoComponent from './LogoComponent';
 
 const API_BASE = 'http://localhost:5050/api';
 
@@ -88,14 +89,9 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-background shadow-ambient w-full">
       <nav className="flex justify-between items-center w-full px-4 sm:px-8 md:px-12 py-3.5 max-w-[1600px] mx-auto">
-        {/* Left: Brand Logo (Single Line, Larger Font) */}
+        {/* Left: Brand Logo */}
         <div className="flex-1 flex justify-start">
-          <Link
-            to="/"
-            className="font-display-lg text-2xl sm:text-[28px] md:text-[32px] text-primary tracking-tight font-bold whitespace-nowrap group hover:opacity-90 transition-opacity"
-          >
-            Malmalee Creations
-          </Link>
+          <LogoComponent height="h-10 sm:h-12" />
         </div>
 
         {/* Center: Desktop Nav Links */}

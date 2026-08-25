@@ -31,7 +31,7 @@ export default function OurStory() {
   const mainTitle = story?.mainTitle || 'Born from Stillness,\nCrafted with Intention';
   const subtitle =
     story?.subtitle ||
-    'Malmalee Creations began as a quiet idea — that the most beautiful things in life are made slowly, with care, and with love. We are a small, passionate team of makers, dreamers, and storytellers.';
+    'DSoft Pack began as a quiet idea — that the most beautiful things in life are made slowly, with care, and with love. We are a small, passionate team of makers, dreamers, and storytellers.';
   const mainImage = story?.mainImage || '/13_studio_table_ribbons.jpg';
   const sections = story?.sections && story.sections.length > 0 ? story.sections : [];
 
@@ -78,7 +78,7 @@ export default function OurStory() {
       <div className="max-w-[960px] w-full mb-16 sm:mb-20">
         <img
           src={imgUrl(mainImage)}
-          alt="Malmalee Creations studio — handmade elegance"
+          alt="DSoft Pack studio — handmade elegance"
           className="w-full h-[280px] sm:h-[400px] md:h-[500px] object-cover rounded-2xl shadow-ambient border border-outline-variant/30"
         />
       </div>

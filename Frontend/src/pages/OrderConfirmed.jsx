@@ -4,7 +4,7 @@ export default function OrderConfirmed() {
   const location = useLocation();
   const state = location.state || {};
   const isBankTransfer = state.paymentMethod === 'bank_transfer' || state.paymentMethod === 'BANK_TRANSFER';
-  const orderNumber = state.order?.orderNumber || state.orderNumber || state.refNumber || `MC-${Date.now().toString().slice(-6)}`;
+  const orderNumber = state.order?.orderNumber || state.orderNumber || state.refNumber || `DSP-${Date.now().toString().slice(-6)}`;
   const totalAmount = state.order?.totalAmount || state.totalAmount || 0;
   const items = state.order?.items || [];
 
@@ -28,7 +28,7 @@ export default function OrderConfirmed() {
         <p className="font-body-lg text-body-lg text-on-surface-variant mb-2">
           {isBankTransfer
             ? 'Your bank slip has been received. Our team will verify your payment shortly.'
-            : 'Thank you for shopping with Malmalee Creations.'}
+            : 'Thank you for shopping with DSoft Pack.'}
         </p>
 
         <p className="font-label-md text-label-md text-on-surface-variant mb-6">
@@ -71,7 +71,7 @@ export default function OrderConfirmed() {
                 <img src="/14_blush_silk_ribbon_bow.jpg" alt="Order item" className="w-16 h-16 rounded-lg object-cover" />
                 <div>
                   <p className="font-title-sm text-title-sm text-on-surface">Handcrafted Boutique Package</p>
-                  <p className="font-body-md text-body-md text-on-surface-variant">Malmalee Collection</p>
+                  <p className="font-body-md text-body-md text-on-surface-variant">DSoft Pack Collection</p>
                 </div>
               </div>
             )}

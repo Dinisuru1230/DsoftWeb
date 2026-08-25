@@ -9,22 +9,26 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('malmalee_user') || sessionStorage.getItem('malmalee_user');
+      const saved = localStorage.getItem('dsoftpack_user') || localStorage.getItem('malmalee_user') || sessionStorage.getItem('dsoftpack_user') || sessionStorage.getItem('malmalee_user');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('malmalee_token') || sessionStorage.getItem('malmalee_token') || null);
+  const [token, setToken] = useState(() => localStorage.getItem('dsoftpack_token') || localStorage.getItem('malmalee_token') || sessionStorage.getItem('dsoftpack_token') || sessionStorage.getItem('malmalee_token') || null);
   const [loading, setLoading] = useState(true);
   const inactivityTimerRef = useRef(null);
 
   // Helper to clear both sessionStorage and localStorage on logout
   function clearAllAuthStorage() {
     try {
+      sessionStorage.removeItem('dsoftpack_user');
+      sessionStorage.removeItem('dsoftpack_token');
       sessionStorage.removeItem('malmalee_user');
       sessionStorage.removeItem('malmalee_token');
+      localStorage.removeItem('dsoftpack_user');
+      localStorage.removeItem('dsoftpack_token');
       localStorage.removeItem('malmalee_user');
       localStorage.removeItem('malmalee_token');
     } catch (e) {
@@ -59,8 +63,8 @@ export function AuthProvider({ children }) {
           if (res.ok && data.user) {
             setUser(data.user);
             setToken(storedToken);
-            localStorage.setItem('malmalee_user', JSON.stringify(data.user));
-            localStorage.setItem('malmalee_token', storedToken);
+            localStorage.setItem('dsoftpack_user', JSON.stringify(data.user));
+            localStorage.setItem('dsoftpack_token', storedToken);
           } else {
             logout();
           }
@@ -160,7 +164,7 @@ export function AuthProvider({ children }) {
         return { success: false, error: data.error || 'Failed to update profile' };
       }
       setUser(data.user);
-      localStorage.setItem('malmalee_user', JSON.stringify(data.user));
+      localStorage.setItem('dsoftpack_user', JSON.stringify(data.user));
       return { success: true, user: data.user };
     } catch (err) {
       return { success: false, error: err.message };

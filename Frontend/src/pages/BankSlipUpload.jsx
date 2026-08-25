@@ -16,7 +16,7 @@ export default function BankSlipUpload() {
 
   const [bankInfo, setBankInfo] = useState({
     bankName: 'Commercial Bank of Ceylon',
-    accountName: 'Malmalee Creations (Pvt) Ltd',
+    accountName: 'DSoft Pack (Pvt) Ltd',
     accountNumber: '8009 123 456',
     branchName: 'Colombo Main Branch',
     swiftCode: 'CCEYLKLX',
@@ -36,7 +36,7 @@ export default function BankSlipUpload() {
         if (data.bankName) {
           setBankInfo({
             bankName: data.bankName || 'Commercial Bank of Ceylon',
-            accountName: data.accountName || 'Malmalee Creations (Pvt) Ltd',
+            accountName: data.accountName || 'DSoft Pack (Pvt) Ltd',
             accountNumber: data.accountNumber || '8009 123 456',
             branchName: data.branchName || 'Colombo Main Branch',
             swiftCode: data.swiftCode || 'CCEYLKLX',
@@ -161,7 +161,7 @@ export default function BankSlipUpload() {
             <span className="material-symbols-outlined text-primary text-3xl">account_balance</span>
             <div>
               <h2 className="font-title-sm text-title-sm text-primary">Bank Account Details</h2>
-              <p className="font-label-sm text-label-sm text-on-surface-variant">Malmalee Creations Official Bank Account</p>
+              <p className="font-label-sm text-label-sm text-on-surface-variant">DSoft Pack Official Bank Account</p>
             </div>
           </div>
 

@@ -212,10 +212,10 @@ export default function ContactUs() {
                   Email
                 </p>
                 <a
-                  href="mailto:Malmaleecreations@gmail.com"
+                  href="mailto:dsoftpack@gmail.com"
                   className="font-body-md text-sm sm:text-base text-primary hover:underline font-medium break-all"
                 >
-                  Malmaleecreations@gmail.com
+                  dsoftpack@gmail.com
                 </a>
               </div>
             </div>
@@ -255,7 +255,7 @@ export default function ContactUs() {
                   rel="noopener noreferrer"
                   className="font-body-md text-sm sm:text-base text-primary hover:underline font-medium"
                 >
-                  @malmaleecreations
+                  @dsoftpack
                 </a>
               </div>
             </div>

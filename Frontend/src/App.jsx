@@ -79,7 +79,7 @@ function AdminLayout({ children }) {
           >
             <span className="material-symbols-outlined text-[24px]">menu</span>
           </button>
-          <h1 className="font-title-sm text-lg text-primary font-bold">Malmalee Admin</h1>
+          <h1 className="font-title-sm text-lg text-primary font-bold">DSoft Pack Admin</h1>
         </div>
         <button
           onClick={() => { logout(); navigate('/login'); }}
@@ -115,7 +115,7 @@ function PageLoader() {
   return (
     <div className="w-full min-h-screen flex flex-col items-center justify-center bg-background gap-3">
       <span className="material-symbols-outlined animate-spin text-primary text-4xl">sync</span>
-      <p className="font-label-md text-label-md text-primary font-bold">Malmalee Creations</p>
+      <p className="font-label-md text-label-md text-primary font-bold">DSoft Pack</p>
     </div>
   );
 }

@@ -59,7 +59,7 @@ export default function Login() {
           <div className="text-center space-y-2">
             <Link to="/" className="inline-block">
               <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight">
-                Malmalee Creations
+                DSoft Pack
               </h1>
             </Link>
             <p className="font-body-md text-body-md text-on-surface-variant">

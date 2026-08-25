@@ -1,7 +1,7 @@
 {
-  "name": "malmalee-backend",
+  "name": "dsoftpack-backend",
   "version": "1.0.0",
-  "description": "Express.js Prisma SQLite Backend for Malmalee Creations",
+  "description": "Express.js Prisma SQLite Backend for DSoft Pack",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

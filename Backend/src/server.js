@@ -26,7 +26,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health Check API Route
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Malmalee Creations API is running' });
+  res.json({ status: 'OK', message: 'DSoft Pack API is running' });
 });
 
 // Register API Routes
@@ -47,6 +47,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Malmalee Creations Server running at http://localhost:${PORT}`);
+  console.log(`🚀 DSoft Pack Server running at http://localhost:${PORT}`);
   console.log(`📬 Contact API ready at http://localhost:${PORT}/api/contact`);
 });

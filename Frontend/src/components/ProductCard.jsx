@@ -27,7 +27,7 @@ export default function ProductCard({ product }) {
     <div className="group relative flex flex-col h-full bg-surface-container-lowest rounded-xl product-card-hover transition-all duration-300 border border-outline-variant/20 overflow-hidden shadow-xs hover:shadow-ambient">
       <Link to={`/product/${id}`} className="flex-grow flex flex-col">
         {/* Image Container */}
-        <div className="relative w-full aspect-[4/5] overflow-hidden bg-surface-container">
+        <div className="relative w-full aspect-square overflow-hidden bg-surface-container">
           {/* Primary image */}
           <img
             src={image || '/14_blush_silk_ribbon_bow.jpg'}
@@ -100,7 +100,7 @@ export default function ProductCard({ product }) {
               Added!
             </span>
           ) : user ? (
-            'Add to Bag'
+            'Add to Cart'
           ) : (
             <span className="flex items-center justify-center gap-1">
               <span className="material-symbols-outlined text-[14px] sm:text-[16px]">lock</span>

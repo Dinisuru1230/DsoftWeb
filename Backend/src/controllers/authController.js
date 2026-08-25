@@ -33,7 +33,7 @@ async function register(req, res) {
 
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'malmalee_creations_super_secret_jwt_key_2026',
+      process.env.JWT_SECRET || 'dsoftpack_super_secret_jwt_key_2026',
       { expiresIn: '7d' }
     );
 
@@ -74,7 +74,7 @@ async function login(req, res) {
 
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'malmalee_creations_super_secret_jwt_key_2026',
+      process.env.JWT_SECRET || 'dsoftpack_super_secret_jwt_key_2026',
       { expiresIn: '7d' }
     );
 

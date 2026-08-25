@@ -113,7 +113,7 @@ export default function Register() {
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success(`Welcome to Malmalee Creations, ${result.user.name || 'Friend'}!`, { id: toastId });
+      toast.success(`Welcome to DSoft Pack, ${result.user.name || 'Friend'}!`, { id: toastId });
       if (result.user.role === 'ADMIN') {
         navigate('/admin');
       } else {
@@ -155,7 +155,7 @@ export default function Register() {
           <div className="text-center md:text-left flex flex-col gap-1">
             <Link to="/" className="inline-block mb-1">
               <span className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight">
-                Malmalee Creations
+                DSoft Pack
               </span>
             </Link>
             <h1 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background">

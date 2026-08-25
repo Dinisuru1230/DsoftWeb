@@ -90,7 +90,7 @@ export default function SecurePayment() {
         {/* Header / Trust Indicators */}
         <header className="flex flex-col items-center text-center gap-2 relative z-10">
           <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile text-primary tracking-tight">
-            Malmalee Creations
+            DSoft Pack
           </h1>
           <div className="flex items-center gap-2 text-secondary bg-secondary-container/40 px-4 py-1 rounded-full font-label-sm text-label-sm">
             <span className="material-symbols-outlined text-[16px]">lock</span>

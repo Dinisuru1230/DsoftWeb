@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import LogoComponent from "./LogoComponent";
 
 export default function Footer() {
   return (
@@ -6,12 +7,9 @@ export default function Footer() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 px-4 sm:px-8 md:px-12 py-16 max-w-[1400px] mx-auto">
         {/* Brand */}
         <div className="md:col-span-1 flex flex-col">
-          <span className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-3">
-            Malmalee Creations
-          </span>
+          <LogoComponent height="h-12 sm:h-14" className="mb-3" />
           <p className="font-body-md text-body-md text-on-surface-variant max-w-xs">
-            Handcrafted accessories bringing a touch of quiet luxury and
-            nostalgia to your everyday life.
+            Next-gen digital products, SaaS suites, and custom software services built to empower modern businesses.
           </p>
         </div>
 
@@ -73,7 +71,7 @@ export default function Footer() {
       <div className="border-t border-outline-variant/30 px-4 sm:px-8 md:px-12 py-5 flex items-center justify-center gap-3.5 text-center max-w-[1400px] mx-auto flex-wrap">
         <p className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 flex-wrap justify-center">
           <span>
-            © 2026 Malmalee Creations. All Rights Reserved. | Website Developed
+            © 2026 DSoft Pack. All Rights Reserved. | Website Developed
             by
           </span>
           <a
@@ -85,11 +83,7 @@ export default function Footer() {
             Fuchsius
           </a>
         </p>
-        <img
-          src="/Logo.png"
-          alt="Malmalee Creations Logo"
-          className="h-9 w-auto object-contain shrink-0"
-        />
+        <LogoComponent height="h-8" />
       </div>
     </footer>
   );

@@ -12,10 +12,10 @@ function imgUrl(path) {
 }
 
 const CATEGORIES = [
-  { label: 'Bows', image: '/14_blush_silk_ribbon_bow.jpg', filter: 'bows' },
-  { label: 'Scrunchies', image: '/18_silk_scrunchie.jpg', filter: 'scrunchies' },
-  { label: 'Headbands', image: '/17_woven_floral_headband.jpg', filter: 'headbands' },
-  { label: 'Accessories', image: '/08_flat_lay_fabrics_ribbon.jpg', filter: 'accessories' },
+  { label: 'Software Suites', image: '/14_blush_silk_ribbon_bow.jpg', filter: 'software' },
+  { label: 'SaaS Platforms', image: '/18_silk_scrunchie.jpg', filter: 'saas' },
+  { label: 'Digital Tools', image: '/17_woven_floral_headband.jpg', filter: 'digital-tools' },
+  { label: 'Cloud Services', image: '/08_flat_lay_fabrics_ribbon.jpg', filter: 'cloud' },
 ];
 
 export default function Home() {
@@ -45,17 +45,17 @@ export default function Home() {
         </div>
         <div className="relative z-10 text-center px-4 sm:px-8 md:px-16 max-w-3xl mx-auto flex flex-col items-center">
           <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-3 md:mb-4 drop-shadow-sm">
-            Handmade Elegance <br />
-            <span className="text-on-surface-variant italic font-light">& Everyday Magic</span>
+            Next-Gen Software <br />
+            <span className="text-secondary font-semibold">& Digital Solutions</span>
           </h1>
           <p className="font-body-lg text-sm sm:text-base md:text-body-lg text-on-surface-variant mb-8 sm:mb-12 md:mb-16 max-w-xl">
-            Discover delicate artisanal accessories crafted to elevate your everyday moments into cherished treasures.
+            Discover cutting-edge digital products, scalable SaaS platforms, and custom software services engineered to elevate your operations.
           </p>
           <Link
             to="/shop"
-            className="inline-flex items-center justify-center bg-primary-container text-on-background font-label-md text-label-md py-3 px-8 rounded-full hover:bg-primary hover:text-white transition-all duration-300 shadow-ambient hover-ambient font-bold"
+            className="inline-flex items-center justify-center bg-primary text-white font-label-md text-label-md py-3 px-8 rounded-full hover:bg-primary/90 transition-all duration-300 shadow-ambient hover-ambient font-bold"
           >
-            Shop Collection
+            Explore Solutions
           </Link>
         </div>
       </section>
@@ -64,7 +64,7 @@ export default function Home() {
       <section className="py-20 px-5 md:px-16 bg-surface-container-lowest">
         <div className="max-w-[1200px] mx-auto text-center">
           <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-primary mb-8">
-            Explore Our Craft
+            Explore Solutions & Services
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center">
             {CATEGORIES.map((cat) => (
@@ -154,10 +154,10 @@ export default function Home() {
         <div className="relative z-10 max-w-[1200px] mx-auto flex flex-col md:flex-row items-center gap-10">
           <div className="md:w-1/2">
             <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-primary mb-4">
-              Crafted with Love
+              Engineered for Excellence
             </h2>
             <p className="font-body-lg text-body-lg text-on-surface-variant mb-6">
-              Every piece from Malmalee Creations is born from a passion for artisanal craft and a deep appreciation for the beauty found in everyday moments.
+              Every digital product and software solution from DSoft Pack is built with high performance, robust security, and seamless user experience at its core.
             </p>
             <Link
               to="/our-story"

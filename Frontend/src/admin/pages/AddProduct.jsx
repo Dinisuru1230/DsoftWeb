@@ -7,11 +7,11 @@ import toast from 'react-hot-toast';
 const API_BASE = 'http://localhost:5050/api';
 
 const INITIAL_SPECS = [
-  { id: '1', key: 'Material', value: '' },
-  { id: '2', key: 'Width', value: '' },
-  { id: '3', key: 'Length', value: '' },
-  { id: '4', key: 'Care Instructions', value: '' },
-  { id: '5', key: 'Origin / Craftsmanship', value: 'Handmade with love in Sri Lanka' },
+  { id: '1', key: 'License Type', value: 'Lifetime Perpetual Key' },
+  { id: '2', key: 'Activation Method', value: 'Instant Key / Telephone Activation' },
+  { id: '3', key: 'Supported System', value: 'Windows 11 / 10 (32-bit & 64-bit)' },
+  { id: '4', key: 'Delivery Method', value: 'Instant Email & Dashboard Delivery' },
+  { id: '5', key: 'Warranty & Guarantee', value: '7 Days 1-to-1 Replacement Guarantee' },
 ];
 
 function sanitizeDecimal(val) {
@@ -30,44 +30,126 @@ function sanitizeInteger(val) {
 }
 
 const DEFAULT_PALETTES = [
-  { name: 'Blush Pink', hex: '#fadadd', placeholder: 'e.g. Blush Pink' },
-  { name: 'Ivory White', hex: '#fdfbf7', placeholder: 'e.g. Ivory White' },
-  { name: 'Sage Green', hex: '#9caf88', placeholder: 'e.g. Sage Green' },
-  { name: 'Lavender', hex: '#e6e6fa', placeholder: 'e.g. Lavender' },
-  { name: 'Dusty Rose', hex: '#dcae96', placeholder: 'e.g. Dusty Rose' },
-  { name: 'Champagne Gold', hex: '#f7e7ce', placeholder: 'e.g. Champagne Gold' },
-  { name: 'Sky Blue', hex: '#87ceeb', placeholder: 'e.g. Sky Blue' },
+  { name: '1 PC Retail License', hex: '#2563eb', placeholder: 'e.g. 1 PC Retail License' },
+  { name: '5 PC Family Pack', hex: '#0f172a', placeholder: 'e.g. 5 PC License Pack' },
+  { name: 'Pro Edition', hex: '#7c3aed', placeholder: 'e.g. Professional Edition' },
+  { name: 'Enterprise License', hex: '#059669', placeholder: 'e.g. Enterprise Tier' },
+  { name: 'Binding Account Key', hex: '#d97706', placeholder: 'e.g. Account Bind Key' },
 ];
 
 const SPEC_PRESETS = [
-  { key: 'Material', keyPlaceholder: 'e.g. Material', valPlaceholder: 'e.g. 100% Mulberry Silk / Satin' },
-  { key: 'Width', keyPlaceholder: 'e.g. Width', valPlaceholder: 'e.g. 2.5 inches / 6.5 cm' },
-  { key: 'Length', keyPlaceholder: 'e.g. Length / Dimensions', valPlaceholder: 'e.g. 15 cm length' },
-  { key: 'Care Instructions', keyPlaceholder: 'e.g. Care Instructions', valPlaceholder: 'e.g. Spot clean with cool water' },
-  { key: 'Origin / Craftsmanship', keyPlaceholder: 'e.g. Craftsmanship', valPlaceholder: 'e.g. Handmade with love in Sri Lanka' },
-  { key: 'Fastening / Attachment', keyPlaceholder: 'e.g. Fastening / Clip', valPlaceholder: 'e.g. French Alligator Clip (Steel)' },
-  { key: 'Packaging', keyPlaceholder: 'e.g. Packaging', valPlaceholder: 'e.g. Signature Malmalee Gift Box' },
-  { key: 'Suitable For', keyPlaceholder: 'e.g. Suitable For', valPlaceholder: 'e.g. Weddings, Parties, Everyday Chic' },
+  { key: 'License Type', keyPlaceholder: 'e.g. License Type', valPlaceholder: 'e.g. Lifetime Perpetual Key / 1-Year Sub' },
+  { key: 'Activation Method', keyPlaceholder: 'e.g. Activation Method', valPlaceholder: 'e.g. Online Key / Telephone slui.exe 4' },
+  { key: 'Supported OS / System', keyPlaceholder: 'e.g. Supported System', valPlaceholder: 'e.g. Windows 11 / 10 / macOS' },
+  { key: 'Delivery Method', keyPlaceholder: 'e.g. Delivery Method', valPlaceholder: 'e.g. Instant Key via Email & Dashboard' },
+  { key: 'Warranty & Guarantee', keyPlaceholder: 'e.g. Warranty', valPlaceholder: 'e.g. 7 Days Replacement / 100% Genuine' },
+  { key: 'System Requirements', keyPlaceholder: 'e.g. Requirements', valPlaceholder: 'e.g. 4GB RAM, 10GB Space, TPM 2.0' },
+  { key: 'Language Support', keyPlaceholder: 'e.g. Language', valPlaceholder: 'e.g. Multilingual / All Languages Supported' },
+  { key: 'Installer Download', keyPlaceholder: 'e.g. Download Link', valPlaceholder: 'e.g. Official ISO Download Link Included' },
 ];
 
 function getSpecPlaceholders(spec, index) {
   const keyLower = (spec.key || '').toLowerCase().trim();
-  if (keyLower.includes('material')) return { key: 'e.g. Material', val: 'e.g. 100% Mulberry Silk / Satin' };
-  if (keyLower.includes('width')) return { key: 'e.g. Width', val: 'e.g. 2.5 inches / 6.5 cm' };
-  if (keyLower.includes('length') || keyLower.includes('dimension') || keyLower.includes('size')) {
-    return { key: 'e.g. Dimensions', val: 'e.g. 15cm × 10cm' };
-  }
-  if (keyLower.includes('care')) return { key: 'e.g. Care Instructions', val: 'e.g. Spot clean with damp cloth' };
-  if (keyLower.includes('origin') || keyLower.includes('craft')) return { key: 'e.g. Craftsmanship', val: 'e.g. Handmade with love in Sri Lanka' };
-  if (keyLower.includes('clip') || keyLower.includes('fasten') || keyLower.includes('attach')) {
-    return { key: 'e.g. Fastening', val: 'e.g. French Alligator Clip (Steel)' };
-  }
-  if (keyLower.includes('pack')) return { key: 'e.g. Packaging', val: 'e.g. Signature Malmalee Gift Box' };
-  if (keyLower.includes('weight')) return { key: 'e.g. Weight', val: 'e.g. 45 grams' };
-  if (keyLower.includes('suit') || keyLower.includes('occasion')) return { key: 'e.g. Suitable For', val: 'e.g. Weddings, Parties, Casual wear' };
-
+  if (keyLower.includes('license') || keyLower.includes('type')) return { key: 'e.g. License Type', val: 'e.g. Lifetime Perpetual Key' };
+  if (keyLower.includes('activat')) return { key: 'e.g. Activation Method', val: 'e.g. Online Instant Key / Telephone' };
+  if (keyLower.includes('os') || keyLower.includes('system') || keyLower.includes('platform')) return { key: 'e.g. Supported System', val: 'e.g. Windows 11 / 10 (64-bit)' };
+  if (keyLower.includes('deliver')) return { key: 'e.g. Delivery Method', val: 'e.g. Instant Key via Email & Dashboard' };
+  if (keyLower.includes('warrant') || keyLower.includes('guarant')) return { key: 'e.g. Warranty', val: 'e.g. 7 Days Replacement Guarantee' };
+  if (keyLower.includes('req') || keyLower.includes('spec')) return { key: 'e.g. Requirements', val: 'e.g. 4GB RAM, 10GB HDD Space' };
+  if (keyLower.includes('lang')) return { key: 'e.g. Language', val: 'e.g. Multilingual / Global' };
   const preset = SPEC_PRESETS[index % SPEC_PRESETS.length];
   return { key: preset.keyPlaceholder, val: preset.valPlaceholder };
+}
+
+function parseFormattedTextPreview(text) {
+  if (!text) return null;
+
+  const colonIdx = text.indexOf(':');
+
+  if (!text.includes('**') && colonIdx > 0) {
+    const title = text.slice(0, colonIdx + 1);
+    const rest = text.slice(colonIdx + 1);
+    return (
+      <>
+        <strong className="font-extrabold text-on-surface" style={{ fontWeight: 800 }}>
+          {title}
+        </strong>
+        {rest}
+      </>
+    );
+  }
+
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+          return (
+            <strong key={i} className="font-extrabold text-on-surface" style={{ fontWeight: 800 }}>
+              {part.slice(2, -2)}
+            </strong>
+          );
+        }
+
+        if (i === 0 && part.includes(':')) {
+          const cIdx = part.indexOf(':');
+          const t = part.slice(0, cIdx + 1);
+          const r = part.slice(cIdx + 1);
+          return (
+            <span key={i}>
+              <strong className="font-extrabold text-on-surface" style={{ fontWeight: 800 }}>
+                {t}
+              </strong>
+              {r}
+            </span>
+          );
+        }
+
+        return part;
+      })}
+    </>
+  );
+}
+
+function renderDescriptionPreviewItem(line, idx) {
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+
+  const numMatch = trimmed.match(/^(\d+[\.\)]\s*)/);
+  const numberPrefix = numMatch ? numMatch[1] : '';
+
+  const hasExplicitBullet = /^([•\-\*])\s*/.test(trimmed);
+
+  const cleanText = trimmed.replace(/^([•\-\*]|(\d+[\.\)]))\s*/, '').trim();
+  if (!cleanText) return null;
+
+  const formattedContent = parseFormattedTextPreview(cleanText);
+
+  if (numberPrefix) {
+    return (
+      <li key={idx} className="flex items-start gap-2.5 text-on-surface text-sm font-medium leading-relaxed">
+        <span className="font-extrabold text-on-surface shrink-0 min-w-[20px]" style={{ fontWeight: 800 }}>
+          {numberPrefix}
+        </span>
+        <div className="flex-1">{formattedContent}</div>
+      </li>
+    );
+  }
+
+  if (hasExplicitBullet) {
+    return (
+      <li key={idx} className="flex items-start gap-2.5 text-on-surface text-sm font-medium leading-relaxed">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+        <div className="flex-1">{formattedContent}</div>
+      </li>
+    );
+  }
+
+  return (
+    <li key={idx} className="text-on-surface text-sm font-medium leading-relaxed list-none">
+      {formattedContent}
+    </li>
+  );
 }
 
 export default function AddProduct() {
@@ -86,6 +168,7 @@ export default function AddProduct() {
     price: '',
     stock: '',
     description: '',
+    downloadUrl: '',
     badge: '',
     featured: false,
     standardShipping: '',
@@ -162,6 +245,7 @@ export default function AddProduct() {
           price: p.colors?.length > 0 ? '' : String(p.price ?? ''),
           stock: p.colors?.length > 0 ? '' : String(p.stock ?? ''),
           description: p.description || '',
+          downloadUrl: p.downloadUrl || '',
           badge: p.badge || '',
           featured: Boolean(p.featured),
           standardShipping: p.standardShipping != null ? String(p.standardShipping) : '',
@@ -496,6 +580,7 @@ export default function AddProduct() {
         name: form.name.trim(),
         description: form.description.trim(),
         details: detailsArray.length > 0 ? detailsArray : null,
+        downloadUrl: form.downloadUrl.trim() || null,
         categoryName: form.category,
         price: colors.length > 0 ? parseFloat(colors[0].price) : parseFloat(form.price),
         stock: colors.length > 0 ? colors.reduce((a, c) => a + (parseInt(c.stock) || 0), 0) : parseInt(form.stock) || 0,
@@ -539,6 +624,90 @@ export default function AddProduct() {
     }
   }
 
+  const insertFormatting = (type) => {
+    const textarea = document.getElementById('description');
+    const current = form.description || '';
+
+    if (!textarea) {
+      if (type === 'bold') setForm((prev) => ({ ...prev, description: (prev.description || '') + '**bold text**' }));
+      if (type === 'bullet') setForm((prev) => ({ ...prev, description: (prev.description || '') + '\n• ' }));
+      if (type === 'number') setForm((prev) => ({ ...prev, description: (prev.description || '') + '\n1. ' }));
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const hasSelection = start !== end;
+    const selected = current.substring(start, end);
+
+    let updated = current;
+    let selStart = start;
+    let selEnd = start;
+
+    if (type === 'bold') {
+      if (hasSelection) {
+        if (selected.startsWith('**') && selected.endsWith('**') && selected.length >= 4) {
+          // Unwrap bold
+          const unwrapped = selected.slice(2, -2);
+          updated = current.substring(0, start) + unwrapped + current.substring(end);
+          selStart = start;
+          selEnd = start + unwrapped.length;
+        } else {
+          // Wrap bold
+          const wrapped = `**${selected}**`;
+          updated = current.substring(0, start) + wrapped + current.substring(end);
+          selStart = start;
+          selEnd = start + wrapped.length;
+        }
+      } else {
+        const defaultText = 'bold text';
+        const wrapped = `**${defaultText}**`;
+        updated = current.substring(0, start) + wrapped + current.substring(end);
+        selStart = start + 2;
+        selEnd = start + 2 + defaultText.length;
+      }
+    } else if (type === 'bullet') {
+      const isStartOfLine = start === 0 || current[start - 1] === '\n';
+      const prefix = isStartOfLine ? '• ' : '\n• ';
+      if (hasSelection) {
+        const bulleted = selected.split('\n').map((l) => (l.startsWith('• ') ? l : `• ${l}`)).join('\n');
+        updated = current.substring(0, start) + bulleted + current.substring(end);
+        selStart = start + bulleted.length;
+        selEnd = selStart;
+      } else {
+        updated = current.substring(0, start) + prefix + current.substring(end);
+        selStart = start + prefix.length;
+        selEnd = selStart;
+      }
+    } else if (type === 'number') {
+      const lines = current.substring(0, start).split('\n');
+      let nextNum = 1;
+      lines.forEach((l) => {
+        const m = l.match(/^(\d+)[\.\)]/);
+        if (m) nextNum = parseInt(m[1], 10) + 1;
+      });
+      const isStartOfLine = start === 0 || current[start - 1] === '\n';
+      const prefix = isStartOfLine ? `${nextNum}. ` : `\n${nextNum}. `;
+      if (hasSelection) {
+        let count = nextNum;
+        const numbered = selected.split('\n').map((l) => `${count++}. ${l.replace(/^(\d+[\.\)]|•|\-)\s*/, '')}`).join('\n');
+        updated = current.substring(0, start) + numbered + current.substring(end);
+        selStart = start + numbered.length;
+        selEnd = selStart;
+      } else {
+        updated = current.substring(0, start) + prefix + current.substring(end);
+        selStart = start + prefix.length;
+        selEnd = selStart;
+      }
+    }
+
+    setForm((prev) => ({ ...prev, description: updated }));
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(selStart, selEnd);
+    }, 30);
+  };
+
   const totalVariantStock = colors.reduce((acc, c) => acc + (parseInt(c.stock) || 0), 0);
   const hasColors = colors.length > 0;
   const errorList = Object.values(errors).filter(Boolean);
@@ -567,12 +736,12 @@ export default function AddProduct() {
             Back to Products
           </button>
           <h1 className="font-headline-md text-headline-md text-on-background">
-            {isEditMode ? 'Edit Product' : 'Add New Product'}
+            {isEditMode ? 'Edit Software License' : 'Add New Digital Software / License'}
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant">
             {isEditMode
-              ? 'Update the details, imagery, and pricing for this artisanal piece.'
-              : 'Add a new handcrafted piece to your boutique catalog.'}
+              ? 'Update the details, license keys, pricing, and system requirements for this software.'
+              : 'Add a new digital software product, operating system key, or SaaS license.'}
           </p>
         </div>
 
@@ -637,13 +806,13 @@ export default function AddProduct() {
           <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-5">
             <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2 border-b border-outline-variant/30 pb-3">
               <span className="material-symbols-outlined">edit_note</span>
-              Basic Information
+              Software Details &amp; Identity
             </h2>
 
             {/* Product Name */}
             <div>
               <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="name">
-                Product Name <span className="text-error">*</span>
+                Software Name <span className="text-error">*</span>
               </label>
               <input
                 id="name"
@@ -652,7 +821,7 @@ export default function AddProduct() {
                 value={form.name}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="e.g. Blush Silk Ribbon Bow"
+                placeholder="e.g. Windows 11 Professional 64-Bit Digital Key"
                 className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface transition-colors ${
                   errors.name ? 'border-error' : 'border-outline-variant focus:border-primary'
                 }`}
@@ -667,17 +836,56 @@ export default function AddProduct() {
 
             {/* Description */}
             <div>
-              <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="description">
-                Description <span className="text-error">*</span>
-              </label>
+              <div className="flex flex-wrap justify-between items-center gap-2 mb-2">
+                <label className="block font-label-md text-label-md text-on-surface" htmlFor="description">
+                  Software Description &amp; Key Features <span className="text-error">*</span>
+                </label>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting('bold')}
+                    className="px-2.5 py-1 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold rounded border border-outline-variant/60 transition-colors flex items-center gap-1 cursor-pointer"
+                    title="Make text bold (**bold**)"
+                  >
+                    <span className="font-extrabold font-serif text-sm">B</span> Bold
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting('bullet')}
+                    className="px-2.5 py-1 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold rounded border border-outline-variant/60 transition-colors flex items-center gap-1 cursor-pointer"
+                    title="Insert bullet point (•)"
+                  >
+                    <span className="font-bold text-sm">•</span> Bullet
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting('number')}
+                    className="px-2.5 py-1 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold rounded border border-outline-variant/60 transition-colors flex items-center gap-1 cursor-pointer"
+                    title="Insert numbered bullet (1.)"
+                  >
+                    <span className="font-bold text-xs">1.</span> Numbered
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm((prev) => ({
+                      ...prev,
+                      description: "• **Instant Delivery:** 1x Authentic activation code delivered instantly to dashboard & email.\n• **License Validity:** Permanent lifetime key for 1 PC device.\n• **Technical Support:** Friendly 24/7 technical customer support included.\n• **Guarantee:** 7 Days 1-to-1 replacement warranty. 100% Genuine software license."
+                    }))}
+                    className="px-2.5 py-1 bg-primary/10 hover:bg-primary/20 text-primary font-bold rounded border border-primary/30 transition-colors flex items-center gap-1 cursor-pointer"
+                    title="Insert sample digital license template"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">auto_fix_high</span> Preset Template
+                  </button>
+                </div>
+              </div>
               <textarea
                 id="description"
                 name="description"
-                rows={4}
+                rows={6}
                 value={form.description}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="Describe the piece, materials, occasion, craftsmanship, etc."
+                placeholder={"• **Instant Delivery:** Authentic activation key delivered immediately\n• **Lifetime License:** Permanent key for your device\n• **24/7 Support:** Technical customer support included"}
                 className={`w-full bg-surface-container-low border rounded-lg p-3 font-body-md text-on-surface focus:outline-none transition-colors ${
                   errors.description ? 'border-error' : 'border-outline-variant focus:border-primary'
                 }`}
@@ -688,11 +896,56 @@ export default function AddProduct() {
                     <span className="material-symbols-outlined text-[13px]">error</span>
                     {errors.description}
                   </p>
-                ) : <span />}
+                ) : (
+                  <p className="text-xs text-on-surface-variant">
+                    Tip: Use the toolbar buttons above to insert <strong>Bold</strong> titles and <strong>• Bullet</strong> points.
+                  </p>
+                )}
                 <span className="font-label-sm text-xs text-on-surface-variant">
                   {form.description.length} chars
                 </span>
               </div>
+
+              {/* Live Formatting Preview */}
+              {form.description.trim().length > 0 && (
+                <div className="mt-3 p-4 bg-surface-container-low/80 border border-primary/20 rounded-xl space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider mb-2">
+                    <span className="material-symbols-outlined text-[16px]">visibility</span>
+                    Live Customer View Preview:
+                  </div>
+                  <ul className="space-y-2">
+                    {form.description
+                      .split('\n')
+                      .map((line, idx) => {
+                        const trimmed = line.trim();
+                        if (!trimmed) {
+                          return <li key={idx} className="h-2 list-none" />;
+                        }
+                        return renderDescriptionPreviewItem(trimmed, idx);
+                      })}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Software Download Link */}
+            <div>
+              <label className="block font-label-md text-label-md text-on-surface mb-1 flex items-center gap-2" htmlFor="downloadUrl">
+                <span className="material-symbols-outlined text-primary text-[18px]">download_for_offline</span>
+                Software Download Link <span className="text-on-surface-variant font-normal text-xs">(optional - direct link for customer download)</span>
+              </label>
+              <input
+                id="downloadUrl"
+                name="downloadUrl"
+                type="url"
+                value={form.downloadUrl}
+                onChange={handleChange}
+                placeholder="e.g. https://officecdn.microsoft.com/pr/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/ProPlus2021Retail.img"
+                className="w-full bg-surface-container-low border border-outline-variant/60 focus:border-primary rounded-lg p-3 font-body-md text-on-surface focus:outline-none transition-colors text-sm"
+              />
+              <p className="text-xs text-on-surface-variant mt-1">
+                Direct ISO/Software download URL. If provided, customers can click &quot;Click Here to Download&quot; on the product page.
+              </p>
             </div>
 
             {/* Badge */}
@@ -706,7 +959,7 @@ export default function AddProduct() {
                 type="text"
                 value={form.badge}
                 onChange={handleChange}
-                placeholder="e.g. Bestseller, New Arrival, Limited Edition"
+                placeholder="e.g. Instant Delivery, Top Seller, Best Value, 100% Genuine"
                 className="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface transition-colors"
               />
             </div>
@@ -823,45 +1076,45 @@ export default function AddProduct() {
             </div>
           </section>
 
-          {/* Color Variants */}
+          {/* License Editions & Variants */}
           <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-5">
             <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
               <div>
                 <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2">
-                  <span className="material-symbols-outlined">palette</span>
-                  Color Variants
+                  <span className="material-symbols-outlined">badge</span>
+                  License Editions &amp; Variants
                 </h2>
                 <p className="font-body-md text-xs text-on-surface-variant mt-0.5">
-                  Optional. If added, customers can choose colors and each color can have its own price & stock.
+                  Optional. Add software tiers (e.g. 1 PC License, Pro Edition, 5 PC Pack) each with custom pricing & key stock.
                 </p>
               </div>
               <span className="font-label-sm text-label-sm text-primary font-bold">
-                {colors.length} {colors.length === 1 ? 'Variant' : 'Variants'}
+                {colors.length} {colors.length === 1 ? 'Edition' : 'Editions'}
               </span>
             </div>
 
-            {/* Colors list */}
+            {/* License Editions list */}
             <div className="space-y-4">
               {colors.map((color, index) => (
                 <div
                   key={color.id || index}
                   className="flex flex-col lg:flex-row items-start lg:items-center gap-4 bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 relative"
                 >
-                  {/* Color Picker & Name */}
+                  {/* Badge Swatch & Edition Name */}
                   <div className="flex items-center gap-3 w-full lg:w-48">
                     <input
                       type="color"
                       value={color.hex}
                       onChange={(e) => handleColorChange(index, 'hex', e.target.value)}
                       className="w-9 h-9 rounded-full border border-outline-variant cursor-pointer p-0.5 bg-transparent"
-                      title="Select variant color swatch"
+                      title="Select tier color badge"
                     />
                     <div className="flex-grow">
                       <input
                         type="text"
                         value={color.name}
                         onChange={(e) => handleColorChange(index, 'name', e.target.value)}
-                        placeholder={DEFAULT_PALETTES[index % DEFAULT_PALETTES.length]?.placeholder || 'e.g. Blush Pink'}
+                        placeholder={DEFAULT_PALETTES[index % DEFAULT_PALETTES.length]?.placeholder || 'e.g. 1 PC Retail License'}
                         className="w-full bg-surface-bright border border-outline-variant rounded-md px-2.5 py-1.5 font-body-md text-sm text-on-surface focus:border-primary outline-none"
                       />
                     </div>
@@ -880,9 +1133,9 @@ export default function AddProduct() {
                     />
                   </div>
 
-                  {/* Stock */}
+                  {/* Stock Keys */}
                   <div className="w-full lg:w-24">
-                    <label className="block font-label-sm text-[11px] text-on-surface-variant mb-0.5">Stock</label>
+                    <label className="block font-label-sm text-[11px] text-on-surface-variant mb-0.5">Key Stock</label>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -915,7 +1168,7 @@ export default function AddProduct() {
                       onClick={() => document.getElementById(`color-img-${index}`).click()}
                       className="font-label-sm text-sm text-primary hover:underline cursor-pointer"
                     >
-                      {color.imagePreview ? 'Change' : 'Add Photo'}
+                      {color.imagePreview ? 'Change' : 'Add Image'}
                     </button>
                     <input
                       id={`color-img-${index}`}
@@ -931,7 +1184,7 @@ export default function AddProduct() {
                     type="button"
                     onClick={() => handleRemoveColor(index)}
                     className="p-2 text-on-surface-variant hover:text-error transition-colors self-end lg:self-center cursor-pointer"
-                    title="Delete color variant"
+                    title="Delete edition variant"
                   >
                     <span className="material-symbols-outlined text-[20px]">delete</span>
                   </button>
@@ -943,10 +1196,10 @@ export default function AddProduct() {
               <button
                 type="button"
                 onClick={handleAddColor}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-primary-container/30 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-primary-container/30 transition-all cursor-pointer font-semibold"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
-                Add Color Variant
+                Add Edition / License Variant
               </button>
               {hasColors && (
                 <button
@@ -1092,9 +1345,9 @@ export default function AddProduct() {
             <div className="p-4 bg-primary-container/30 rounded-xl border border-primary/20 flex items-start gap-3">
               <span className="material-symbols-outlined text-primary mt-0.5">info</span>
               <div className="text-sm">
-                <p className="font-bold text-primary mb-0.5">Color Variants Active</p>
+                <p className="font-bold text-primary mb-0.5">License Editions Active</p>
                 <p className="text-on-surface-variant">
-                  Price &amp; Stock are set per color above. Total: <span className="font-bold text-primary">{totalVariantStock} units</span>
+                  Price &amp; Key Stock are set per edition above. Total Keys: <span className="font-bold text-primary">{totalVariantStock} keys</span>
                 </p>
               </div>
             </div>
@@ -1349,7 +1602,7 @@ export default function AddProduct() {
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-on-surface-variant">Product Name</span>
+                <span className="text-on-surface-variant">Software Name</span>
                 <span className="font-medium text-on-surface truncate max-w-[130px]">{form.name || '—'}</span>
               </div>
               <div className="flex justify-between">
@@ -1357,11 +1610,11 @@ export default function AddProduct() {
                 <span className="font-medium text-on-surface">{form.category || '—'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-on-surface-variant">Colors</span>
-                <span className="font-medium text-on-surface">{hasColors ? `${colors.length} variants` : 'Single'}</span>
+                <span className="text-on-surface-variant">Editions</span>
+                <span className="font-medium text-on-surface">{hasColors ? `${colors.length} editions` : 'Single'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-on-surface-variant">Main Photo</span>
+                <span className="text-on-surface-variant">Main Banner / Cover</span>
                 <span className={`font-medium ${mainImagePreview ? 'text-secondary' : 'text-error'}`}>
                   {mainImagePreview ? '✓ Ready' : '✗ Missing'}
                 </span>
@@ -1392,19 +1645,19 @@ export default function AddProduct() {
         </div>
       </form>
 
-      {/* Shared Confirmation Modal for Clearing Colors */}
+      {/* Shared Confirmation Modal for Clearing Editions */}
       <ConfirmModal
         isOpen={showClearColorsConfirm}
-        title="Clear All Color Variants"
-        message="Are you sure you want to remove all configured color variants? The product will revert to a single product with global price and stock."
-        confirmText="Clear All Colors"
-        cancelText="Keep Variants"
+        title="Clear All License Editions"
+        message="Are you sure you want to remove all configured license editions? The product will revert to a single product edition with global price and key stock."
+        confirmText="Clear All Editions"
+        cancelText="Keep Editions"
         variant="warning"
         icon="delete_sweep"
         onConfirm={() => {
           setColors([]);
           setShowClearColorsConfirm(false);
-          toast.success('All color variants cleared.');
+          toast.success('All license editions cleared.');
         }}
         onClose={() => setShowClearColorsConfirm(false)}
       />

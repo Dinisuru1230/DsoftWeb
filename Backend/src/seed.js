@@ -7,18 +7,18 @@ async function seed() {
   // 1. Create Default Admin User
   const adminPassword = await bcrypt.hash('admin123', 10);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@malmalee.lk' },
+    where: { email: 'admin@dsoftpack.lk' },
     update: {
       password: adminPassword,
       role: 'ADMIN',
     },
     create: {
       name: 'Pramod Wijenayake',
-      email: 'admin@malmalee.lk',
+      email: 'admin@dsoftpack.lk',
       password: adminPassword,
       role: 'ADMIN',
       phone: '+94 77 123 4567',
-      address: 'Malmalee Creations HQ, Colombo',
+      address: 'DSoft Pack HQ, Colombo',
     },
   });
   console.log('✅ Default Admin User created:', admin.email);
@@ -47,7 +47,7 @@ async function seed() {
       expressShipping: 1200,
       freeShippingOver: 15000,
       bankName: 'Commercial Bank of Ceylon',
-      accountName: 'Malmalee Creations (Pvt) Ltd',
+      accountName: 'DSoft Pack (Pvt) Ltd',
       accountNumber: '8009 123 456',
       branchName: 'Colombo Main Branch',
       swiftCode: 'CCEYLKLX',
@@ -70,7 +70,7 @@ async function seed() {
       id: 'sec-2',
       title: 'Everyday Magic',
       paragraph:
-        "Magic isn't found in the grandiose; it's tucked quietly into the objects we touch every day. At Malmalee Creations, we aim to infuse your rituals with a touch of this extraordinary comfort. Our throw blankets are designed not just for warmth, but for the feeling of being wrapped in something that was made with genuine care.\n\nThis is our promise to you: every thread is a deliberate act of intention.",
+        "Magic isn't found in the grandiose; it's tucked quietly into the objects we touch every day. At DSoft Pack, we aim to infuse your rituals with a touch of this extraordinary comfort. Our throw blankets are designed not just for warmth, but for the feeling of being wrapped in something that was made with genuine care.\n\nThis is our promise to you: every thread is a deliberate act of intention.",
       image: '/06_elegant_living_space.jpg',
       reverse: true,
     },
@@ -78,7 +78,7 @@ async function seed() {
       id: 'sec-3',
       title: 'The Hands Behind the Magic',
       paragraph:
-        'Our collections are born in the hands of skilled artisans who have dedicated their lives to the craft of weaving. We partner with small family-run workshops, ensuring fair wages and a sustainable practice that honors both the maker and the material.\n\nWhen you choose Malmalee Creations, you are not just buying a product. You are investing in a story of human connection, skill, and a shared love for beautiful things.',
+        'Our collections are born in the hands of skilled artisans who have dedicated their lives to the craft of weaving. We partner with small family-run workshops, ensuring fair wages and a sustainable practice that honors both the maker and the material.\n\nWhen you choose DSoft Pack, you are not just buying a product. You are investing in a story of human connection, skill, and a shared love for beautiful things.',
       image: '/05_artisanal_weaving_loom.jpg',
       reverse: false,
     },
@@ -97,7 +97,7 @@ async function seed() {
     update: {
       mainTitle: 'Born from Stillness,\nCrafted with Intention',
       subtitle:
-        'Malmalee Creations began as a quiet idea — that the most beautiful things in life are made slowly, with care, and with love. We are a small, passionate team of makers, dreamers, and storytellers.',
+        'DSoft Pack began as a quiet idea — that the most beautiful things in life are made slowly, with care, and with love. We are a small, passionate team of makers, dreamers, and storytellers.',
       mainImage: '/13_studio_table_ribbons.jpg',
       sections: JSON.stringify(storySections),
     },
@@ -105,7 +105,7 @@ async function seed() {
       id: 'global',
       mainTitle: 'Born from Stillness,\nCrafted with Intention',
       subtitle:
-        'Malmalee Creations began as a quiet idea — that the most beautiful things in life are made slowly, with care, and with love. We are a small, passionate team of makers, dreamers, and storytellers.',
+        'DSoft Pack began as a quiet idea — that the most beautiful things in life are made slowly, with care, and with love. We are a small, passionate team of makers, dreamers, and storytellers.',
       mainImage: '/13_studio_table_ribbons.jpg',
       sections: JSON.stringify(storySections),
     },

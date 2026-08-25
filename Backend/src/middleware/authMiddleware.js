@@ -10,7 +10,7 @@ async function authenticateToken(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'malmalee_creations_super_secret_jwt_key_2026');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dsoftpack_super_secret_jwt_key_2026');
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: { id: true, name: true, email: true, role: true, address: true, phone: true, city: true, district: true, postalCode: true },
@@ -37,7 +37,7 @@ async function optionalAuth(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'malmalee_creations_super_secret_jwt_key_2026');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dsoftpack_super_secret_jwt_key_2026');
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: { id: true, name: true, email: true, role: true, address: true, phone: true, city: true, district: true, postalCode: true },

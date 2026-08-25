@@ -28,6 +28,33 @@ export default function Checkout() {
     freeShippingOver: 15000,
   });
 
+  const [currentTime, setCurrentTime] = useState('');
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Colombo',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+      setCurrentTime(timeStr);
+
+      const colomboHourStr = now.toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Colombo',
+        hour: '2-digit',
+        hour12: false,
+      });
+      const colomboHour = parseInt(colomboHourStr, 10);
+      setIsOnline(colomboHour >= 5 && colomboHour < 23);
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     fetch(`${API_BASE}/settings`)
       .then((r) => r.json())
@@ -42,6 +69,8 @@ export default function Checkout() {
 
   // Toggle between default profile address vs new custom delivery address
   const [isCustomAddress, setIsCustomAddress] = useState(false);
+  const [sameAsDelivery, setSameAsDelivery] = useState(true);
+  const [selectedExistingAddress, setSelectedExistingAddress] = useState('default');
 
   const [form, setForm] = useState({
     firstName: user?.name ? user.name.split(' ')[0] : 'Amara',
@@ -122,8 +151,8 @@ export default function Checkout() {
     0
   );
 
-  const shippingCost = defaultShippingCost + specificShippingTotal;
-  const finalTotal = totalPrice + shippingCost;
+  const shippingCost = 0;
+  const finalTotal = totalPrice;
 
   const customerName = !isCustomAddress && user?.name
     ? user.name
@@ -227,407 +256,260 @@ export default function Checkout() {
   }
 
   return (
-    <main className="flex-grow w-full max-w-[1400px] mx-auto px-5 md:px-16 py-12">
+    <main className="flex-grow w-full max-w-[1400px] mx-auto px-5 md:px-16 py-6 md:py-8">
       {/* Header */}
-      <header className="mb-10 text-center md:text-left border-b border-outline-variant/30 pb-6">
-        <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight mb-2">
-          Malmalee Creations
+      <header className="mb-4 text-center md:text-left border-b border-outline-variant/30 pb-2">
+        <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-background tracking-tight">
+          Checkout
         </h1>
-        <p className="font-body-md text-body-md text-on-surface-variant">
-          Checkout securely — Handcrafted with Magic.
-        </p>
       </header>
+
+      {/* Trust & Information Cards Section */}
+      <section className="mb-6 bg-[#f8f9fa] dark:bg-surface-container-low border border-outline-variant/30 rounded-2xl p-4 md:p-5 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+          {/* 1. FAST DELIVERY */}
+          <div className="flex flex-col items-center px-2">
+            <div className="w-12 h-12 rounded-full border border-neutral-800 flex items-center justify-center mb-2 bg-white dark:bg-surface-container-lowest shadow-sm">
+              <span className="material-symbols-outlined text-[24px] text-[#ff5500]">local_shipping</span>
+            </div>
+            <h3 className="font-bold text-[#d92626] uppercase text-xs md:text-sm tracking-wider mb-1">
+              FAST DELIVERY
+            </h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              We typically deliver within 15 minutes during our working hours; in rare cases, delivery may take longer.
+            </p>
+          </div>
+
+          {/* 2. WORKING HOURS */}
+          <div className="flex flex-col items-center px-2">
+            <div className="w-12 h-12 rounded-full border border-neutral-800 flex items-center justify-center mb-2 bg-white dark:bg-surface-container-lowest shadow-sm">
+              <span className="material-symbols-outlined text-[24px] text-[#ff5500]">schedule</span>
+            </div>
+            <h3 className="font-bold text-[#d92626] uppercase text-xs md:text-sm tracking-wider mb-1">
+              WORKING HOURS
+            </h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              5.00 AM to 11.00 PM (GMT+5:30 - Current time: {currentTime || '10:44 PM'})
+            </p>
+            <p className="text-xs font-medium mt-0.5">
+              Status: <span className={isOnline ? 'text-emerald-600 font-bold' : 'text-amber-600 font-bold'}>{isOnline ? 'Online' : 'Offline'}</span>
+            </p>
+          </div>
+
+          {/* 3. EMAIL NOTIFICATIONS */}
+          <div className="flex flex-col items-center px-2">
+            <div className="w-12 h-12 rounded-full border border-neutral-800 flex items-center justify-center mb-2 bg-white dark:bg-surface-container-lowest shadow-sm">
+              <span className="material-symbols-outlined text-[24px] text-[#ff5500]">mail</span>
+            </div>
+            <h3 className="font-bold text-[#d92626] uppercase text-xs md:text-sm tracking-wider mb-1">
+              EMAIL NOTIFICATIONS
+            </h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Order status notifications via Email. Check My Account &gt;&gt; Order History to see purchased products.
+            </p>
+          </div>
+
+          {/* 4. WARRANTY */}
+          <div className="flex flex-col items-center px-2">
+            <div className="w-12 h-12 rounded-full border border-neutral-800 flex items-center justify-center mb-2 bg-white dark:bg-surface-container-lowest shadow-sm">
+              <span className="material-symbols-outlined text-[24px] text-[#ff5500]">verified</span>
+            </div>
+            <h3 className="font-bold text-[#d92626] uppercase text-xs md:text-sm tracking-wider mb-1">
+              WARRANTY
+            </h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              If you face any problem during activation, contact us within the warranty period with error screenshots.
+            </p>
+          </div>
+        </div>
+      </section>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         {/* Left Column (7 Cols): Forms */}
         <div className="lg:col-span-7 space-y-10">
-          {/* Delivery Details Section */}
-          <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-ambient border border-outline-variant/30 space-y-6">
-            <div className="flex justify-between items-center border-b border-outline-variant/30 pb-3">
-              <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background">
-                Delivery Details
+          {/* Billing Address Section */}
+          <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-ambient border border-outline-variant/30 space-y-5">
+            <div className="border-b border-outline-variant/30 pb-2 mb-4">
+              <h2 className="text-xl md:text-2xl font-bold text-on-background inline-block relative pb-1">
+                Billing Address
+                <span className="absolute bottom-0 left-0 w-full h-[2.5px] bg-primary rounded-full"></span>
               </h2>
-              {isCustomAddress && (
-                <button
-                  type="button"
-                  onClick={() => setIsCustomAddress(false)}
-                  className="font-label-sm text-label-sm text-primary font-bold hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                  Use Default Saved Address
-                </button>
-              )}
             </div>
 
-            {!isCustomAddress ? (
-              /* Saved Default Profile Address Card */
-              <div className="space-y-4">
-                <div className="bg-surface-container-low p-5 rounded-xl border-2 border-primary/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-title-sm text-title-sm text-primary font-bold">
-                        {user?.name || `${form.firstName} ${form.lastName}`}
-                      </span>
-                      <span className="bg-primary-container text-on-background px-2.5 py-0.5 rounded-full font-label-sm text-[11px] font-bold">
-                        Default Address
-                      </span>
-                    </div>
-                    <p className="font-body-md text-body-md text-on-surface">{user?.address || form.address}</p>
-                    <p className="font-body-md text-body-md text-on-surface-variant">
-                      {user?.city || form.city}, {user?.state || form.district} {user?.postalCode || form.postalCode}
-                    </p>
-                    <p className="font-body-md text-body-md text-on-surface-variant font-medium pt-1">
-                      📞 {user?.phone || form.phone}
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsCustomAddress(true)}
-                    className="px-4 py-2.5 border border-primary text-primary font-label-md text-label-md rounded-xl hover:bg-primary hover:text-white transition-all duration-300 whitespace-nowrap self-start sm:self-center shadow-sm cursor-pointer"
-                  >
-                    + Change to New Address
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* Editable New Delivery Address Form */
-              <div className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">First Name *</label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={form.firstName}
-                      onChange={handleChange}
-                      required
-                      placeholder="Amara"
-                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Last Name *</label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={form.lastName}
-                      onChange={handleChange}
-                      required
-                      placeholder="Perera"
-                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Street Address *</label>
+            <div className="space-y-4">
+              {/* Option 1: Existing Address */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer text-base md:text-lg font-medium text-on-background select-none">
                   <input
-                    type="text"
-                    name="address"
-                    value={form.address}
-                    onChange={handleChange}
-                    required
-                    placeholder="42 Flower Lane, Suite 4"
-                    className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                    type="radio"
+                    name="addressOption"
+                    checked={!isCustomAddress}
+                    onChange={() => setIsCustomAddress(false)}
+                    className="w-4 h-4 text-primary focus:ring-primary border-neutral-400 accent-primary cursor-pointer"
                   />
-                </div>
+                  <span>I want to use an existing address</span>
+                </label>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* State / Province Dropdown */}
-                  <div>
-                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">State / Province *</label>
-                    <div className="relative">
-                      <select
-                        name="district"
-                        value={form.district}
-                        onChange={handleDistrictChange}
-                        required
-                        className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
-                      >
-                        <option value="" disabled>Select Province...</option>
-                        {SRI_LANKA_PROVINCES.map((p) => (
-                          <option key={p} value={p} className="bg-surface-container-lowest text-on-surface py-1">
-                            {p}
-                          </option>
-                        ))}
-                      </select>
-                      <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                        unfold_more
-                      </span>
-                    </div>
+                {!isCustomAddress && (
+                  <div className="pl-7 pt-1">
+                    <select
+                      value={selectedExistingAddress}
+                      onChange={(e) => setSelectedExistingAddress(e.target.value)}
+                      className="w-full max-w-xl bg-white dark:bg-surface-container-low border border-neutral-300 dark:border-outline-variant rounded-lg px-4 py-2.5 text-on-surface text-sm font-medium focus:outline-none focus:border-primary shadow-sm"
+                    >
+                      <option value="default">
+                        {user?.name || `${form.firstName} ${form.lastName}`} {user?.address ? `${user.address}, ` : ''}{user?.city || 'Sri Lanka'}
+                      </option>
+                    </select>
                   </div>
+                )}
+              </div>
 
-                  {/* City Dropdown */}
-                  <div>
-                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">City *</label>
-                    <div className="relative">
-                      <select
-                        name="city"
-                        value={form.city}
+              {/* Option 2: New Address */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer text-base md:text-lg font-medium text-on-background select-none">
+                  <input
+                    type="radio"
+                    name="addressOption"
+                    checked={isCustomAddress}
+                    onChange={() => setIsCustomAddress(true)}
+                    className="w-4 h-4 text-primary focus:ring-primary border-neutral-400 accent-primary cursor-pointer"
+                  />
+                  <span>I want to use a new address</span>
+                </label>
+
+                {isCustomAddress && (
+                  <div className="pl-7 pt-2 space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">First Name *</label>
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={form.firstName}
+                          onChange={handleChange}
+                          required
+                          placeholder="Amara"
+                          className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Last Name *</label>
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={form.lastName}
+                          onChange={handleChange}
+                          required
+                          placeholder="Perera"
+                          className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Street Address *</label>
+                      <input
+                        type="text"
+                        name="address"
+                        value={form.address}
                         onChange={handleChange}
                         required
-                        className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
-                      >
-                        <option value="" disabled>Select City...</option>
-                        {availableCities.map((c) => (
-                          <option key={c} value={c} className="bg-surface-container-lowest text-on-surface py-1">
-                            {c}
-                          </option>
-                        ))}
-                      </select>
-                      <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                        unfold_more
-                      </span>
+                        placeholder="42 Flower Lane, Suite 4"
+                        className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                      />
                     </div>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Postal Code *</label>
-                    <input
-                      type="text"
-                      name="postalCode"
-                      value={form.postalCode}
-                      onChange={handleChange}
-                      required
-                      placeholder="00300"
-                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Contact Number *</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={form.phone}
-                      onChange={handleChange}
-                      required
-                      placeholder="+94 77 123 4567"
-                      className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* Shipping Method Section */}
-          <section className="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-ambient border border-outline-variant/30 space-y-6">
-            <div className="border-b border-outline-variant/30 pb-3 flex items-center justify-between">
-              <div>
-                <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background">
-                  Delivery &amp; Shipping Options
-                </h2>
-                <p className="font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">
-                  Select standard or express delivery method for your items.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {/* Group 1: Items with Default Delivery Fees */}
-              {hasDefaultItems && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-primary text-[22px]">storefront</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <h3 className="font-title-sm text-title-sm text-primary font-bold">
-                          Standard Store Items ({defaultItems.length} {defaultItems.length === 1 ? 'item' : 'items'})
-                        </h3>
-                        <p className="font-body-md text-body-md text-on-surface-variant text-xs mt-0.5">
-                          Standard store delivery package. One delivery method applies to all items in this group.
-                        </p>
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-primary-container text-[11px] font-label-sm text-on-background font-bold whitespace-nowrap">
-                      Standard Package
-                    </span>
-                  </div>
-
-                  <div className="space-y-4 bg-surface-container-low/50 p-4 md:p-5 rounded-xl border border-outline-variant/30">
-                    {/* List down all items in the standard package */}
-                    <div className="divide-y divide-outline-variant/20 space-y-2">
-                      {defaultItems.map((item, idx) => (
-                        <div key={item.id || idx} className="pt-2 first:pt-0 flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 border border-outline-variant/30">
-                              <img src={item.image || '/14_blush_silk_ribbon_bow.jpg'} alt={item.name} className="w-full h-full object-cover" />
-                            </div>
-                            <div>
-                              <p className="font-label-md text-label-md text-on-surface font-medium line-clamp-1">{item.name}</p>
-                              <p className="font-body-md text-body-md text-on-surface-variant text-xs">
-                                Qty: {item.quantity || 1} &bull; Rs. {(item.price || 0).toLocaleString()} each
-                              </p>
-                            </div>
-                          </div>
-                          <span className="font-label-md text-label-md text-on-surface font-bold text-sm">
-                            Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">State / Province *</label>
+                        <div className="relative">
+                          <select
+                            name="district"
+                            value={form.district}
+                            onChange={handleDistrictChange}
+                            required
+                            className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
+                          >
+                            <option value="" disabled>Select Province...</option>
+                            {SRI_LANKA_PROVINCES.map((p) => (
+                              <option key={p} value={p} className="bg-surface-container-lowest text-on-surface py-1">
+                                {p}
+                              </option>
+                            ))}
+                          </select>
+                          <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
+                            unfold_more
                           </span>
                         </div>
-                      ))}
-                    </div>
+                      </div>
 
-                    {/* Single Delivery Selector for All Standard Items */}
-                    <div className="space-y-3 pt-3 border-t border-outline-variant/20">
-                      <p className="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                        Select Delivery Method for Standard Items:
-                      </p>
-
-                      <label
-                        className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                          defaultShippingMethod === 'standard'
-                            ? 'border-primary bg-primary-container/20 shadow-sm'
-                            : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="defaultShipping"
-                          value="standard"
-                          checked={defaultShippingMethod === 'standard'}
-                          onChange={() => setDefaultShippingMethod('standard')}
-                          className="accent-primary h-4 w-4"
-                        />
-                        <span className="ml-4 flex-grow">
-                          <span className="block font-label-md text-label-md text-on-background">Standard Delivery</span>
-                          <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">3-5 Business Days</span>
-                        </span>
-                        <span className="font-label-md text-label-md text-primary font-bold">
-                          {isFreeDefaultShipping ? 'FREE' : `Rs. ${defaultStandardFee.toLocaleString()}`}
-                        </span>
-                      </label>
-
-                      <label
-                        className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                          defaultShippingMethod === 'express'
-                            ? 'border-primary bg-primary-container/20 shadow-sm'
-                            : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="defaultShipping"
-                          value="express"
-                          checked={defaultShippingMethod === 'express'}
-                          onChange={() => setDefaultShippingMethod('express')}
-                          className="accent-primary h-4 w-4"
-                        />
-                        <span className="ml-4 flex-grow">
-                          <span className="block font-label-md text-label-md text-on-background">Express Delivery</span>
-                          <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">1-2 Business Days</span>
-                        </span>
-                        <span className="font-label-md text-label-md text-primary font-bold">
-                          Rs. {defaultExpressFee.toLocaleString()}
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Group 2: Items with Specific Delivery Fees (Listed Separately) */}
-              {specificShippingCalculations.length > 0 && (
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-secondary text-[22px]">local_shipping</span>
                       <div>
-                        <h3 className="font-title-sm text-title-sm text-secondary font-bold">
-                          Specific Delivery Items ({specificShippingCalculations.length} {specificShippingCalculations.length === 1 ? 'item' : 'items'})
-                        </h3>
-                        <p className="font-body-md text-body-md text-on-surface-variant text-xs mt-0.5">
-                          These items have custom delivery rates. Select standard or express for each item below.
-                        </p>
+                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">City *</label>
+                        <div className="relative">
+                          <select
+                            name="city"
+                            value={form.city}
+                            onChange={handleChange}
+                            required
+                            className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
+                          >
+                            <option value="" disabled>Select City...</option>
+                            {availableCities.map((c) => (
+                              <option key={c} value={c} className="bg-surface-container-lowest text-on-surface py-1">
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                          <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
+                            unfold_more
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-secondary-container/50 text-[11px] font-label-sm text-secondary font-bold">
-                      Custom Rates
-                    </span>
-                  </div>
 
-                  <div className="space-y-4">
-                    {specificShippingCalculations.map((calc) => (
-                <div key={calc.key} className="space-y-4 bg-surface-container-low/50 p-4 md:p-5 rounded-xl border border-outline-variant/30">
-                  <div className="flex items-center justify-between gap-3 pb-2 border-b border-outline-variant/20">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 border border-outline-variant/30">
-                        <img src={calc.item.image || '/14_blush_silk_ribbon_bow.jpg'} alt={calc.item.name} className="w-full h-full object-cover" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Postal Code *</label>
+                        <input
+                          type="text"
+                          name="postalCode"
+                          value={form.postalCode}
+                          onChange={handleChange}
+                          required
+                          placeholder="00300"
+                          className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                        />
                       </div>
                       <div>
-                        <h3 className="font-title-sm text-title-sm text-on-surface font-bold line-clamp-1">
-                          {calc.item.name}
-                        </h3>
-                        <p className="font-body-md text-body-md text-on-surface-variant text-xs">
-                          Qty: {calc.item.quantity || 1} &bull; Rs. {(calc.item.price || 0).toLocaleString()} each
-                        </p>
+                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Contact Number *</label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={form.phone}
+                          onChange={handleChange}
+                          required
+                          placeholder="+94 77 123 4567"
+                          className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
+                        />
                       </div>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-secondary-container/50 text-[11px] font-label-sm text-secondary font-bold whitespace-nowrap">
-                      Specific Delivery
-                    </span>
                   </div>
+                )}
+              </div>
 
-                  <div className="space-y-3 pt-1">
-                    <p className="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                      Select Delivery Method for this Item:
-                    </p>
-
-                    <label
-                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        calc.selectedMethod === 'standard'
-                          ? 'border-primary bg-primary-container/20 shadow-sm'
-                          : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name={`shipping-${calc.key}`}
-                        value="standard"
-                        checked={calc.selectedMethod === 'standard'}
-                        onChange={() => handleSpecificShippingChange(calc.key, 'standard')}
-                        className="accent-primary h-4 w-4"
-                      />
-                      <span className="ml-4 flex-grow">
-                        <span className="block font-label-md text-label-md text-on-background">Standard Delivery</span>
-                        <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">3-5 Business Days</span>
-                      </span>
-                      <span className="font-label-md text-label-md text-primary font-bold">
-                        Rs. {calc.standardFee.toLocaleString()}
-                      </span>
-                    </label>
-
-                    <label
-                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        calc.selectedMethod === 'express'
-                          ? 'border-primary bg-primary-container/20 shadow-sm'
-                          : 'border-outline-variant/50 hover:border-primary/40 bg-surface-container-lowest'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name={`shipping-${calc.key}`}
-                        value="express"
-                        checked={calc.selectedMethod === 'express'}
-                        onChange={() => handleSpecificShippingChange(calc.key, 'express')}
-                        className="accent-primary h-4 w-4"
-                      />
-                      <span className="ml-4 flex-grow">
-                        <span className="block font-label-md text-label-md text-on-background">Express Delivery</span>
-                        <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">1-2 Business Days</span>
-                      </span>
-                      <span className="font-label-md text-label-md text-primary font-bold">
-                        Rs. {calc.expressFee.toLocaleString()}
-                      </span>
-                    </label>
-                  </div>
-                </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Checkbox: My delivery and billing addresses are the same. */}
+              <div className="pt-2">
+                <label className="flex items-center gap-3 cursor-pointer text-base md:text-lg font-medium text-on-background select-none">
+                  <input
+                    type="checkbox"
+                    checked={sameAsDelivery}
+                    onChange={(e) => setSameAsDelivery(e.target.checked)}
+                    className="w-4 h-4 rounded text-primary focus:ring-primary border-neutral-400 accent-primary cursor-pointer"
+                  />
+                  <span>My delivery and billing addresses are the same.</span>
+                </label>
+              </div>
             </div>
           </section>
 
@@ -750,23 +632,9 @@ export default function Checkout() {
                 <span>Rs. {totalPrice.toLocaleString()}</span>
               </div>
 
-              {hasDefaultItems && specificShippingCalculations.length > 0 && (
-                <div className="flex justify-between text-on-surface-variant text-xs">
-                  <span>Standard Store Items ({defaultShippingMethod === 'express' ? 'Express' : 'Standard'})</span>
-                  <span>{defaultShippingCost === 0 ? 'FREE' : `Rs. ${defaultShippingCost.toLocaleString()}`}</span>
-                </div>
-              )}
-
-              {specificShippingCalculations.length > 0 && specificShippingCalculations.map((calc) => (
-                <div key={calc.key} className="flex justify-between text-on-surface-variant text-xs">
-                  <span className="truncate max-w-[200px]">{calc.item.name} ({calc.selectedMethod === 'express' ? 'Express' : 'Standard'})</span>
-                  <span>Rs. {calc.cost.toLocaleString()}</span>
-                </div>
-              ))}
-
               <div className="flex justify-between text-on-surface-variant">
-                <span>Shipping &amp; Delivery</span>
-                <span>{shippingCost === 0 ? 'FREE' : `Rs. ${shippingCost.toLocaleString()}`}</span>
+                <span>Digital Delivery</span>
+                <span className="text-emerald-600 font-bold">FREE (Instant)</span>
               </div>
             </div>
 

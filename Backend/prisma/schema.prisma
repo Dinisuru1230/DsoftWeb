@@ -63,6 +63,7 @@ model Product {
   badge            String?
   description      String
   details          String?
+  downloadUrl      String?
   image            String
   hoverImage       String?
   galleryImages    String?
@@ -149,7 +150,7 @@ model Setting {
   expressShipping  Float    @default(1200)
   freeShippingOver Float    @default(15000)
   bankName         String   @default("Commercial Bank of Ceylon")
-  accountName      String   @default("Malmalee Creations (Pvt) Ltd")
+  accountName      String   @default("DSoft Pack (Pvt) Ltd")
   accountNumber    String   @default("8009 123 456")
   branchName       String   @default("Colombo Main Branch")
   swiftCode        String   @default("CCEYLKLX")
@@ -161,7 +162,7 @@ model Setting {
 model OurStory {
   id        String   @id @default("global")
   mainTitle String   @default("Born from Stillness,\nCrafted with Intention")
-  subtitle  String   @default("Malmalee Creations began as a quiet idea — that the most beautiful things in life are made slowly, with care, and with love. We are a small, passionate team of makers, dreamers, and storytellers.")
+  subtitle  String   @default("DSoft Pack began as a quiet idea — that the most beautiful things in life are made slowly, with care, and with love. We are a small, passionate team of makers, dreamers, and storytellers.")
   mainImage String   @default("/13_studio_table_ribbons.jpg")
   sections  String   @default("[]") // JSON array of { id, title, paragraph, image, reverse }
   updatedAt DateTime @updatedAt

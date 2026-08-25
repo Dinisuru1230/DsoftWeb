@@ -100,7 +100,7 @@ async function getProductById(req, res) {
 
 async function createProduct(req, res) {
   try {
-    const { name, price, stock, categoryName, badge, description, details, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, downloadUrl, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
 
     if (!name || !price || !categoryName || !description || !image) {
       return res.status(400).json({ error: 'Missing required product fields' });
@@ -126,6 +126,7 @@ async function createProduct(req, res) {
         badge,
         description,
         details: Array.isArray(details) ? JSON.stringify(details) : details,
+        downloadUrl: downloadUrl || null,
         image,
         hoverImage,
         galleryImages: Array.isArray(galleryImages) ? JSON.stringify(galleryImages.filter(Boolean)) : null,
@@ -158,7 +159,7 @@ async function createProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, price, stock, categoryName, badge, description, details, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, downloadUrl, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -178,6 +179,7 @@ async function updateProduct(req, res) {
         ...(details !== undefined && {
           details: Array.isArray(details) ? JSON.stringify(details) : details,
         }),
+        ...(downloadUrl !== undefined && { downloadUrl: downloadUrl || null }),
         ...(image && { image }),
         ...(hoverImage !== undefined && { hoverImage }),
         ...(galleryImages !== undefined && {
