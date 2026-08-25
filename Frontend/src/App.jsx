@@ -24,7 +24,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import NewPassword from './pages/NewPassword';
 import MyAccount from './pages/MyAccount';
 import MyProfile from './pages/MyProfile';
-import TrackOrder from './pages/TrackOrder';
+import Terms from './pages/Terms';
 import NotFound from './pages/NotFound';
 
 // Admin Components & Pages
@@ -39,8 +39,8 @@ import CustomerManagement from './admin/pages/CustomerManagement';
 import AdminManagement from './admin/pages/AdminManagement';
 import AdminProfile from './admin/pages/AdminProfile';
 import ContactManagement from './admin/pages/ContactManagement';
-import DeliverySettings from './admin/pages/DeliverySettings';
 import BankDetailsSettings from './admin/pages/BankDetailsSettings';
+import InvoiceSettings from './admin/pages/InvoiceSettings';
 import OurStoryManagement from './admin/pages/OurStoryManagement';
 
 // Customer Layout (Navbar + Content + Footer)
@@ -220,13 +220,12 @@ export default function App() {
             <Route path="/checkout/failed" element={<CustomerLayout><PaymentUnsuccessful /></CustomerLayout>} />
             <Route path="/our-story" element={<CustomerLayout><OurStory /></CustomerLayout>} />
             <Route path="/contact" element={<CustomerLayout><ContactUs /></CustomerLayout>} />
-            <Route path="/track-order" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
-            <Route path="/track" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
+            <Route path="/terms" element={<CustomerLayout><Terms /></CustomerLayout>} />
 
-            {/* ── Protected Customer Account Pages ── */}
-            <Route path="/account" element={<CustomerAccountRoute><MyAccount /></CustomerAccountRoute>} />
+            {/* ── Customer Account Pages ── */}
+            <Route path="/account" element={<CustomerLayout><MyAccount /></CustomerLayout>} />
+            <Route path="/my-account" element={<CustomerLayout><MyAccount /></CustomerLayout>} />
             <Route path="/account/profile" element={<CustomerAccountRoute><MyProfile /></CustomerAccountRoute>} />
-            <Route path="/account/track" element={<CustomerLayout><TrackOrder /></CustomerLayout>} />
 
             {/* ── Protected Admin Panel Pages ── */}
             <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
@@ -241,8 +240,8 @@ export default function App() {
             <Route path="/admin/profile" element={<AdminRoute><AdminProfile /></AdminRoute>} />
             <Route path="/admin/messages" element={<AdminRoute><ContactManagement /></AdminRoute>} />
             <Route path="/admin/our-story" element={<AdminRoute><OurStoryManagement /></AdminRoute>} />
-            <Route path="/admin/delivery-settings" element={<AdminRoute><DeliverySettings /></AdminRoute>} />
             <Route path="/admin/bank-details" element={<AdminRoute><BankDetailsSettings /></AdminRoute>} />
+            <Route path="/admin/invoice-settings" element={<AdminRoute><InvoiceSettings /></AdminRoute>} />
 
             {/* ── 404 Not Found ── */}
             <Route path="*" element={<CustomerLayout><NotFound /></CustomerLayout>} />

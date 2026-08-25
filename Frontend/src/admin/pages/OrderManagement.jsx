@@ -10,7 +10,6 @@ const STATUS_COLORS = {
   PENDING: 'bg-surface-container text-on-surface-variant',
   PROCESSING: 'bg-secondary-container text-secondary',
   CONFIRMED: 'bg-primary-container text-primary font-bold',
-  SHIPPED: 'bg-primary-container/60 text-primary font-bold',
   DELIVERED: 'bg-primary-container/40 text-on-surface-variant',
   CANCELLED: 'bg-error-container text-error',
 };
@@ -20,12 +19,11 @@ const STATUS_LABELS = {
   PENDING: 'Pending',
   PROCESSING: 'Processing',
   CONFIRMED: 'Confirmed',
-  SHIPPED: 'Shipped',
-  DELIVERED: 'Delivered',
+  DELIVERED: 'Completed',
   CANCELLED: 'Cancelled',
 };
 
-const STATUS_KEYS = ['ALL', 'BANK_SLIP_PENDING', 'PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+const STATUS_KEYS = ['ALL', 'BANK_SLIP_PENDING', 'PENDING', 'CONFIRMED', 'PROCESSING', 'DELIVERED', 'CANCELLED'];
 
 export default function OrderManagement() {
   const { token } = useAuth();
@@ -144,7 +142,7 @@ export default function OrderManagement() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
         {STATUS_KEYS.filter((s) => s !== 'ALL').map((status) => (
           <button
             key={status}

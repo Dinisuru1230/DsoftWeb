@@ -52,7 +52,7 @@ export function CartProvider({ children }) {
     if (!silent) {
       const title = product.name || 'Item';
       const variant = product.color || product.colorName;
-      toast.success(`Added ${title}${variant ? ` (${variant})` : ''} to bag!`, {
+      toast.success(`Added ${title}${variant ? ` (${variant})` : ''} to cart!`, {
         id: `cart-${key}`,
       });
     }
@@ -71,7 +71,7 @@ export function CartProvider({ children }) {
   function removeFromCart(key, silent = false) {
     setCartItems((prev) => prev.filter((item) => (item.cartKey || cartKey(item)) !== key));
     if (!silent) {
-      toast('Item removed from your bag.', { icon: '🛍️' });
+      toast('Item removed from your cart.', { icon: '🛍️' });
     }
   }
 

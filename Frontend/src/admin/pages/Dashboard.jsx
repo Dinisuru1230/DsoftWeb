@@ -10,7 +10,6 @@ const STATUS_COLORS = {
   PENDING: 'bg-surface-container text-on-surface-variant',
   PROCESSING: 'bg-secondary-container text-secondary',
   CONFIRMED: 'bg-primary-container text-primary font-bold',
-  SHIPPED: 'bg-primary-container/70 text-primary font-bold',
   DELIVERED: 'bg-primary-container/40 text-on-surface-variant',
   CANCELLED: 'bg-error-container text-error',
 };
@@ -20,8 +19,7 @@ const STATUS_LABELS = {
   PENDING: 'Pending',
   PROCESSING: 'Processing',
   CONFIRMED: 'Confirmed',
-  SHIPPED: 'Shipped',
-  DELIVERED: 'Delivered',
+  DELIVERED: 'Completed',
   CANCELLED: 'Cancelled',
 };
 
@@ -343,8 +341,8 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ${p.stock === 0 ? 'bg-error-container text-error' : 'bg-tertiary-container text-tertiary'}`}>
-                        {p.stock === 0 ? 'Out of Stock' : `${p.stock} left`}
+                      <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ${p.stock === 0 ? 'bg-error-container text-error' : 'bg-secondary-container text-secondary'}`}>
+                        {p.stock === 0 ? 'Out of Stock' : 'In Stock'}
                       </span>
                       <Link
                         to={`/admin/edit-product/${p.id}`}

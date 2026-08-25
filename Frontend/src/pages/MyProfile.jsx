@@ -322,97 +322,12 @@ export default function MyProfile() {
             </div>
           </div>
 
-          {/* Delivery Address */}
+          {/* Country / Location */}
           <div className="flex flex-col gap-4">
             <div className="border-b border-outline-variant/40 pb-2">
-              <h3 className="font-title-sm text-title-sm text-primary font-bold uppercase tracking-widest text-xs">Delivery Address</h3>
+              <h3 className="font-title-sm text-title-sm text-primary font-bold uppercase tracking-widest text-xs">Location</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-1 md:col-span-2">
-                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs">
-                  Street Address
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={form.address}
-                  onChange={handleChange}
-                  placeholder="e.g. 42 Flower Lane"
-                  className="custom-input w-full py-2 font-body-md text-body-md text-on-surface bg-transparent"
-                />
-              </div>
-
-              {/* State / Province Select Dropdown */}
-              <div className="flex flex-col gap-1">
-                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs">
-                  State / Province
-                </label>
-                <div className="relative">
-                  <select
-                    name="state"
-                    value={form.state}
-                    onChange={handleStateChange}
-                    className="custom-input w-full py-2 pr-8 font-body-md text-body-md text-on-surface bg-transparent appearance-none cursor-pointer"
-                  >
-                    {SRI_LANKA_PROVINCES.map((p) => (
-                      <option key={p} value={p} className="bg-surface-container-lowest text-on-surface py-1">
-                        {p}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                    unfold_more
-                  </span>
-                </div>
-              </div>
-
-              {/* City Select Dropdown */}
-              <div className="flex flex-col gap-1">
-                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs">
-                  City
-                </label>
-                <div className="relative">
-                  <select
-                    name="city"
-                    value={form.city}
-                    onChange={handleChange}
-                    className="custom-input w-full py-2 pr-8 font-body-md text-body-md text-on-surface bg-transparent appearance-none cursor-pointer"
-                  >
-                    {availableCities.map((c) => (
-                      <option key={c} value={c} className="bg-surface-container-lowest text-on-surface py-1">
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                    unfold_more
-                  </span>
-                </div>
-              </div>
-
-              {/* Postal Code */}
-              <div className="flex flex-col gap-1">
-                <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs">
-                  Postal Code (5 digits)
-                </label>
-                <input
-                  type="text"
-                  name="postalCode"
-                  value={form.postalCode}
-                  onChange={handleChange}
-                  placeholder="e.g. 10350"
-                  maxLength={5}
-                  className={`custom-input w-full py-2 font-body-md text-body-md text-on-surface bg-transparent ${errors.postalCode ? 'border-b-error' : ''}`}
-                />
-                {errors.postalCode && (
-                  <p className="text-xs text-error font-label-sm flex items-center gap-1 mt-1">
-                    <span className="material-symbols-outlined text-[13px]">error</span>
-                    {errors.postalCode}
-                  </p>
-                )}
-              </div>
-
-              {/* Country */}
               <div className="flex flex-col gap-1">
                 <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-xs">
                   Country

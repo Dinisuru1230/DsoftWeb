@@ -64,6 +64,7 @@ model Product {
   description      String
   details          String?
   downloadUrl      String?
+  licenseKey       String?
   image            String
   hoverImage       String?
   galleryImages    String?
@@ -73,7 +74,19 @@ model Product {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   colors           ProductColor[]
+  keys             ProductKey[]
   orderItems       OrderItem[]
+}
+
+model ProductKey {
+  id        String    @id @default(uuid())
+  productId String
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  key       String
+  isUsed    Boolean   @default(false)
+  usedAt    DateTime?
+  orderId   String?
+  createdAt DateTime  @default(now())
 }
 
 model ProductColor {
@@ -114,6 +127,7 @@ model OrderItem {
   productId String
   product   Product @relation(fields: [productId], references: [id])
   colorName String?
+  licenseKey String?
   quantity  Int
   price     Float
 }
@@ -145,17 +159,25 @@ enum MessageStatus {
 
 // Global store settings (singleton — always id="global")
 model Setting {
-  id               String   @id @default("global")
-  standardShipping Float    @default(450)
-  expressShipping  Float    @default(1200)
-  freeShippingOver Float    @default(15000)
-  bankName         String   @default("Commercial Bank of Ceylon")
-  accountName      String   @default("DSoft Pack (Pvt) Ltd")
-  accountNumber    String   @default("8009 123 456")
-  branchName       String   @default("Colombo Main Branch")
-  swiftCode        String   @default("CCEYLKLX")
-  bankNotes        String?  @default("Please include your contact number or order ID as the deposit reference.")
-  updatedAt        DateTime @updatedAt
+  id                  String   @id @default("global")
+  standardShipping    Float    @default(450)
+  expressShipping     Float    @default(1200)
+  freeShippingOver    Float    @default(15000)
+  bankName            String   @default("Commercial Bank of Ceylon")
+  accountName         String   @default("DSoft Pack (Pvt) Ltd")
+  accountNumber       String   @default("8009 123 456")
+  branchName          String   @default("Colombo Main Branch")
+  swiftCode           String   @default("CCEYLKLX")
+  bankNotes           String?  @default("Please include your contact number or order ID as the deposit reference.")
+  companyName         String   @default("DSoft Pack")
+  companyLegalName    String   @default("DSoft Technologies LLC")
+  companyAddressLine1 String   @default("5931 Greenville Ave #1169")
+  companyAddressLine2 String   @default("Dallas, TX 75206 US")
+  companyTaxId        String   @default("EIN: 98-1860068")
+  companyEmail        String   @default("contact@dsoftpack.com")
+  companyWebsite      String   @default("https://dsoftpack.com")
+  invoiceFooterNote   String   @default("Thank you for choosing DSoft Pack. For support queries, email us at contact@dsoftpack.com")
+  updatedAt           DateTime @updatedAt
 }
 
 // Our Story CMS content (singleton — always id="global")

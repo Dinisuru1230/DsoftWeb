@@ -7,6 +7,7 @@ const {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  updateOrderItemLicenseKey,
   trackOrder,
   getDashboardStats,
 } = require('../controllers/orderController');
@@ -21,5 +22,6 @@ router.get('/track/:orderNumber', trackOrder);
 router.get('/', authenticateToken, requireAdmin, getAllOrders);
 router.get('/:id', authenticateToken, requireAdmin, getOrderById);
 router.put('/:id/status', authenticateToken, requireAdmin, updateOrderStatus);
+router.put('/:orderId/items/:itemId/license-key', authenticateToken, requireAdmin, updateOrderItemLicenseKey);
 
 module.exports = router;

@@ -10,7 +10,6 @@ const STATUS_COLORS = {
   PENDING: 'bg-surface-container text-on-surface-variant',
   PROCESSING: 'bg-secondary-container text-secondary',
   CONFIRMED: 'bg-primary-container text-primary font-bold',
-  SHIPPED: 'bg-primary-container/60 text-primary font-bold',
   DELIVERED: 'bg-primary-container/40 text-on-surface-variant',
   CANCELLED: 'bg-error-container text-error',
 };
@@ -20,18 +19,55 @@ const STATUS_LABELS = {
   PENDING: 'Pending',
   PROCESSING: 'Processing',
   CONFIRMED: 'Confirmed',
-  SHIPPED: 'Shipped',
-  DELIVERED: 'Delivered',
+  DELIVERED: 'Completed',
   CANCELLED: 'Cancelled',
 };
 
-const ALL_STATUSES = ['BANK_SLIP_PENDING', 'PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+const ALL_STATUSES = ['BANK_SLIP_PENDING', 'PENDING', 'CONFIRMED', 'PROCESSING', 'DELIVERED', 'CANCELLED'];
 
 export default function OrderDetails() {
   const { id } = useParams();
   const { token } = useAuth();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [editingKeyItemId, setEditingKeyItemId] = useState(null);
+  const [keyInput, setKeyInput] = useState('');
+  const [savingKey, setSavingKey] = useState(false);
+
+  async function saveItemLicenseKey(itemId) {
+    if (!token || !order) return;
+    setSavingKey(true);
+    const toastId = toast.loading('Saving license key...');
+    try {
+      const res = await fetch(`${API_BASE}/orders/${order.id}/items/${itemId}/license-key`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ licenseKey: keyInput }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save license key');
+      
+      // Update local order state with full order returned from backend
+      if (data.order) {
+        setOrder(data.order);
+      } else {
+        setOrder({
+          ...order,
+          items: order.items.map((it) => (it.id === itemId ? { ...it, licenseKey: keyInput } : it)),
+        });
+      }
+      setEditingKeyItemId(null);
+      toast.success(data.message || 'License key updated successfully!', { id: toastId });
+    } catch (err) {
+      toast.error(err.message || 'Error updating license key', { id: toastId });
+    } finally {
+      setSavingKey(false);
+    }
+  }
+
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState('');
 
@@ -163,13 +199,77 @@ export default function OrderDetails() {
                     alt={item.product?.name || 'Product'}
                     className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-outline-variant/30"
                   />
-                  <div className="flex-grow">
+                  <div className="flex-grow space-y-1">
                     <p className="font-title-sm text-title-sm text-on-surface font-bold">
-                      {item.product?.name || 'Handcrafted Item'}
+                      {item.product?.name || 'Software Product'}
                     </p>
                     <p className="font-label-sm text-label-sm text-on-surface-variant text-xs">
                       {item.colorName ? `Color: ${item.colorName} · ` : ''}Qty: {item.quantity} · Rs. {(item.price || 0).toLocaleString()} each
                     </p>
+
+                    {/* License Key Controls */}
+                    <div className="pt-1">
+                      {editingKeyItemId === item.id ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="text"
+                            value={keyInput}
+                            onChange={(e) => setKeyInput(e.target.value)}
+                            placeholder="Enter License Key (e.g. XXXXX-XXXXX)"
+                            className="bg-surface-container-low border border-primary/60 text-xs rounded px-2.5 py-1 font-mono font-bold w-64 text-on-surface focus:outline-none"
+                          />
+                          <button
+                            onClick={() => saveItemLicenseKey(item.id)}
+                            disabled={savingKey}
+                            className="bg-primary text-white text-xs px-3 py-1 rounded-md font-bold hover:bg-primary/90 cursor-pointer"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingKeyItemId(null)}
+                            className="text-on-surface-variant text-xs px-1 hover:text-on-surface cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-1 mt-1">
+                          {item.licenseKey || item.product?.licenseKey ? (
+                            (item.licenseKey || item.product?.licenseKey).includes(',') ? (
+                              <div className="space-y-1">
+                                {(item.licenseKey || item.product?.licenseKey).split(',').map((k, kIdx) => (
+                                  <div key={kIdx} className="flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-1 bg-primary-container/40 text-primary px-2.5 py-1 rounded-md text-xs font-mono font-bold">
+                                      <span className="material-symbols-outlined text-[15px]">vpn_key</span>
+                                      Key #{kIdx + 1}: {k.trim()}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 bg-primary-container/40 text-primary px-2.5 py-1 rounded-md text-xs font-mono font-bold">
+                                  <span className="material-symbols-outlined text-[15px]">vpn_key</span>
+                                  Key: {item.licenseKey || item.product?.licenseKey}
+                                </span>
+                              </div>
+                            )
+                          ) : (
+                            <span className="text-xs text-on-surface-variant italic">No keys assigned</span>
+                          )}
+
+                          <button
+                            onClick={() => {
+                              setEditingKeyItemId(item.id);
+                              setKeyInput(item.licenseKey || item.product?.licenseKey || '');
+                            }}
+                            className="text-xs text-primary underline hover:text-primary/80 cursor-pointer font-bold block pt-0.5"
+                          >
+                            {item.licenseKey || item.product?.licenseKey ? 'Edit Key(s)' : '+ Assign Key'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <span className="font-title-sm text-title-sm text-on-surface font-bold">
                     Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}

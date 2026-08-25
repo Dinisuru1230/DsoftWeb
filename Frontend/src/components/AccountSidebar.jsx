@@ -14,7 +14,6 @@ export default function AccountSidebar() {
   const navItems = [
     { label: 'Profile Info', to: '/account/profile', icon: 'person' },
     { label: 'Order History', to: '/account', icon: 'history', exact: true },
-    { label: 'Track Order', to: '/account/track', icon: 'local_shipping' },
   ];
 
   const isActive = (item) => {

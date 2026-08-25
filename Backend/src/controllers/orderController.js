@@ -1,6 +1,6 @@
 const prisma = require('../config/prisma');
 
-// Helper to deduct stock for order items
+// Helper to deduct stock for order items (variant level if applicable)
 async function deductStock(items) {
   for (const item of items) {
     const pId = item.productId || item.id;
@@ -8,14 +8,6 @@ async function deductStock(items) {
     if (!pId) continue;
 
     try {
-      const product = await prisma.product.findUnique({ where: { id: pId } });
-      if (product) {
-        await prisma.product.update({
-          where: { id: pId },
-          data: { stock: Math.max(0, product.stock - qty) },
-        });
-      }
-
       const colorName = item.colorName || item.color;
       if (colorName) {
         const colorVariant = await prisma.productColor.findFirst({
@@ -34,7 +26,7 @@ async function deductStock(items) {
   }
 }
 
-// Helper to restore (re-increment) stock for cancelled orders
+// Helper to restore stock for cancelled orders
 async function restoreStock(items) {
   for (const item of items) {
     const pId = item.productId || item.id;
@@ -42,14 +34,6 @@ async function restoreStock(items) {
     if (!pId) continue;
 
     try {
-      const product = await prisma.product.findUnique({ where: { id: pId } });
-      if (product) {
-        await prisma.product.update({
-          where: { id: pId },
-          data: { stock: product.stock + qty },
-        });
-      }
-
       const colorName = item.colorName || item.color;
       if (colorName) {
         const colorVariant = await prisma.productColor.findFirst({
@@ -90,6 +74,49 @@ async function createOrder(req, res) {
       initialStatus = 'PROCESSING';
     }
 
+    // Resolve products and allocate unique license keys from key pool
+    const itemsToCreate = await Promise.all(
+      items.map(async (item) => {
+        const pId = item.productId || item.id;
+        const qty = parseInt(item.quantity || 1);
+        let allocatedKey = item.licenseKey || null;
+
+        if (pId && paymentMethod !== 'BANK_TRANSFER') {
+          // Find unused keys in key pool
+          const availableKeys = await prisma.productKey.findMany({
+            where: { productId: pId, isUsed: false },
+            take: qty,
+            orderBy: { createdAt: 'asc' },
+          });
+
+          if (availableKeys.length > 0) {
+            allocatedKey = availableKeys.map((k) => k.key).join(', ');
+
+            // Mark keys as used
+            const keyIds = availableKeys.map((k) => k.id);
+            await prisma.productKey.updateMany({
+              where: { id: { in: keyIds } },
+              data: { isUsed: true, usedAt: new Date() },
+            });
+          } else {
+            // Fallback to static product default licenseKey if available
+            const product = await prisma.product.findUnique({ where: { id: pId } });
+            if (product && product.licenseKey && !allocatedKey) {
+              allocatedKey = product.licenseKey;
+            }
+          }
+        }
+
+        return {
+          productId: pId,
+          colorName: item.colorName || item.color || null,
+          licenseKey: allocatedKey,
+          quantity: qty,
+          price: parseFloat(item.price || 0),
+        };
+      })
+    );
+
     const order = await prisma.order.create({
       data: {
         orderNumber,
@@ -103,12 +130,7 @@ async function createOrder(req, res) {
         paymentMethod,
         orderStatus: initialStatus,
         items: {
-          create: items.map((item) => ({
-            productId: item.productId || item.id,
-            colorName: item.colorName || item.color || null,
-            quantity: parseInt(item.quantity || 1),
-            price: parseFloat(item.price || 0),
-          })),
+          create: itemsToCreate,
         },
       },
       include: {
@@ -172,12 +194,95 @@ async function uploadBankSlip(req, res) {
   }
 }
 
+// Helper to automatically assign available keys and complete any pending orders across the system
+async function autoFulfillAllPendingOrders() {
+  try {
+    const pendingItems = await prisma.orderItem.findMany({
+      where: {
+        order: {
+          orderStatus: { in: ['PENDING', 'PROCESSING', 'CONFIRMED'] },
+        },
+      },
+      include: {
+        product: true,
+        order: {
+          include: {
+            items: true,
+          },
+        },
+      },
+      orderBy: { id: 'asc' },
+    });
+
+    for (const item of pendingItems) {
+      if (!item.productId) continue;
+      if (item.order.orderStatus === 'DELIVERED') continue;
+
+      const qty = parseInt(item.quantity || 1);
+      let allocatedKey = null;
+
+      // 1. Try to claim available keys from ProductKey pool
+      const availableKeys = await prisma.productKey.findMany({
+        where: { productId: item.productId, isUsed: false },
+        take: qty,
+        orderBy: { createdAt: 'asc' },
+      });
+
+      if (availableKeys.length >= qty) {
+        allocatedKey = availableKeys.map((k) => k.key).join(', ');
+        const keyIds = availableKeys.map((k) => k.id);
+
+        await prisma.productKey.updateMany({
+          where: { id: { in: keyIds } },
+          data: {
+            isUsed: true,
+            usedAt: new Date(),
+            orderId: item.order.id,
+          },
+        });
+      } else if (item.product && item.product.licenseKey && !item.licenseKey) {
+        // 2. Fallback to static product licenseKey if available
+        allocatedKey = item.product.licenseKey;
+      }
+
+      // If key was successfully found/allocated, assign it to order item
+      if (allocatedKey) {
+        await prisma.orderItem.update({
+          where: { id: item.id },
+          data: { licenseKey: allocatedKey },
+        });
+
+        // Check if all items in parent order now have license keys
+        const updatedOrderItems = await prisma.orderItem.findMany({
+          where: { orderId: item.order.id },
+        });
+
+        const allItemsHaveKey = updatedOrderItems.every((it) =>
+          it.id === item.id || (it.licenseKey && it.licenseKey.trim() !== '')
+        );
+
+        if (allItemsHaveKey) {
+          await prisma.order.update({
+            where: { id: item.order.id },
+            data: { orderStatus: 'DELIVERED' },
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error in autoFulfillAllPendingOrders:', err);
+  }
+}
+
 // GET /api/orders/my-orders
 async function getMyOrders(req, res) {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+
+    // Auto-fulfill any pending orders if keys are now available
+    await autoFulfillAllPendingOrders();
 
     const orders = await prisma.order.findMany({
       where: { userId: req.user.id },
@@ -199,6 +304,9 @@ async function getMyOrders(req, res) {
 async function getAllOrders(req, res) {
   try {
     const { status } = req.query;
+
+    // Auto-fulfill any pending orders if keys are now available
+    await autoFulfillAllPendingOrders();
 
     const where = {};
     if (status && status !== 'All') {
@@ -225,6 +333,9 @@ async function getAllOrders(req, res) {
 async function getOrderById(req, res) {
   try {
     const { id } = req.params;
+
+    // Auto-fulfill any pending orders if keys are now available
+    await autoFulfillAllPendingOrders();
 
     const order = await prisma.order.findFirst({
       where: {
@@ -282,7 +393,7 @@ async function updateOrderStatus(req, res) {
       await deductStock(existingOrder.items);
     }
 
-    const updatedOrder = await prisma.order.update({
+    let updatedOrder = await prisma.order.update({
       where: { id: existingOrder.id },
       data: { orderStatus: newStatus },
       include: {
@@ -291,6 +402,15 @@ async function updateOrderStatus(req, res) {
         },
       },
     });
+
+    if (newStatus !== 'BANK_SLIP_PENDING' && newStatus !== 'CANCELLED') {
+      await autoFulfillAllPendingOrders();
+      // Re-fetch order to return updated items and keys
+      updatedOrder = await prisma.order.findUnique({
+        where: { id: existingOrder.id },
+        include: { items: { include: { product: true } } },
+      });
+    }
 
     res.json({ message: 'Order status updated successfully', order: updatedOrder });
   } catch (error) {
@@ -350,7 +470,7 @@ async function getDashboardStats(req, res) {
       }),
       prisma.product.count(),
       prisma.product.findMany({
-        where: { stock: { lte: 5 } },
+        where: { stock: 0 },
         select: { id: true, name: true, stock: true, image: true, categoryName: true },
         take: 6,
       }),
@@ -389,6 +509,92 @@ async function getDashboardStats(req, res) {
   }
 }
 
+// PUT /api/orders/:orderId/items/:itemId/license-key (Admin only)
+async function updateOrderItemLicenseKey(req, res) {
+  try {
+    const { itemId } = req.params;
+    const { licenseKey } = req.body;
+
+    const item = await prisma.orderItem.findUnique({ where: { id: itemId } });
+    if (!item) {
+      return res.status(404).json({ error: 'Order item not found' });
+    }
+
+    const newKey = licenseKey ? licenseKey.trim() : null;
+
+    const updatedItem = await prisma.orderItem.update({
+      where: { id: itemId },
+      data: { licenseKey: newKey },
+      include: { product: true },
+    });
+
+    // Check parent order and auto-complete if order is currently pending/processing
+    let parentOrder = await prisma.order.findUnique({
+      where: { id: item.orderId },
+      include: { items: { include: { product: true } } },
+    });
+
+    let autoCompleted = false;
+    if (newKey && parentOrder && ['PENDING', 'BANK_SLIP_PENDING', 'PROCESSING'].includes(parentOrder.orderStatus)) {
+      const allItemsHaveKey = parentOrder.items.every((it) => (it.id === itemId ? !!newKey : !!it.licenseKey));
+      if (allItemsHaveKey) {
+        parentOrder = await prisma.order.update({
+          where: { id: parentOrder.id },
+          data: { orderStatus: 'DELIVERED' },
+          include: { items: { include: { product: true } } },
+        });
+        autoCompleted = true;
+      }
+    }
+
+    res.json({
+      message: autoCompleted
+        ? 'License key saved & Order automatically marked as COMPLETED!'
+        : 'License key updated successfully',
+      item: updatedItem,
+      order: parentOrder,
+      autoCompleted,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// GET /api/orders/track/:orderNumber
+async function trackOrder(req, res) {
+  try {
+    const { orderNumber } = req.params;
+    if (!orderNumber) {
+      return res.status(400).json({ error: 'Order number is required' });
+    }
+
+    // Auto-fulfill any pending orders if keys are now available
+    await autoFulfillAllPendingOrders();
+
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { orderNumber: orderNumber.trim() },
+          { id: orderNumber.trim() },
+        ],
+      },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = {
   createOrder,
   uploadBankSlip,
@@ -396,6 +602,8 @@ module.exports = {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  updateOrderItemLicenseKey,
   trackOrder,
   getDashboardStats,
+  autoFulfillAllPendingOrders,
 };

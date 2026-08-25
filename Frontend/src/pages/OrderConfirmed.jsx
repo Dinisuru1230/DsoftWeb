@@ -90,17 +90,30 @@ export default function OrderConfirmed() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
-            to={`/track-order?id=${orderNumber}`}
-            className="bg-primary-container text-on-background font-label-md text-label-md py-3 px-8 rounded-full hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center gap-2 font-bold shadow-ambient"
+            to="/my-account"
+            state={{
+              recentOrder: state.order || {
+                id: state.order?.id || `temp-${Date.now()}`,
+                orderNumber,
+                totalAmount,
+                items: items.length > 0 ? items : [{ product: { name: 'Order Package', image: '/14_blush_silk_ribbon_bow.jpg' }, quantity: 1, price: totalAmount }],
+                paymentMethod: isBankTransfer ? 'BANK_TRANSFER' : state.paymentMethod === 'cod' ? 'COD' : 'CARD',
+                orderStatus: isBankTransfer ? 'BANK_SLIP_PENDING' : 'PENDING',
+                createdAt: new Date().toISOString(),
+              },
+            }}
+            className="w-full sm:w-auto bg-primary text-white font-label-md text-label-md py-3 px-6 rounded-full hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 font-bold shadow-ambient"
           >
-            <span className="material-symbols-outlined text-[18px]">local_shipping</span> Track Order
+            <span className="material-symbols-outlined text-[20px]">history</span>
+            Order History
           </Link>
           <Link
             to="/shop"
-            className="border border-primary text-primary font-label-md text-label-md py-3 px-8 rounded-full hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center gap-2 font-bold"
+            className="w-full sm:w-auto bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/60 font-label-md text-label-md py-3 px-6 rounded-full transition-all duration-300 flex items-center justify-center gap-2 font-bold"
           >
+            <span className="material-symbols-outlined text-[20px]">storefront</span>
             Continue Shopping
           </Link>
         </div>

@@ -62,6 +62,7 @@ async function getAllProducts(req, res) {
       orderBy,
       include: {
         colors: true,
+        keys: true,
       },
     };
 
@@ -85,6 +86,7 @@ async function getProductById(req, res) {
       where: { id },
       include: {
         colors: true,
+        keys: true,
       },
     });
 
@@ -98,9 +100,175 @@ async function getProductById(req, res) {
   }
 }
 
+// GET /api/products/:id/keys
+async function getProductKeys(req, res) {
+  try {
+    const { id } = req.params;
+    const keys = await prisma.productKey.findMany({
+      where: { productId: id },
+      orderBy: { createdAt: 'desc' },
+    });
+    const availableCount = keys.filter((k) => !k.isUsed).length;
+    const usedCount = keys.filter((k) => k.isUsed).length;
+    res.json({ keys, availableCount, usedCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// Helper to automatically assign newly added keys to pending orders for a product
+async function autoFulfillPendingOrdersForProduct(productId) {
+  try {
+    const pendingItems = await prisma.orderItem.findMany({
+      where: {
+        productId,
+        order: {
+          orderStatus: { in: ['PENDING', 'PROCESSING', 'CONFIRMED'] },
+        },
+      },
+      include: {
+        order: {
+          include: {
+            items: true,
+          },
+        },
+      },
+      orderBy: { id: 'asc' },
+    });
+
+    let fulfilledOrdersCount = 0;
+
+    for (const item of pendingItems) {
+      // If parent order is already delivered, skip
+      if (item.order.orderStatus === 'DELIVERED') continue;
+
+      const qty = parseInt(item.quantity || 1);
+
+      // Check available unused keys in key pool
+      const availableKeys = await prisma.productKey.findMany({
+        where: { productId, isUsed: false },
+        take: qty,
+        orderBy: { createdAt: 'asc' },
+      });
+
+      if (availableKeys.length >= qty) {
+        const keyString = availableKeys.map((k) => k.key).join(', ');
+        const keyIds = availableKeys.map((k) => k.id);
+
+        // Mark pool keys as used and tag with orderId
+        await prisma.productKey.updateMany({
+          where: { id: { in: keyIds } },
+          data: {
+            isUsed: true,
+            usedAt: new Date(),
+            orderId: item.order.id,
+          },
+        });
+
+        // Update the order item with allocated keys
+        await prisma.orderItem.update({
+          where: { id: item.id },
+          data: { licenseKey: keyString },
+        });
+
+        // Check if all items in parent order now have keys allocated
+        const updatedOrderItems = await prisma.orderItem.findMany({
+          where: { orderId: item.order.id },
+        });
+
+        const allItemsHaveKey = updatedOrderItems.every(
+          (it) => it.id === item.id || (it.licenseKey && it.licenseKey.trim() !== '')
+        );
+
+        if (allItemsHaveKey) {
+          await prisma.order.update({
+            where: { id: item.order.id },
+            data: { orderStatus: 'DELIVERED' },
+          });
+          fulfilledOrdersCount++;
+        }
+      }
+    }
+
+    return fulfilledOrdersCount;
+  } catch (err) {
+    console.error(`Error auto-fulfilling pending orders for product ${productId}:`, err);
+    return 0;
+  }
+}
+
+// POST /api/products/:id/keys
+async function addProductKeys(req, res) {
+  try {
+    const { id } = req.params;
+    const { keys, rawText } = req.body;
+    let keysList = [];
+    if (Array.isArray(keys)) {
+      keysList = keys.map((k) => String(k).trim()).filter(Boolean);
+    } else if (rawText && typeof rawText === 'string') {
+      keysList = rawText
+        .split('\n')
+        .map((k) => k.trim())
+        .filter(Boolean);
+    }
+
+    if (!keysList.length) {
+      return res.status(400).json({ error: 'No valid license keys provided' });
+    }
+
+    await prisma.productKey.createMany({
+      data: keysList.map((k) => ({
+        productId: id,
+        key: k,
+        isUsed: false,
+      })),
+    });
+
+    // Auto-fulfill any pending orders waiting for keys
+    const fulfilledCount = await autoFulfillPendingOrdersForProduct(id);
+
+    const updatedKeys = await prisma.productKey.findMany({
+      where: { productId: id },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    let msg = `${keysList.length} key(s) added successfully!`;
+    if (fulfilledCount > 0) {
+      msg += ` ${fulfilledCount} pending order(s) auto-fulfilled & completed!`;
+    }
+
+    res.json({
+      message: msg,
+      count: keysList.length,
+      fulfilledCount,
+      keys: updatedKeys,
+      availableCount: updatedKeys.filter((k) => !k.isUsed).length,
+      usedCount: updatedKeys.filter((k) => k.isUsed).length,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// DELETE /api/products/:id/keys/:keyId
+async function deleteProductKey(req, res) {
+  try {
+    const { id, keyId } = req.params;
+    await prisma.productKey.delete({ where: { id: keyId } });
+
+    const totalAvailable = await prisma.productKey.count({
+      where: { productId: id, isUsed: false },
+    });
+
+    res.json({ message: 'Key deleted successfully', totalAvailable });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 async function createProduct(req, res) {
   try {
-    const { name, price, stock, categoryName, badge, description, details, downloadUrl, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
 
     if (!name || !price || !categoryName || !description || !image) {
       return res.status(400).json({ error: 'Missing required product fields' });
@@ -127,6 +295,7 @@ async function createProduct(req, res) {
         description,
         details: Array.isArray(details) ? JSON.stringify(details) : details,
         downloadUrl: downloadUrl || null,
+        licenseKey: licenseKey || null,
         image,
         hoverImage,
         galleryImages: Array.isArray(galleryImages) ? JSON.stringify(galleryImages.filter(Boolean)) : null,
@@ -159,7 +328,7 @@ async function createProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, price, stock, categoryName, badge, description, details, downloadUrl, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping } = req.body;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -180,6 +349,7 @@ async function updateProduct(req, res) {
           details: Array.isArray(details) ? JSON.stringify(details) : details,
         }),
         ...(downloadUrl !== undefined && { downloadUrl: downloadUrl || null }),
+        ...(licenseKey !== undefined && { licenseKey: licenseKey || null }),
         ...(image && { image }),
         ...(hoverImage !== undefined && { hoverImage }),
         ...(galleryImages !== undefined && {
@@ -206,6 +376,11 @@ async function updateProduct(req, res) {
       include: { colors: true },
     });
 
+
+    // If static license key or stock was updated, auto-fulfill any pending orders waiting for keys
+    if (licenseKey || stock) {
+      await autoFulfillPendingOrdersForProduct(id);
+    }
 
     res.json(product);
   } catch (error) {
@@ -268,4 +443,7 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  getProductKeys,
+  addProductKeys,
+  deleteProductKey,
 };

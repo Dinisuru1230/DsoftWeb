@@ -265,8 +265,7 @@ export default function ProductDetail() {
   if (error || !product) return null;
 
   const currentPrice = selectedColor ? selectedColor.price : product.price;
-  const currentStock = selectedColor ? selectedColor.stock : product.stock;
-  const isOutOfStock = currentStock === 0;
+  const isOutOfStock = product.stock === 0;
   const detailsList = parseDetails(product.details);
 
   return (
@@ -461,9 +460,15 @@ export default function ProductDetail() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-xs">
-              <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded flex items-center gap-1">
-                ✓ IN STOCK
-              </span>
+              {isOutOfStock ? (
+                <span className="bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 font-bold px-2.5 py-1 rounded flex items-center gap-1">
+                  ✕ OUT OF STOCK
+                </span>
+              ) : (
+                <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold px-2.5 py-1 rounded flex items-center gap-1">
+                  ✓ IN STOCK
+                </span>
+              )}
               <span className="text-on-surface-variant font-medium">• CID Points: 1</span>
               <span className="text-amber-700 font-bold">🔥 845 Sold</span>
               <span className="text-on-surface-variant">👁️ 9595 Views</span>

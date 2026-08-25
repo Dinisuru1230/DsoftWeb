@@ -231,20 +231,7 @@ export default function Register() {
               </p>
             </div>
 
-            {/* Address */}
-            <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-                Delivery Address
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={form.address}
-                onChange={handleChange}
-                placeholder="42 Flower Lane, Colombo 03"
-                className="w-full bg-surface-container-low border-b-2 border-outline-variant text-on-background focus:outline-none focus:border-primary py-2.5 font-body-md transition-colors placeholder:text-outline/50 bg-transparent"
-              />
-            </div>
+
 
             {/* Password */}
             <div className="flex flex-col gap-1">

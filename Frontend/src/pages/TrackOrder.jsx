@@ -9,8 +9,7 @@ const LIFECYCLE_STEPS = [
   { key: 'PLACED', label: 'Order Placed', icon: 'receipt_long' },
   { key: 'CONFIRMED', label: 'Confirmed', icon: 'verified' },
   { key: 'PROCESSING', label: 'Processing', icon: 'inventory_2' },
-  { key: 'SHIPPED', label: 'Shipped', icon: 'local_shipping' },
-  { key: 'DELIVERED', label: 'Delivered', icon: 'home' },
+  { key: 'DELIVERED', label: 'Completed', icon: 'check_circle' },
 ];
 
 const STATUS_PROGRESS_MAP = {
@@ -18,8 +17,7 @@ const STATUS_PROGRESS_MAP = {
   BANK_SLIP_PENDING: 1,
   CONFIRMED: 2,
   PROCESSING: 3,
-  SHIPPED: 4,
-  DELIVERED: 5,
+  DELIVERED: 4,
   CANCELLED: 0,
 };
 
@@ -28,8 +26,7 @@ const STATUS_LABELS = {
   PENDING: 'Order Placed',
   PROCESSING: 'In Processing',
   CONFIRMED: 'Order Confirmed',
-  SHIPPED: 'Package Shipped',
-  DELIVERED: 'Delivered',
+  DELIVERED: 'Completed',
   CANCELLED: 'Order Cancelled',
 };
 
@@ -218,7 +215,7 @@ export default function TrackOrder() {
                 </h3>
                 <div className="relative">
                   {/* Steps with connecting segments */}
-                  <div className="grid grid-cols-5 gap-1 sm:gap-4 relative z-10">
+                  <div className="grid grid-cols-4 gap-1 sm:gap-4 relative z-10">
                     {LIFECYCLE_STEPS.map((step, index) => {
                       const stepNum = index + 1;
                       const isDone = currentProgressStep >= stepNum;

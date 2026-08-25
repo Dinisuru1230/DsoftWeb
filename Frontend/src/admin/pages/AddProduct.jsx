@@ -169,6 +169,8 @@ export default function AddProduct() {
     stock: '',
     description: '',
     downloadUrl: '',
+    licenseKey: '',
+    multipleKeys: '',
     badge: '',
     featured: false,
     standardShipping: '',
@@ -243,9 +245,10 @@ export default function AddProduct() {
           name: p.name || '',
           category: p.categoryName || '',
           price: p.colors?.length > 0 ? '' : String(p.price ?? ''),
-          stock: p.colors?.length > 0 ? '' : String(p.stock ?? ''),
+          stock: String(p.stock ?? '10'),
           description: p.description || '',
           downloadUrl: p.downloadUrl || '',
+          licenseKey: p.licenseKey || '',
           badge: p.badge || '',
           featured: Boolean(p.featured),
           standardShipping: p.standardShipping != null ? String(p.standardShipping) : '',
@@ -499,8 +502,9 @@ export default function AddProduct() {
     if (!hasColors) {
       if (!form.price) errs.price = 'Price is required.';
       else if (parseFloat(form.price) <= 0) errs.price = 'Price must be greater than 0.';
-      if (form.stock === '' || form.stock === null || form.stock === undefined) errs.stock = 'Stock quantity is required.';
-      else if (parseInt(form.stock) < 0) errs.stock = 'Stock cannot be negative.';
+      if (form.stock !== '' && form.stock !== null && form.stock !== undefined && parseInt(form.stock) < 0) {
+        errs.stock = 'Invalid availability status.';
+      }
     } else {
       colors.forEach((c, i) => {
         if (!c.name.trim()) errs[`color_name_${i}`] = 'Color name is required.';
@@ -581,9 +585,10 @@ export default function AddProduct() {
         description: form.description.trim(),
         details: detailsArray.length > 0 ? detailsArray : null,
         downloadUrl: form.downloadUrl.trim() || null,
+        licenseKey: form.licenseKey.trim() || null,
         categoryName: form.category,
         price: colors.length > 0 ? parseFloat(colors[0].price) : parseFloat(form.price),
-        stock: colors.length > 0 ? colors.reduce((a, c) => a + (parseInt(c.stock) || 0), 0) : parseInt(form.stock) || 0,
+        stock: form.stock === '0' ? 0 : 10,
         image: imageUrl,
         hoverImage,
         galleryImages,
@@ -611,6 +616,18 @@ export default function AddProduct() {
         toast.error(errorMsg, { id: toastId });
         setSubmitting(false);
         return;
+      }
+
+      // If multiple keys were pasted, save them to the product key pool
+      if (form.multipleKeys && form.multipleKeys.trim()) {
+        const prodId = data.id || editId;
+        if (prodId) {
+          await fetch(`${API_BASE}/products/${prodId}/keys`, {
+            method: 'POST',
+            headers: { ...authHeaders, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rawText: form.multipleKeys }),
+          }).catch(() => {});
+        }
       }
 
       // Success
@@ -948,6 +965,41 @@ export default function AddProduct() {
               </p>
             </div>
 
+            {/* Product License Key Pool */}
+            <div className="space-y-3 p-4 rounded-xl bg-surface-container-low border border-outline-variant/30">
+              <label className="block font-label-md text-label-md text-on-surface flex items-center gap-2" htmlFor="multipleKeys">
+                <span className="material-symbols-outlined text-primary text-[18px]">vpn_key</span>
+                Product License Keys Pool <span className="text-on-surface-variant font-normal text-xs">(paste multiple keys line-by-line)</span>
+              </label>
+              <textarea
+                id="multipleKeys"
+                name="multipleKeys"
+                rows={4}
+                value={form.multipleKeys}
+                onChange={handleChange}
+                placeholder={`XXXXX-XXXXX-XXXXX-11111\nXXXXX-XXXXX-XXXXX-22222\nXXXXX-XXXXX-XXXXX-33333`}
+                className="w-full bg-surface border border-outline-variant/60 focus:border-primary rounded-lg p-3 font-mono text-xs text-on-surface focus:outline-none transition-colors leading-relaxed"
+              />
+              <p className="text-xs text-on-surface-variant">
+                Paste activation keys above (one key per line). Each customer order will automatically consume one separate unique key from this pool!
+              </p>
+
+              <div className="pt-2 border-t border-outline-variant/30">
+                <label className="block text-xs font-bold text-on-surface-variant mb-1" htmlFor="licenseKey">
+                  Fallback Default Key (Optional)
+                </label>
+                <input
+                  id="licenseKey"
+                  name="licenseKey"
+                  type="text"
+                  value={form.licenseKey}
+                  onChange={handleChange}
+                  placeholder="Fallback key if key pool becomes empty"
+                  className="w-full bg-surface border border-outline-variant/60 focus:border-primary rounded-lg p-2.5 font-mono text-xs text-on-surface focus:outline-none"
+                />
+              </div>
+            </div>
+
             {/* Badge */}
             <div>
               <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="badge">
@@ -1281,65 +1333,76 @@ export default function AddProduct() {
             </button>
           </section>
 
-          {/* Pricing & Stock (when no colors) */}
+          {/* Pricing (when no colors) */}
           {!hasColors && (
             <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-5">
               <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2 border-b border-outline-variant/30 pb-3">
                 <span className="material-symbols-outlined">sell</span>
-                Pricing &amp; Stock
+                Base Pricing
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="price">
-                    Price (Rs. LKR) <span className="text-error">*</span>
-                  </label>
-                  <input
-                    id="price"
-                    name="price"
-                    type="text"
-                    inputMode="decimal"
-                    value={form.price}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="1200.00"
-                    className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${
-                      errors.price ? 'border-error' : 'border-outline-variant focus:border-primary'
-                    }`}
-                  />
-                  {errors.price && (
-                    <p className="text-xs text-error mt-1 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[13px]">error</span>
-                      {errors.price}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="stock">
-                    Stock Quantity <span className="text-error">*</span>
-                  </label>
-                  <input
-                    id="stock"
-                    name="stock"
-                    type="text"
-                    inputMode="numeric"
-                    value={form.stock}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="48"
-                    className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${
-                      errors.stock ? 'border-error' : 'border-outline-variant focus:border-primary'
-                    }`}
-                  />
-                  {errors.stock && (
-                    <p className="text-xs text-error mt-1 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[13px]">error</span>
-                      {errors.stock}
-                    </p>
-                  )}
-                </div>
+              <div>
+                <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="price">
+                  Price (Rs. LKR) <span className="text-error">*</span>
+                </label>
+                <input
+                  id="price"
+                  name="price"
+                  type="text"
+                  inputMode="decimal"
+                  value={form.price}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="1200.00"
+                  className={`w-full bg-transparent border-b-2 outline-none py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${
+                    errors.price ? 'border-error' : 'border-outline-variant focus:border-primary'
+                  }`}
+                />
+                {errors.price && (
+                  <p className="text-xs text-error mt-1 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {errors.price}
+                  </p>
+                )}
               </div>
             </section>
           )}
+
+          {/* Availability Status Section (ALWAYS VISIBLE FOR ALL PRODUCTS) */}
+          <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-4">
+            <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2 border-b border-outline-variant/30 pb-3">
+              <span className="material-symbols-outlined">inventory_2</span>
+              Product Availability Status
+            </h2>
+            <p className="text-xs text-on-surface-variant">
+              Choose whether customers can purchase this product on the store.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, stock: '10' }))}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
+                  parseInt(form.stock || 0) > 0 || form.stock === ''
+                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-400 shadow-xs'
+                    : 'bg-surface-container text-on-surface-variant border-outline-variant/60 hover:border-emerald-300'
+                }`}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${parseInt(form.stock || 0) > 0 || form.stock === '' ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'}`} />
+                Available (In Stock)
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, stock: '0' }))}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
+                  parseInt(form.stock || 0) === 0 && form.stock !== ''
+                    ? 'bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border-red-400 shadow-xs'
+                    : 'bg-surface-container text-on-surface-variant border-outline-variant/60 hover:border-red-300'
+                }`}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${parseInt(form.stock || 0) === 0 && form.stock !== '' ? 'bg-red-500' : 'bg-neutral-400'}`} />
+                Out of Stock
+              </button>
+            </div>
+          </section>
 
           {hasColors && (
             <div className="p-4 bg-primary-container/30 rounded-xl border border-primary/20 flex items-start gap-3">
@@ -1353,178 +1416,7 @@ export default function AddProduct() {
             </div>
           )}
 
-          {/* Delivery & Shipping Fees */}
-          <section className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30 space-y-5">
-            <h2 className="font-title-sm text-title-sm text-primary flex items-center gap-2 border-b border-outline-variant/30 pb-3">
-              <span className="material-symbols-outlined">local_shipping</span>
-              Delivery &amp; Shipping Fees
-            </h2>
-            <p className="font-body-md text-sm text-on-surface-variant">
-              Select whether to use the store's default shipping rates or configure specific delivery rates for this item.
-            </p>
 
-            {/* Radio Selection: Default vs Specific */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option 1: Store Default Fee */}
-              <label
-                className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  shippingType === 'default'
-                    ? 'border-primary bg-primary-container/20 shadow-sm'
-                    : 'border-outline-variant/50 hover:border-primary/40'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="shippingType"
-                  value="default"
-                  checked={shippingType === 'default'}
-                  onChange={() => {
-                    setShippingType('default');
-                    setForm((prev) => ({ ...prev, standardShipping: '', expressShipping: '' }));
-                    setErrors((prev) => ({ ...prev, standardShipping: '', expressShipping: '' }));
-                  }}
-                  className="accent-primary h-4 w-4 mt-1"
-                />
-                <div className="ml-3">
-                  <span className="block font-label-md text-on-background font-bold">Use Default Delivery Fee</span>
-                  <span className="block font-body-md text-on-surface-variant text-xs mt-1">
-                    Standard: <strong className="text-primary">Rs. {Number(defaultSettings.standardShipping).toLocaleString()}</strong> &bull; Express: <strong className="text-primary">Rs. {Number(defaultSettings.expressShipping).toLocaleString()}</strong>
-                  </span>
-                  <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full bg-surface-container text-[11px] font-label-sm text-on-surface-variant">
-                    Store Default
-                  </span>
-                </div>
-              </label>
-
-              {/* Option 2: Specific Delivery Fee */}
-              <label
-                className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  shippingType === 'specific'
-                    ? 'border-primary bg-primary-container/20 shadow-sm'
-                    : 'border-outline-variant/50 hover:border-primary/40'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="shippingType"
-                  value="specific"
-                  checked={shippingType === 'specific'}
-                  onChange={() => setShippingType('specific')}
-                  className="accent-primary h-4 w-4 mt-1"
-                />
-                <div className="ml-3">
-                  <span className="block font-label-md text-on-background font-bold">Specific Delivery Fee</span>
-                  <span className="block font-body-md text-on-surface-variant text-xs mt-1">
-                    Enter custom Standard &amp; Express rates for this product
-                  </span>
-                  <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full bg-secondary-container/50 text-[11px] font-label-sm text-secondary font-bold">
-                    Custom Rates
-                  </span>
-                </div>
-              </label>
-            </div>
-
-            {/* Custom inputs shown only if 'specific' selected */}
-            {shippingType === 'specific' && (
-              <div className="space-y-4 pt-2 border-t border-outline-variant/20">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Standard Shipping */}
-                  <div>
-                    <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="standardShipping">
-                      Custom Standard Delivery Fee (Rs.) <span className="text-error">*</span>
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">
-                        Rs.
-                      </span>
-                      <input
-                        id="standardShipping"
-                        name="standardShipping"
-                        type="text"
-                        inputMode="decimal"
-                        value={form.standardShipping}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        placeholder="e.g. 550"
-                        className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${
-                          errors.standardShipping ? 'border-error' : 'border-outline-variant focus:border-primary'
-                        }`}
-                      />
-                    </div>
-                    {errors.standardShipping ? (
-                      <p className="text-xs text-error mt-1 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px]">error</span>
-                        {errors.standardShipping}
-                      </p>
-                    ) : (
-                      <p className="text-xs text-on-surface-variant mt-1">
-                        Standard / regular shipping cost for this product
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Express Shipping */}
-                  <div>
-                    <label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="expressShipping">
-                      Custom Express Delivery Fee (Rs.) <span className="text-error">*</span>
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-0 bottom-2 font-label-sm text-[11px] text-on-surface-variant pointer-events-none font-bold">
-                        Rs.
-                      </span>
-                      <input
-                        id="expressShipping"
-                        name="expressShipping"
-                        type="text"
-                        inputMode="decimal"
-                        value={form.expressShipping}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        placeholder="e.g. 1400"
-                        className={`w-full bg-transparent border-b-2 outline-none pl-8 py-2 font-body-md text-on-surface font-bold text-primary transition-colors ${
-                          errors.expressShipping ? 'border-error' : 'border-outline-variant focus:border-primary'
-                        }`}
-                      />
-                    </div>
-                    {errors.expressShipping ? (
-                      <p className="text-xs text-error mt-1 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px]">error</span>
-                        {errors.expressShipping}
-                      </p>
-                    ) : (
-                      <p className="text-xs text-on-surface-variant mt-1">
-                        Priority / express delivery cost for this product
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Live preview */}
-                {(form.standardShipping || form.expressShipping) && (
-                  <div className="flex gap-4 pt-2">
-                    {form.standardShipping && (
-                      <div className="flex items-center gap-2 px-3 py-2 bg-surface-container rounded-lg border border-outline-variant/30">
-                        <span className="material-symbols-outlined text-primary text-[18px]">local_shipping</span>
-                        <div>
-                          <p className="font-label-sm text-[10px] text-on-surface-variant uppercase">Standard Fee</p>
-                          <p className="font-bold text-primary text-sm">Rs. {parseInt(form.standardShipping || 0).toLocaleString()}</p>
-                        </div>
-                      </div>
-                    )}
-                    {form.expressShipping && (
-                      <div className="flex items-center gap-2 px-3 py-2 bg-secondary-container/30 rounded-lg border border-outline-variant/30">
-                        <span className="material-symbols-outlined text-secondary text-[18px]">rocket_launch</span>
-                        <div>
-                          <p className="font-label-sm text-[10px] text-on-surface-variant uppercase">Express Fee</p>
-                          <p className="font-bold text-secondary text-sm">Rs. {parseInt(form.expressShipping || 0).toLocaleString()}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
         </div>
 
         {/* ── Right Column ── */}

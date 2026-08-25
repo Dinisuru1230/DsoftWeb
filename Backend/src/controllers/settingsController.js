@@ -16,11 +16,19 @@ async function getOrCreateSettings() {
       branchName: 'Colombo Main Branch',
       swiftCode: 'CCEYLKLX',
       bankNotes: 'Please include your contact number or order ID as the deposit reference.',
+      companyName: 'DSoft Pack',
+      companyLegalName: 'DSoft Technologies LLC',
+      companyAddressLine1: '5931 Greenville Ave #1169',
+      companyAddressLine2: 'Dallas, TX 75206 US',
+      companyTaxId: 'EIN: 98-1860068',
+      companyEmail: 'contact@dsoftpack.com',
+      companyWebsite: 'https://dsoftpack.com',
+      invoiceFooterNote: 'Thank you for choosing DSoft Pack. For support queries, email us at contact@dsoftpack.com',
     },
   });
 }
 
-// GET /api/settings — Public (frontend needs delivery fee defaults & bank details)
+// GET /api/settings — Public (frontend needs delivery fee defaults, bank details & invoice details)
 async function getSettings(req, res) {
   try {
     const settings = await getOrCreateSettings();
@@ -44,6 +52,14 @@ async function updateSettings(req, res) {
       branchName,
       swiftCode,
       bankNotes,
+      companyName,
+      companyLegalName,
+      companyAddressLine1,
+      companyAddressLine2,
+      companyTaxId,
+      companyEmail,
+      companyWebsite,
+      invoiceFooterNote,
     } = req.body;
 
     const data = {};
@@ -56,6 +72,15 @@ async function updateSettings(req, res) {
     if (branchName !== undefined) data.branchName = String(branchName).trim();
     if (swiftCode !== undefined) data.swiftCode = String(swiftCode).trim();
     if (bankNotes !== undefined) data.bankNotes = String(bankNotes).trim();
+
+    if (companyName !== undefined) data.companyName = String(companyName).trim();
+    if (companyLegalName !== undefined) data.companyLegalName = String(companyLegalName).trim();
+    if (companyAddressLine1 !== undefined) data.companyAddressLine1 = String(companyAddressLine1).trim();
+    if (companyAddressLine2 !== undefined) data.companyAddressLine2 = String(companyAddressLine2).trim();
+    if (companyTaxId !== undefined) data.companyTaxId = String(companyTaxId).trim();
+    if (companyEmail !== undefined) data.companyEmail = String(companyEmail).trim();
+    if (companyWebsite !== undefined) data.companyWebsite = String(companyWebsite).trim();
+    if (invoiceFooterNote !== undefined) data.invoiceFooterNote = String(invoiceFooterNote).trim();
 
     if (Object.keys(data).length === 0) {
       return res.status(400).json({ error: 'Please provide at least one valid setting field to update.' });
@@ -75,6 +100,14 @@ async function updateSettings(req, res) {
         branchName: data.branchName ?? 'Colombo Main Branch',
         swiftCode: data.swiftCode ?? 'CCEYLKLX',
         bankNotes: data.bankNotes ?? 'Please include your contact number or order ID as the deposit reference.',
+        companyName: data.companyName ?? 'DSoft Pack',
+        companyLegalName: data.companyLegalName ?? 'DSoft Technologies LLC',
+        companyAddressLine1: data.companyAddressLine1 ?? '5931 Greenville Ave #1169',
+        companyAddressLine2: data.companyAddressLine2 ?? 'Dallas, TX 75206 US',
+        companyTaxId: data.companyTaxId ?? 'EIN: 98-1860068',
+        companyEmail: data.companyEmail ?? 'contact@dsoftpack.com',
+        companyWebsite: data.companyWebsite ?? 'https://dsoftpack.com',
+        invoiceFooterNote: data.invoiceFooterNote ?? 'Thank you for choosing DSoft Pack. For support queries, email us at contact@dsoftpack.com',
       },
     });
 

@@ -71,13 +71,16 @@ export default function Checkout() {
   const [isCustomAddress, setIsCustomAddress] = useState(false);
   const [sameAsDelivery, setSameAsDelivery] = useState(true);
   const [selectedExistingAddress, setSelectedExistingAddress] = useState('default');
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [termsError, setTermsError] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const [form, setForm] = useState({
     firstName: user?.name ? user.name.split(' ')[0] : 'Amara',
     lastName: user?.name ? user.name.split(' ').slice(1).join(' ') : 'Perera',
     email: user?.email || 'amara@example.com',
     phone: user?.phone || '+94 77 123 4567',
-    address: user?.address || '42 Flower Lane, Suite 4',
+    address: user?.address || 'Sri Lanka',
     city: user?.city || 'Colombo 03',
     district: user?.district || 'Western Province',
     postalCode: user?.postalCode || '00300',
@@ -172,6 +175,13 @@ export default function Checkout() {
 
   async function handleButtonClick(e) {
     if (e) e.preventDefault();
+
+    if (!agreeTerms) {
+      setTermsError(true);
+      return;
+    } else {
+      setTermsError(false);
+    }
 
     const customerDetails = {
       customerName,
@@ -358,7 +368,7 @@ export default function Checkout() {
                       className="w-full max-w-xl bg-white dark:bg-surface-container-low border border-neutral-300 dark:border-outline-variant rounded-lg px-4 py-2.5 text-on-surface text-sm font-medium focus:outline-none focus:border-primary shadow-sm"
                     >
                       <option value="default">
-                        {user?.name || `${form.firstName} ${form.lastName}`} {user?.address ? `${user.address}, ` : ''}{user?.city || 'Sri Lanka'}
+                        {user?.name || `${form.firstName} ${form.lastName}`}, Sri Lanka
                       </option>
                     </select>
                   </div>
@@ -407,77 +417,16 @@ export default function Checkout() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Street Address *</label>
-                      <input
-                        type="text"
-                        name="address"
-                        value={form.address}
-                        onChange={handleChange}
-                        required
-                        placeholder="42 Flower Lane, Suite 4"
-                        className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
-                      />
-                    </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">State / Province *</label>
-                        <div className="relative">
-                          <select
-                            name="district"
-                            value={form.district}
-                            onChange={handleDistrictChange}
-                            required
-                            className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
-                          >
-                            <option value="" disabled>Select Province...</option>
-                            {SRI_LANKA_PROVINCES.map((p) => (
-                              <option key={p} value={p} className="bg-surface-container-lowest text-on-surface py-1">
-                                {p}
-                              </option>
-                            ))}
-                          </select>
-                          <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                            unfold_more
-                          </span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">City *</label>
-                        <div className="relative">
-                          <select
-                            name="city"
-                            value={form.city}
-                            onChange={handleChange}
-                            required
-                            className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 pr-8 font-body-md text-body-md text-on-surface appearance-none cursor-pointer transition-colors"
-                          >
-                            <option value="" disabled>Select City...</option>
-                            {availableCities.map((c) => (
-                              <option key={c} value={c} className="bg-surface-container-lowest text-on-surface py-1">
-                                {c}
-                              </option>
-                            ))}
-                          </select>
-                          <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                            unfold_more
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Postal Code *</label>
+                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Country *</label>
                         <input
                           type="text"
-                          name="postalCode"
-                          value={form.postalCode}
+                          name="address"
+                          value={form.address || 'Sri Lanka'}
                           onChange={handleChange}
                           required
-                          placeholder="00300"
+                          placeholder="Sri Lanka"
                           className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
                         />
                       </div>
@@ -569,31 +518,6 @@ export default function Checkout() {
                 </span>
                 <span className="material-symbols-outlined text-primary">upload_file</span>
               </label>
-
-              {/* Cash on Delivery (COD) Option */}
-              <label
-                className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  paymentMethod === 'cod'
-                    ? 'border-primary bg-primary-container/20 shadow-sm'
-                    : 'border-outline-variant/50 hover:border-primary/40'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  value="cod"
-                  checked={paymentMethod === 'cod'}
-                  onChange={() => setPaymentMethod('cod')}
-                  className="accent-primary h-4 w-4"
-                />
-                <span className="ml-4 flex-grow">
-                  <span className="block font-label-md text-label-md text-on-background">Cash on Delivery (COD)</span>
-                  <span className="block font-body-md text-body-md text-on-surface-variant text-sm mt-0.5">
-                    Pay with cash when you receive your package
-                  </span>
-                </span>
-                <span className="material-symbols-outlined text-primary">payments</span>
-              </label>
             </div>
           </section>
         </div>
@@ -643,6 +567,40 @@ export default function Checkout() {
               <span className="font-title-sm text-title-sm text-primary font-bold">Rs. {finalTotal.toLocaleString()}</span>
             </div>
 
+            {/* Terms & Conditions Checkbox */}
+            <div className="pt-2">
+              <label className="flex items-center gap-3 cursor-pointer text-sm font-medium text-on-background select-none">
+                <input
+                  type="checkbox"
+                  checked={agreeTerms}
+                  onChange={(e) => {
+                    setAgreeTerms(e.target.checked);
+                    if (e.target.checked) setTermsError(false);
+                  }}
+                  className="w-4 h-4 rounded text-primary focus:ring-primary border-neutral-400 accent-primary cursor-pointer"
+                />
+                <span>
+                  I have read and agree to the{' '}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowTermsModal(true);
+                    }}
+                    className="underline text-on-background font-bold hover:text-primary transition-colors cursor-pointer"
+                  >
+                    Terms & Conditions
+                  </button>
+                </span>
+              </label>
+
+              {termsError && (
+                <p className="text-red-600 font-bold text-sm mt-1.5 animate-pulse">
+                  Warning: You must agree to the Terms & Conditions!
+                </p>
+              )}
+            </div>
+
             {/* Dynamic CTA button based on selected payment method */}
             <button
               type="button"
@@ -651,13 +609,11 @@ export default function Checkout() {
               className="w-full bg-primary-container text-on-background font-label-md text-label-md py-4 px-8 rounded-full hover:bg-primary hover:text-white transition-all duration-300 shadow-ambient flex items-center justify-center gap-2 cursor-pointer font-bold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-sm">
-                {paymentMethod === 'card' ? 'credit_card' : paymentMethod === 'bank_transfer' ? 'upload_file' : 'check_circle'}
+                {paymentMethod === 'card' ? 'credit_card' : 'upload_file'}
               </span>
               {paymentMethod === 'card'
                 ? `Proceed to Card Payment (Rs. ${finalTotal.toLocaleString()})`
-                : paymentMethod === 'bank_transfer'
-                ? `Proceed to Upload Bank Slip (Rs. ${finalTotal.toLocaleString()})`
-                : `Confirm Order with COD (Rs. ${finalTotal.toLocaleString()})`}
+                : `Proceed to Upload Bank Slip (Rs. ${finalTotal.toLocaleString()})`}
             </button>
 
             <p className="text-center font-body-md text-body-md text-on-surface-variant text-xs pt-1">
@@ -666,6 +622,159 @@ export default function Checkout() {
           </div>
         </div>
       </form>
+
+      {/* Terms & Conditions Popup Modal */}
+      {showTermsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div
+            className="fixed inset-0"
+            onClick={() => setShowTermsModal(false)}
+          />
+          <div className="relative bg-surface-container-lowest w-full max-w-3xl max-h-[85vh] rounded-2xl shadow-2xl border border-outline-variant/30 flex flex-col overflow-hidden z-10 animate-slide-in">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container-low/50">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[22px]">gavel</span>
+                <h3 className="text-lg font-bold text-on-background">Terms & Conditions</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTermsModal(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-background hover:bg-surface-container transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body - Scrollable Terms content */}
+            <div className="p-6 overflow-y-auto space-y-5 text-sm leading-relaxed text-on-surface">
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Changes to Terms</h4>
+                <p className="text-on-surface-variant">
+                  DSoft Pack reserves the right to modify these Terms at any time without notice. Any changes will be posted on the Site, and your continued use of the Site constitutes acceptance of the revised Terms. We recommend periodically reviewing these Terms for updates.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Product Activation</h4>
+                <p className="text-on-surface-variant">
+                  All product keys are recommended to be activated within the warranty period, as much as possible. Failure to do so will result in expiration, with no replacement or refund provided.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">General Use Terms</h4>
+                <p className="text-on-surface-variant">
+                  DSoft Pack provides content and services through the Site, including materials, trademarks, and services ("Materials"). You are granted a limited, non-transferable license to use the Materials for personal or internal business use only. Modification, reproduction, or exploitation of the Materials is prohibited.
+                </p>
+                <p className="text-on-surface-variant pt-1">
+                  You agree not to circumvent security measures, misuse the Site, or engage in prohibited conduct, including unauthorized access, harassment, or disruption of the Site's operations.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Password Restricted Areas</h4>
+                <p className="text-on-surface-variant">
+                  Certain areas of the Site are password-restricted. If you are an authorized user, you are responsible for maintaining the confidentiality of your account and notifying DSoft Pack of any security breaches.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Pricing and Payments</h4>
+                <p className="text-on-surface-variant">
+                  Fees and charges for services are based on DSoft Pack's billing terms. Fraudulent payments may result in suspension or termination of access.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Privacy Policy</h4>
+                <p className="text-on-surface-variant">
+                  Your use of the Site is governed by our Privacy Policy, available on the Privacy Policy Page.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Third-Party Content</h4>
+                <p className="text-on-surface-variant">
+                  Third-party content provided on the Site is for personal or internal business use only. You agree not to modify or reproduce third-party content without authorization.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Submissions</h4>
+                <p className="text-on-surface-variant">
+                  By submitting data or communications on the Site, you grant DSoft Pack a perpetual, royalty-free license to use, reproduce, and modify such submissions.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Links to Third-Party Sites</h4>
+                <p className="text-on-surface-variant">
+                  The Site may contain links to third-party sites. DSoft Pack is not responsible for the content of these sites.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Unauthorized Activities</h4>
+                <p className="text-on-surface-variant">
+                  Unauthorized use of Materials may violate laws and regulations. You agree to indemnify DSoft Pack for any claims arising from your use of the Site.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Trademarks and Copyright</h4>
+                <p className="text-on-surface-variant">
+                  All trademarks and content on the Site are the property of their respective owners. Reproduction or distribution of copyrighted material is prohibited without consent.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Disclaimer of Warranties</h4>
+                <p className="text-on-surface-variant">
+                  Your use of the Site is at your own risk. DSoft Pack does not warrant the accuracy or timeliness of materials or third-party content.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Limitation of Liability</h4>
+                <p className="text-on-surface-variant">
+                  DSoft Pack's liability for damages is limited to fifty dollars ($50). DSoft Pack is not liable for indirect, incidental, or consequential damages.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">Refunds and Cancellations</h4>
+                <p className="text-on-surface-variant">
+                  For information on refunds and cancellations, refer to our Refund Policy.
+                </p>
+              </section>
+
+              <section className="space-y-1.5">
+                <h4 className="font-bold text-on-background text-base">General</h4>
+                <p className="text-on-surface-variant">
+                  DSoft Pack may terminate access to the Site for violations of these Terms. Disputes will be governed by Maryland law. These Terms constitute the entire agreement between you and DSoft Pack.
+                </p>
+              </section>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-outline-variant/30 flex justify-end gap-3 bg-surface-container-low/30">
+              <button
+                type="button"
+                onClick={() => {
+                  setAgreeTerms(true);
+                  setTermsError(false);
+                  setShowTermsModal(false);
+                }}
+                className="px-6 py-2.5 bg-primary text-white text-xs font-bold rounded-full hover:bg-primary/90 transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                I Agree & Accept
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -59,10 +59,10 @@ export default function Footer() {
             Help
           </h3>
           <Link
-            to="/account/track"
+            to="/terms"
             className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
           >
-            Track My Order
+            Terms & Conditions
           </Link>
         </div>
       </div>
