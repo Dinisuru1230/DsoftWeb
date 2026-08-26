@@ -90,20 +90,31 @@ function SidebarFilters({
               <span className="text-xs font-label-md">Loading...</span>
             </div>
           ) : (
-            dbCategories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.name)}
-                className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${
-                  selectedCategory === cat.name
-                    ? 'text-primary font-bold bg-primary-container/40'
-                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">{cat.icon || 'category'}</span>
-                {cat.name}
-              </button>
-            ))
+            dbCategories.map((cat) => {
+              let displayIcon = cat.icon;
+              if (!displayIcon || displayIcon === 'category' || displayIcon === 'auto_awesome' || displayIcon === 'style') {
+                const lower = cat.name.toLowerCase();
+                if (lower.includes('microsoft') || lower.includes('windows')) displayIcon = 'window';
+                else if (lower.includes('office')) displayIcon = 'grid_view';
+                else if (lower.includes('security') || lower.includes('antivirus')) displayIcon = 'shield';
+                else if (lower.includes('key') || lower.includes('license')) displayIcon = 'vpn_key';
+                else displayIcon = 'window';
+              }
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.name)}
+                  className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${
+                    selectedCategory === cat.name
+                      ? 'text-primary font-bold bg-primary-container/40'
+                      : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">{displayIcon}</span>
+                  {cat.name}
+                </button>
+              );
+            })
           )}
         </div>
       </div>
@@ -258,11 +269,11 @@ export default function ShopAll() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
         <div>
-          <h1 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background mb-2">
-            All Collections
+          <h1 className="text-2xl sm:text-3xl md:text-4xl text-on-background mb-2 font-bold tracking-tight">
+            Software Products
           </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            Discover our complete range of handcrafted ribbons, bows, and silk accessories.
+          <p className="font-body-md text-xs sm:text-sm text-on-surface-variant">
+            Browse genuine operating system licenses, office suites, and security software with instant digital delivery.
           </p>
         </div>
         <button

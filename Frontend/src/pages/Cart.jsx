@@ -11,7 +11,7 @@ export default function Cart() {
         <span className="material-symbols-outlined text-8xl text-outline mb-6">shopping_bag</span>
         <h1 className="font-headline-md-mobile text-headline-md-mobile text-primary mb-4">Your Bag is Empty</h1>
         <p className="font-body-lg text-body-lg text-on-surface-variant mb-8">
-          Discover handcrafted pieces to fill your bag with everyday magic.
+          Discover genuine software licenses to fill your cart.
         </p>
         <Link
           to="/shop"

@@ -6,28 +6,25 @@ import toast from 'react-hot-toast';
 const API_BASE = 'http://localhost:5050/api';
 
 const ICON_OPTIONS = [
-  { icon: 'auto_awesome', label: 'Sparkles / Magic' },
-  { icon: 'style', label: 'Bows & Ribbons' },
-  { icon: 'favorite', label: 'Heart & Bridal' },
-  { icon: 'layers', label: 'Satin Wraps & Fabrics' },
-  { icon: 'checkroom', label: 'Apparel & Headbands' },
-  { icon: 'card_giftcard', label: 'Gift Sets & Boxes' },
-  { icon: 'shopping_bag', label: 'Shopping & Boutique' },
-  { icon: 'diamond', label: 'Jewelry & Accessories' },
-  { icon: 'spa', label: 'Floral & Botanical' },
-  { icon: 'local_florist', label: 'Roses & Flowers' },
-  { icon: 'palette', label: 'Artisan & Crafts' },
-  { icon: 'content_cut', label: 'Scissors & Sewing' },
-  { icon: 'storefront', label: 'Store Collection' },
-  { icon: 'sell', label: 'Tags & Badges' },
-  { icon: 'category', label: 'General Category' },
-  { icon: 'dry', label: 'Hair Care & Styling' },
-  { icon: 'redeem', label: 'Special Offer & Bundles' },
-  { icon: 'star', label: 'Featured / Star' },
-  { icon: 'bolt', label: 'Quick / Fast' },
-  { icon: 'celebration', label: 'Celebration' },
-  { icon: 'emoji_events', label: 'Awards & Events' },
-  { icon: 'volunteer_activism', label: 'Handmade / Care' },
+  { icon: 'window', label: 'Microsoft Windows / OS' },
+  { icon: 'desktop_windows', label: 'Microsoft Office & Desktop Apps' },
+  { icon: 'grid_view', label: 'Software Suites & Apps' },
+  { icon: 'shield', label: 'Antivirus & Security' },
+  { icon: 'vpn_key', label: 'Product License Keys / CID' },
+  { icon: 'terminal', label: 'Developer Tools & IDEs' },
+  { icon: 'cloud', label: 'Cloud & Office 365' },
+  { icon: 'computer', label: 'PC Hardware & Workstations' },
+  { icon: 'laptop', label: 'Laptops & Computers' },
+  { icon: 'workspace_premium', label: 'Premium Software License' },
+  { icon: 'verified', label: 'Genuine Product License' },
+  { icon: 'memory', label: 'RAM, Drivers & Utility' },
+  { icon: 'dashboard', label: 'Control Panel & System Tools' },
+  { icon: 'code', label: 'Programming & Web Dev' },
+  { icon: 'database', label: 'Database Software' },
+  { icon: 'palette', label: 'Design & Graphics Suites' },
+  { icon: 'video_settings', label: 'Video & Audio Editors' },
+  { icon: 'auto_awesome', label: 'AI & Special Software' },
+  { icon: 'category', label: 'General Software' },
 ];
 
 export default function CategoryManagement() {
@@ -39,15 +36,18 @@ export default function CategoryManagement() {
 
   // Create mode
   const [adding, setAdding] = useState(false);
-  const [newForm, setNewForm] = useState({ name: '', icon: 'auto_awesome' });
+  const [newForm, setNewForm] = useState({ name: '', icon: 'window' });
   const [createError, setCreateError] = useState('');
   const [creating, setCreating] = useState(false);
 
   // Edit mode
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', icon: 'auto_awesome' });
+  const [editForm, setEditForm] = useState({ name: '', icon: 'window' });
   const [editError, setEditError] = useState('');
   const [editSaving, setEditSaving] = useState(false);
+
+  // Reorder loading
+  const [reordering, setReordering] = useState(false);
 
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -101,7 +101,7 @@ export default function CategoryManagement() {
       setCreating(false);
       if (res.ok) {
         setCategories((prev) => [...prev, data.category]);
-        setNewForm({ name: '', icon: 'auto_awesome' });
+        setNewForm({ name: '', icon: 'window' });
         setAdding(false);
         toast.success(`Category "${data.category.name}" created successfully!`, { id: toastId });
       } else {
@@ -112,6 +112,47 @@ export default function CategoryManagement() {
     } catch {
       setCreating(false);
       toast.error('Network error. Could not create category.', { id: toastId });
+    }
+  }
+
+  // ── Move Category Up / Down ──
+  async function handleMove(index, direction) {
+    if (reordering) return;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= categories.length) return;
+
+    const newCategories = [...categories];
+    const [movedCategory] = newCategories.splice(index, 1);
+    newCategories.splice(targetIndex, 0, movedCategory);
+
+    // Re-assign order sequence
+    const updatedWithOrder = newCategories.map((cat, idx) => ({
+      ...cat,
+      order: idx,
+    }));
+
+    setCategories(updatedWithOrder);
+    setReordering(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/categories/reorder`, {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify({
+          items: updatedWithOrder.map((c) => ({ id: c.id, order: c.order })),
+        }),
+      });
+      if (res.ok) {
+        toast.success('Category order updated!');
+      } else {
+        toast.error('Failed to save category order.');
+        fetchCategories(); // Revert on failure
+      }
+    } catch {
+      toast.error('Network error while saving order.');
+      fetchCategories(); // Revert on failure
+    } finally {
+      setReordering(false);
     }
   }
 
@@ -217,10 +258,10 @@ export default function CategoryManagement() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
           <h1 className="font-headline-md text-headline-md text-on-background mb-1">Category Management</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant">Organize and manage your boutique product collections.</p>
+          <p className="font-body-md text-body-md text-on-surface-variant">Organize, reorder, and manage software & digital license categories.</p>
         </div>
         <button
-          onClick={() => { setAdding(!adding); setCreateError(''); setNewForm({ name: '', icon: 'auto_awesome' }); }}
+          onClick={() => { setAdding(!adding); setCreateError(''); setNewForm({ name: '', icon: 'window' }); }}
           className="bg-primary text-white px-6 py-3 rounded-full font-label-md text-label-md hover:bg-primary/80 transition-colors flex items-center justify-center gap-2 shadow-ambient whitespace-nowrap cursor-pointer"
         >
           <span className="material-symbols-outlined text-[18px]">{adding ? 'close' : 'add'}</span>
@@ -258,7 +299,7 @@ export default function CategoryManagement() {
                 type="text"
                 value={newForm.name}
                 onChange={(e) => { setNewForm({ ...newForm, name: e.target.value }); setCreateError(''); }}
-                placeholder="e.g. Hair Clips"
+                placeholder="e.g. Microsoft Windows"
                 className="w-full px-3 py-2.5 bg-surface-container-low border border-outline-variant rounded-lg font-body-md text-on-surface outline-none focus:border-primary transition-colors"
               />
             </div>
@@ -348,6 +389,10 @@ export default function CategoryManagement() {
               className="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:bg-surface-container-lowest transition-colors placeholder:text-outline outline-none"
             />
           </div>
+          <span className="text-xs text-on-surface-variant flex items-center gap-1">
+            <span className="material-symbols-outlined text-sm text-primary">swap_vert</span>
+            Use <span className="font-bold text-primary">⬆ ⬇ Arrows</span> to reorder categories display sequence
+          </span>
         </div>
 
         {/* Table */}
@@ -361,6 +406,7 @@ export default function CategoryManagement() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-outline-variant/30 bg-surface-container-low/50">
+                  <th className="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-center w-24">Order</th>
                   <th className="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Category Name</th>
                   <th className="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-center">Products</th>
                   <th className="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-center">Status</th>
@@ -370,110 +416,144 @@ export default function CategoryManagement() {
               <tbody className="divide-y divide-outline-variant/20 font-body-md text-on-surface">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center text-on-surface-variant font-label-md">
+                    <td colSpan={5} className="p-8 text-center text-on-surface-variant font-label-md">
                       {search ? 'No categories match your search.' : 'No categories yet. Create one!'}
                     </td>
                   </tr>
-                ) : filtered.map((cat) => (
-                  <tr key={cat.id} className="hover:bg-surface-container-low/50 transition-colors group">
-                    <td className="p-4">
-                      {editingId === cat.id ? (
-                        <form onSubmit={handleEditSave} className="flex flex-col gap-2">
-                          <div className="flex items-center gap-2">
+                ) : filtered.map((cat, idx) => {
+                  const originalIdx = categories.findIndex((c) => c.id === cat.id);
+                  const isFirst = originalIdx === 0;
+                  const isLast = originalIdx === categories.length - 1;
+
+                  return (
+                    <tr key={cat.id} className="hover:bg-surface-container-low/50 transition-colors group">
+                      {/* Order Controls */}
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            disabled={isFirst || reordering || Boolean(search)}
+                            onClick={() => handleMove(originalIdx, 'up')}
+                            className="p-1 rounded hover:bg-primary-container text-on-surface-variant hover:text-primary disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
+                            title="Move Up"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">keyboard_arrow_up</span>
+                          </button>
+                          <span className="font-mono text-xs font-bold text-primary w-5 text-center">
+                            {originalIdx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={isLast || reordering || Boolean(search)}
+                            onClick={() => handleMove(originalIdx, 'down')}
+                            className="p-1 rounded hover:bg-primary-container text-on-surface-variant hover:text-primary disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
+                            title="Move Down"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">keyboard_arrow_down</span>
+                          </button>
+                        </div>
+                      </td>
+
+                      {/* Name */}
+                      <td className="p-4">
+                        {editingId === cat.id ? (
+                          <form onSubmit={handleEditSave} className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center shrink-0">
+                                <span className="material-symbols-outlined text-primary text-[20px]">{editForm.icon}</span>
+                              </div>
+                              <input
+                                type="text"
+                                value={editForm.name}
+                                onChange={(e) => { setEditForm({ ...editForm, name: e.target.value }); setEditError(''); }}
+                                className="flex-1 px-2 py-1.5 bg-surface-container-low border border-primary rounded-lg font-body-md text-on-surface outline-none text-sm"
+                                autoFocus
+                              />
+                            </div>
+                            <div className="flex items-center gap-2 pl-12">
+                              <div className="relative flex-grow">
+                                <select
+                                  value={editForm.icon}
+                                  onChange={(e) => setEditForm({ ...editForm, icon: e.target.value })}
+                                  className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 pr-8 font-body-md text-on-surface outline-none focus:border-primary appearance-none cursor-pointer text-sm"
+                                >
+                                  {ICON_OPTIONS.map((opt) => (
+                                    <option key={opt.icon} value={opt.icon}>{opt.label}</option>
+                                  ))}
+                                </select>
+                                <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[18px]">expand_more</span>
+                              </div>
+                            </div>
+                            {editError && (
+                              <p className="text-xs text-error pl-12 flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[13px]">error</span>
+                                {editError}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 pl-12">
+                              <button type="submit" disabled={editSaving} className="px-3 py-1 bg-primary text-white text-xs rounded-full cursor-pointer hover:bg-primary/80 transition-colors disabled:opacity-50 flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[14px]">{editSaving ? 'sync' : 'check'}</span>
+                                Save
+                              </button>
+                              <button type="button" onClick={() => setEditingId(null)} className="px-3 py-1 border border-outline-variant text-xs rounded-full cursor-pointer hover:bg-surface-container transition-colors">
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center shrink-0">
-                              <span className="material-symbols-outlined text-primary text-[20px]">{editForm.icon}</span>
+                              <span className="material-symbols-outlined text-primary">{cat.icon}</span>
                             </div>
-                            <input
-                              type="text"
-                              value={editForm.name}
-                              onChange={(e) => { setEditForm({ ...editForm, name: e.target.value }); setEditError(''); }}
-                              className="flex-1 px-2 py-1.5 bg-surface-container-low border border-primary rounded-lg font-body-md text-on-surface outline-none text-sm"
-                              autoFocus
-                            />
+                            <span className="font-medium text-primary font-title-sm text-base">{cat.name}</span>
                           </div>
-                          <div className="flex items-center gap-2 pl-12">
-                            <div className="relative flex-grow">
-                              <select
-                                value={editForm.icon}
-                                onChange={(e) => setEditForm({ ...editForm, icon: e.target.value })}
-                                className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 pr-8 font-body-md text-on-surface outline-none focus:border-primary appearance-none cursor-pointer text-sm"
-                              >
-                                {ICON_OPTIONS.map((opt) => (
-                                  <option key={opt.icon} value={opt.icon}>{opt.label}</option>
-                                ))}
-                              </select>
-                              <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[18px]">expand_more</span>
-                            </div>
-                          </div>
-                          {editError && (
-                            <p className="text-xs text-error pl-12 flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[13px]">error</span>
-                              {editError}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-2 pl-12">
-                            <button type="submit" disabled={editSaving} className="px-3 py-1 bg-primary text-white text-xs rounded-full cursor-pointer hover:bg-primary/80 transition-colors disabled:opacity-50 flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[14px]">{editSaving ? 'sync' : 'check'}</span>
-                              Save
+                        )}
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className="font-label-md text-on-surface-variant text-sm">{cat.productCount ?? 0}</span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => toggleActive(cat)}
+                          className={`inline-flex items-center px-3 py-1 rounded-full font-label-sm text-[11px] uppercase tracking-wide cursor-pointer transition-colors ${
+                            cat.active
+                              ? 'bg-secondary-container text-on-secondary-container font-bold'
+                              : 'bg-surface-container text-on-surface-variant'
+                          }`}
+                        >
+                          {cat.active ? 'Active' : 'Inactive'}
+                        </button>
+                      </td>
+                      <td className="p-4 text-right">
+                        {editingId !== cat.id && (
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => openEdit(cat)}
+                              className="p-2 text-on-surface-variant hover:text-secondary transition-colors rounded-full hover:bg-secondary-container/30 cursor-pointer"
+                              title="Edit Category"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">edit</span>
                             </button>
-                            <button type="button" onClick={() => setEditingId(null)} className="px-3 py-1 border border-outline-variant text-xs rounded-full cursor-pointer hover:bg-surface-container transition-colors">
-                              Cancel
+                            <button
+                              onClick={() => toggleActive(cat)}
+                              className="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-low cursor-pointer"
+                              title={cat.active ? 'Deactivate' : 'Activate'}
+                            >
+                              <span className="material-symbols-outlined text-[20px]">{cat.active ? 'visibility_off' : 'visibility'}</span>
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(cat)}
+                              className="p-2 text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-error-container/50 cursor-pointer"
+                              title="Delete Category"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">delete</span>
                             </button>
                           </div>
-                        </form>
-                      ) : (
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center shrink-0">
-                            <span className="material-symbols-outlined text-primary">{cat.icon}</span>
-                          </div>
-                          <span className="font-medium text-primary font-title-sm text-base">{cat.name}</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-4 text-center">
-                      <span className="font-label-md text-on-surface-variant text-sm">{cat.productCount ?? 0}</span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() => toggleActive(cat)}
-                        className={`inline-flex items-center px-3 py-1 rounded-full font-label-sm text-[11px] uppercase tracking-wide cursor-pointer transition-colors ${
-                          cat.active
-                            ? 'bg-secondary-container text-on-secondary-container font-bold'
-                            : 'bg-surface-container text-on-surface-variant'
-                        }`}
-                      >
-                        {cat.active ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="p-4 text-right">
-                      {editingId !== cat.id && (
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => openEdit(cat)}
-                            className="p-2 text-on-surface-variant hover:text-secondary transition-colors rounded-full hover:bg-secondary-container/30 cursor-pointer"
-                            title="Edit Category"
-                          >
-                            <span className="material-symbols-outlined text-[20px]">edit</span>
-                          </button>
-                          <button
-                            onClick={() => toggleActive(cat)}
-                            className="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-low cursor-pointer"
-                            title={cat.active ? 'Deactivate' : 'Activate'}
-                          >
-                            <span className="material-symbols-outlined text-[20px]">{cat.active ? 'visibility_off' : 'visibility'}</span>
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(cat)}
-                            className="p-2 text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-error-container/50 cursor-pointer"
-                            title="Delete Category"
-                          >
-                            <span className="material-symbols-outlined text-[20px]">delete</span>
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

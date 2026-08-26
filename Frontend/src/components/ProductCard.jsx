@@ -11,9 +11,12 @@ export default function ProductCard({ product }) {
   const { id, name, price, category, image, hoverImage, isNew, badge } = product;
   const [added, setAdded] = useState(false);
 
+  const isOutOfStock = product.stock !== undefined ? product.stock <= 0 : false;
+
   function handleAddToCart(e) {
     e.preventDefault();
     e.stopPropagation();
+    if (isOutOfStock) return;
     if (!user) {
       navigate('/login', { state: { from: location.pathname } });
       return;
@@ -28,28 +31,41 @@ export default function ProductCard({ product }) {
       <Link to={`/product/${id}`} className="flex-grow flex flex-col">
         {/* Image Container */}
         <div className="relative w-full aspect-square overflow-hidden bg-surface-container">
+          {/* Out of Stock Red Corner Ribbon */}
+          {isOutOfStock && (
+            <div className="absolute top-0 left-0 w-24 h-24 sm:w-28 sm:h-28 overflow-hidden z-20 pointer-events-none">
+              <div className="bg-[#dc2626] text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-center py-1 sm:py-1.5 w-32 sm:w-36 -rotate-45 -translate-x-9 sm:-translate-x-10 translate-y-3 sm:translate-y-3.5 shadow-md border-y border-white/20">
+                OUT OF STOCK
+              </div>
+            </div>
+          )}
+
           {/* Primary image */}
           <img
-            src={image || '/14_blush_silk_ribbon_bow.jpg'}
+            src={image || ''}
             alt={name}
-            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0"
+            className={`absolute inset-0 w-full h-full object-contain p-2 transition-transform duration-500 ${
+              hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-105'
+            } ${isOutOfStock ? 'opacity-80 grayscale-[20%]' : ''}`}
           />
-          {/* Hover image */}
+          {/* Hover image (if provided) */}
           {hoverImage && (
             <img
               src={hoverImage}
               alt={`${name} - alternate view`}
-              className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              className={`absolute inset-0 w-full h-full object-contain p-2 opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${
+                isOutOfStock ? 'grayscale-[20%]' : ''
+              }`}
             />
           )}
           {/* Badges */}
           {isNew && (
-            <div className="absolute top-2 left-2 z-10 bg-primary-container text-on-background font-label-sm text-[10px] sm:text-xs py-0.5 px-2 sm:py-1 sm:px-2.5 rounded-full shadow-sm font-bold">
+            <div className={`absolute top-2 ${isOutOfStock ? 'right-2' : 'left-2'} z-10 bg-primary-container text-on-background font-label-sm text-[10px] sm:text-xs py-0.5 px-2 sm:py-1 sm:px-2.5 rounded-full shadow-sm font-bold`}>
               New
             </div>
           )}
           {badge && !isNew && (
-            <div className="absolute top-2 left-2 z-10 bg-tertiary-container text-on-background font-label-sm text-[10px] sm:text-xs py-0.5 px-2 sm:py-1 sm:px-2.5 rounded-full shadow-sm font-bold">
+            <div className={`absolute top-2 ${isOutOfStock ? 'right-2' : 'left-2'} z-10 bg-tertiary-container text-on-background font-label-sm text-[10px] sm:text-xs py-0.5 px-2 sm:py-1 sm:px-2.5 rounded-full shadow-sm font-bold`}>
               {badge}
             </div>
           )}
@@ -88,13 +104,18 @@ export default function ProductCard({ product }) {
       <div className="px-2.5 sm:px-4 pb-3 sm:pb-4 mt-auto">
         <button
           onClick={handleAddToCart}
-          className={`w-full py-2 sm:py-2.5 font-label-md text-xs sm:text-sm rounded-full transition-all duration-300 shadow-sm cursor-pointer font-bold ${
-            added
-              ? 'bg-primary text-white'
-              : 'bg-primary-container text-on-background hover:bg-primary hover:text-white'
+          disabled={isOutOfStock}
+          className={`w-full py-2 sm:py-2.5 font-label-md text-xs sm:text-sm rounded-full transition-all duration-300 shadow-sm font-bold ${
+            isOutOfStock
+              ? 'bg-surface-container text-on-surface-variant/60 cursor-not-allowed border border-outline-variant/30'
+              : added
+              ? 'bg-primary text-white cursor-pointer'
+              : 'bg-primary-container text-on-background hover:bg-primary hover:text-white cursor-pointer'
           }`}
         >
-          {added ? (
+          {isOutOfStock ? (
+            'Out of Stock'
+          ) : added ? (
             <span className="flex items-center justify-center gap-1">
               <span className="material-symbols-outlined text-[15px] sm:text-[18px]">check</span>
               Added!

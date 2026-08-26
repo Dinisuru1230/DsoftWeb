@@ -70,7 +70,7 @@ export default function OrderConfirmed() {
               <div className="flex items-center gap-4">
                 <img src="/14_blush_silk_ribbon_bow.jpg" alt="Order item" className="w-16 h-16 rounded-lg object-cover" />
                 <div>
-                  <p className="font-title-sm text-title-sm text-on-surface">Handcrafted Boutique Package</p>
+                  <p className="font-title-sm text-title-sm text-on-surface">Digital License Delivery</p>
                   <p className="font-body-md text-body-md text-on-surface-variant">DSoft Pack Collection</p>
                 </div>
               </div>

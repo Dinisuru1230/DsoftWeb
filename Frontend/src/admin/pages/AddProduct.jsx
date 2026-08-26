@@ -1482,26 +1482,37 @@ export default function AddProduct() {
                   No categories found. Please <button type="button" onClick={() => navigate('/admin/categories')} className="underline font-bold cursor-pointer">create categories</button> first.
                 </div>
               ) : (
-                <div className="relative">
-                  <select
-                    id="category"
-                    name="category"
-                    value={form.category}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className={`w-full bg-transparent border-0 border-b-2 outline-none py-2 pr-8 font-body-md text-on-surface appearance-none cursor-pointer transition-colors ${
-                      errors.category ? 'border-error' : 'border-outline-variant focus:border-primary'
-                    }`}
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.name} className="bg-surface-container-lowest text-on-surface py-2">
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
-                    unfold_more
-                  </span>
+                <div className="relative flex items-center">
+                  {(() => {
+                    const selCat = categories.find((c) => c.name === form.category);
+                    const iconName = selCat?.icon || (form.category?.toLowerCase().includes('microsoft') || form.category?.toLowerCase().includes('windows') ? 'window' : 'category');
+                    return (
+                      <span className="material-symbols-outlined text-primary text-[20px] mr-2">
+                        {iconName}
+                      </span>
+                    );
+                  })()}
+                  <div className="relative flex-grow">
+                    <select
+                      id="category"
+                      name="category"
+                      value={form.category}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={`w-full bg-transparent border-0 border-b-2 outline-none py-2 pr-8 font-body-md text-on-surface appearance-none cursor-pointer transition-colors ${
+                        errors.category ? 'border-error' : 'border-outline-variant focus:border-primary'
+                      }`}
+                    >
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.name} className="bg-surface-container-lowest text-on-surface py-2">
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-primary pointer-events-none text-[20px]">
+                      unfold_more
+                    </span>
+                  </div>
                 </div>
               )}
               {errors.category && <p className="text-xs text-error mt-1">{errors.category}</p>}

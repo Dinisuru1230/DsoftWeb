@@ -38,10 +38,11 @@ model User {
   city       String?
   district   String?
   postalCode String?
-  role       Role     @default(CUSTOMER)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  orders     Order[]
+  role          Role     @default(CUSTOMER)
+  usedCidPoints Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  orders        Order[]
 }
 
 model Category {
@@ -49,6 +50,7 @@ model Category {
   name     String    @unique
   slug     String    @unique
   icon     String    @default("category")
+  order    Int       @default(0)
   active   Boolean   @default(true)
   products Product[]
 }

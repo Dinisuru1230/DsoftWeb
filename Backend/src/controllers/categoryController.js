@@ -16,7 +16,7 @@ async function getCategories(req, res) {
     const categories = await prisma.category.findMany({
       where: includeInactive ? {} : { active: true },
       include: { _count: { select: { products: true } } },
-      orderBy: { name: 'asc' },
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
     });
     res.json({
       categories: categories.map((c) => ({
@@ -24,6 +24,7 @@ async function getCategories(req, res) {
         name: c.name,
         slug: c.slug,
         icon: c.icon,
+        order: c.order ?? 0,
         active: c.active,
         productCount: c._count.products,
       })),
@@ -36,7 +37,7 @@ async function getCategories(req, res) {
 // POST /api/categories — Create new category (admin only)
 async function createCategory(req, res) {
   try {
-    const { name, icon } = req.body;
+    const { name, icon, order } = req.body;
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Category name is required' });
     }
@@ -47,11 +48,22 @@ async function createCategory(req, res) {
     if (existing) {
       return res.status(400).json({ error: 'A category with this name already exists' });
     }
+
+    // Auto-calculate highest order if not provided
+    let newOrder = Number(order);
+    if (isNaN(newOrder)) {
+      const maxOrderCat = await prisma.category.findFirst({
+        orderBy: { order: 'desc' },
+      });
+      newOrder = (maxOrderCat?.order ?? -1) + 1;
+    }
+
     const category = await prisma.category.create({
       data: {
         name: name.trim(),
         slug,
         icon: icon || 'category',
+        order: newOrder,
         active: true,
       },
     });
@@ -61,11 +73,33 @@ async function createCategory(req, res) {
   }
 }
 
+// PUT /api/categories/reorder — Bulk reorder categories (admin only)
+async function reorderCategories(req, res) {
+  try {
+    const { items } = req.body; // Array of { id, order }
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ error: 'items array is required' });
+    }
+
+    const updatePromises = items.map((item) =>
+      prisma.category.update({
+        where: { id: item.id },
+        data: { order: Number(item.order) || 0 },
+      })
+    );
+
+    await Promise.all(updatePromises);
+    res.json({ message: 'Category order updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 // PUT /api/categories/:id — Update category (admin only)
 async function updateCategory(req, res) {
   try {
     const { id } = req.params;
-    const { name, icon, active } = req.body;
+    const { name, icon, active, order } = req.body;
 
     const existing = await prisma.category.findUnique({ where: { id } });
     if (!existing) return res.status(404).json({ error: 'Category not found' });
@@ -82,6 +116,7 @@ async function updateCategory(req, res) {
     }
     if (icon !== undefined) updateData.icon = icon;
     if (active !== undefined) updateData.active = active;
+    if (order !== undefined) updateData.order = Number(order);
 
     const updated = await prisma.category.update({ where: { id }, data: updateData });
     res.json({ message: 'Category updated successfully', category: updated });
@@ -111,4 +146,10 @@ async function deleteCategory(req, res) {
   }
 }
 
-module.exports = { getCategories, createCategory, updateCategory, deleteCategory };
+module.exports = {
+  getCategories,
+  createCategory,
+  reorderCategories,
+  updateCategory,
+  deleteCategory,
+};

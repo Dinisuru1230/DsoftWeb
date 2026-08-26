@@ -247,7 +247,7 @@ export default function ProductDetail() {
       {
         id: product.id,
         name: selectedColor ? `${product.name} (${selectedColor.name})` : product.name,
-        price: currentPrice + warrantyPrice,
+        price: currentPrice,
         image: activeImage,
         categoryName: product.categoryName,
         warranty: warrantyPrice > 0 ? `Extended Warranty (+Rs. ${warrantyPrice})` : null,
@@ -332,10 +332,21 @@ export default function ProductDetail() {
         {/* Left Column: Product Image Showcase */}
         <div className="lg:col-span-6 flex flex-col space-y-4">
           <div className="w-full aspect-square bg-surface-container-low rounded-xl border border-outline-variant/50 overflow-hidden relative shadow-md group">
+            {/* Out of Stock Red Corner Ribbon */}
+            {isOutOfStock && (
+              <div className="absolute top-0 left-0 w-28 h-28 sm:w-32 sm:h-32 overflow-hidden z-20 pointer-events-none">
+                <div className="bg-[#dc2626] text-white text-[10px] sm:text-xs font-black uppercase tracking-wider text-center py-1 sm:py-1.5 w-36 sm:w-40 -rotate-45 -translate-x-10 sm:-translate-x-11 translate-y-3.5 sm:translate-y-4 shadow-md border-y border-white/20">
+                  OUT OF STOCK
+                </div>
+              </div>
+            )}
+
             <img
               src={activeImage || imgUrl(product.image)}
               alt={product.name}
-              className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+              className={`w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500 ${
+                isOutOfStock ? 'grayscale-[15%]' : ''
+              }`}
             />
             {/* NEW Badge */}
             <div className="absolute top-3 right-3 bg-black text-white text-xs font-bold uppercase px-2.5 py-1 rounded shadow">
@@ -526,7 +537,7 @@ export default function ProductDetail() {
           <div className="py-4 border-y border-outline-variant/60 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-extrabold text-on-surface">
-                Rs. {(currentPrice + warrantyPrice).toLocaleString()}
+                Rs. {currentPrice.toLocaleString()}
               </span>
             </div>
 
@@ -548,22 +559,6 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Extended Warranty Selector */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-on-surface uppercase tracking-wide">
-              Extended Warranty
-            </label>
-            <select
-              value={warrantyPrice}
-              onChange={(e) => setWarrantyPrice(Number(e.target.value))}
-              className="w-full bg-surface border border-outline-variant rounded-md px-3 py-2 text-sm text-on-surface font-medium focus:ring-2 focus:ring-primary focus:outline-none"
-            >
-              <option value={0}>No Warranty (Included)</option>
-              <option value={100}>30 Days (+Rs. 100)</option>
-              <option value={200}>60 Days (+Rs. 200)</option>
-              <option value={500}>1 Year (+Rs. 500)</option>
-            </select>
-          </div>
 
           {/* Quantity Selector + Add to Cart + Buy Now + Help Button */}
           <div className="flex flex-wrap items-center gap-3 pt-2">

@@ -32,10 +32,10 @@ export default function Footer() {
             Company
           </h3>
           <Link
-            to="/our-story"
+            to="/about-us"
             className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
           >
-            Our Story
+            About Us
           </Link>
           <Link
             to="/contact"
@@ -58,6 +58,12 @@ export default function Footer() {
           <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">
             Help
           </h3>
+          <Link
+            to="/get-cid"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+          >
+            Get CID Free
+          </Link>
           <Link
             to="/terms"
             className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"

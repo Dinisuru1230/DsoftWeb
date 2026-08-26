@@ -13,7 +13,7 @@ export const navItems = [
   { to: '/admin/reviews', label: 'Reviews', icon: 'rate_review' },
   { to: '/admin/customers', label: 'Customers', icon: 'group' },
   { to: '/admin/messages', label: 'Messages', icon: 'inbox', badgeKey: 'unread' },
-  { to: '/admin/our-story', label: 'Our Story', icon: 'auto_stories' },
+  { to: '/admin/our-story', label: 'About Us', icon: 'info' },
   { to: '/admin/bank-details', label: 'Bank Details', icon: 'account_balance' },
   { to: '/admin/invoice-settings', label: 'Invoice Settings', icon: 'receipt_long' },
   { to: '/admin/admins', label: 'Admin Team', icon: 'admin_panel_settings' },
@@ -32,7 +32,7 @@ export default function AdminSidebar({ onClose }) {
     })
       .then((r) => r.json())
       .then((data) => { if (data.unread !== undefined) setUnreadCount(data.unread); })
-      .catch(() => {});
+      .catch(() => { });
 
     // Poll every 60s for new messages
     const interval = setInterval(() => {
@@ -41,7 +41,7 @@ export default function AdminSidebar({ onClose }) {
       })
         .then((r) => r.json())
         .then((data) => { if (data.unread !== undefined) setUnreadCount(data.unread); })
-        .catch(() => {});
+        .catch(() => { });
     }, 60000);
     return () => clearInterval(interval);
   }, [token]);
@@ -81,10 +81,9 @@ export default function AdminSidebar({ onClose }) {
             end={item.end}
             onClick={() => { if (onClose) onClose(); }}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-md text-label-md transition-all duration-200 ${
-                isActive
-                  ? 'text-primary font-bold bg-primary-container shadow-sm'
-                  : 'text-on-surface-variant hover:bg-surface-container hover:text-primary hover:translate-x-1'
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-md text-label-md transition-all duration-200 ${isActive
+                ? 'text-primary font-bold bg-primary-container shadow-sm'
+                : 'text-on-surface-variant hover:bg-surface-container hover:text-primary hover:translate-x-1'
               }`
             }
           >

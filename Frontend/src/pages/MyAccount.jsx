@@ -143,7 +143,7 @@ export default function MyAccount() {
               <span className="material-symbols-outlined text-5xl text-outline">shopping_bag</span>
               <h3 className="font-title-sm text-on-surface">You haven't placed any orders yet</h3>
               <p className="font-body-md text-on-surface-variant text-sm max-w-md mx-auto">
-                Explore our handcrafted floral ribbons, bows, and artisan headbands to find your next favorite piece.
+                Explore our genuine software licenses, operating systems, and office suites.
               </p>
               <Link
                 to="/shop"

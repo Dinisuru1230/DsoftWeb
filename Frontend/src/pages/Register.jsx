@@ -139,10 +139,10 @@ export default function Register() {
         <div className="absolute inset-0 bg-primary/10 backdrop-blur-[2px] flex items-center justify-center p-12">
           <div className="text-center space-y-3">
             <h2 className="font-display-lg text-white text-headline-md drop-shadow-md">
-              Your Everyday Magic Awaits
+              DSoft Pack Software Store
             </h2>
             <p className="font-body-md text-white text-body-md drop-shadow-sm">
-              Handcrafted for the moments that matter.
+              Genuine software licenses delivered instantly.
             </p>
           </div>
         </div>
@@ -161,8 +161,8 @@ export default function Register() {
             <h1 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background">
               Create a Customer Account
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">
-              Step into a world of everyday magic and handmade elegance.
+            <p className="font-body-md text-xs sm:text-sm text-on-surface-variant">
+              Get instant access to genuine software licenses and digital delivery.
             </p>
           </div>
 

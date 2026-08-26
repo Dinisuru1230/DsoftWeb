@@ -16,8 +16,10 @@ import SecurePayment from './pages/SecurePayment';
 import BankSlipUpload from './pages/BankSlipUpload';
 import OrderConfirmed from './pages/OrderConfirmed';
 import PaymentUnsuccessful from './pages/PaymentUnsuccessful';
+import AboutUs from './pages/AboutUs';
 import OurStory from './pages/OurStory';
 import ContactUs from './pages/ContactUs';
+import GetCid from './pages/GetCid';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -219,8 +221,10 @@ export default function App() {
             <Route path="/checkout/bank-slip" element={<CustomerLayout><BankSlipUpload /></CustomerLayout>} />
             <Route path="/checkout/success" element={<CustomerLayout><OrderConfirmed /></CustomerLayout>} />
             <Route path="/checkout/failed" element={<CustomerLayout><PaymentUnsuccessful /></CustomerLayout>} />
-            <Route path="/our-story" element={<CustomerLayout><OurStory /></CustomerLayout>} />
+            <Route path="/about-us" element={<CustomerLayout><AboutUs /></CustomerLayout>} />
+            <Route path="/our-story" element={<CustomerLayout><AboutUs /></CustomerLayout>} />
             <Route path="/contact" element={<CustomerLayout><ContactUs /></CustomerLayout>} />
+            <Route path="/get-cid" element={<CustomerLayout><GetCid /></CustomerLayout>} />
             <Route path="/terms" element={<CustomerLayout><Terms /></CustomerLayout>} />
 
             {/* ── Customer Account Pages ── */}

@@ -185,10 +185,10 @@ export default function Login() {
         <div className="absolute inset-0 bg-primary/10 backdrop-blur-[2px] flex items-center justify-center p-12">
           <div className="text-center space-y-3">
             <h2 className="font-display-lg text-white text-display-lg-mobile md:text-headline-md drop-shadow-md">
-              Artisanal Elegance
+              Digital IT Solutions
             </h2>
             <p className="font-body-md text-white text-body-md drop-shadow-sm">
-              Crafted with love, for your home.
+              Genuine software licenses with instant digital delivery.
             </p>
           </div>
         </div>

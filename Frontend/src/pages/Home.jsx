@@ -113,7 +113,7 @@ export default function Home() {
             ) : newArrivals.length === 0 ? (
               <div className="col-span-full py-12 text-center text-on-surface-variant space-y-3">
                 <span className="material-symbols-outlined text-4xl text-outline">inventory_2</span>
-                <p className="font-title-sm text-on-surface font-semibold">New handcrafted designs arriving soon!</p>
+                <p className="font-title-sm text-on-surface font-semibold">New software products arriving soon!</p>
                 <Link to="/shop" className="inline-block text-xs text-primary font-bold hover:underline">
                   Browse All Collections &rarr;
                 </Link>
@@ -182,7 +182,7 @@ export default function Home() {
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="font-title-sm text-title-sm text-primary mb-2">Join Our Journal</h2>
           <p className="font-body-md text-body-md text-on-surface-variant mb-6">
-            Receive updates on new collections and a touch of everyday magic in your inbox.
+            Receive updates on new software releases and special deals in your inbox.
           </p>
           <form className="flex flex-col sm:flex-row gap-3 justify-center" onSubmit={(e) => e.preventDefault()}>
             <input

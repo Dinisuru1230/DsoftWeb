@@ -9,28 +9,56 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('dsoftpack_user') || localStorage.getItem('malmalee_user') || sessionStorage.getItem('dsoftpack_user') || sessionStorage.getItem('malmalee_user');
+      const saved =
+        localStorage.getItem('dsoftpack_user') ||
+        localStorage.getItem('malmalee_user') ||
+        localStorage.getItem('dsoft_user') ||
+        sessionStorage.getItem('dsoftpack_user') ||
+        sessionStorage.getItem('malmalee_user') ||
+        sessionStorage.getItem('dsoft_user');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('dsoftpack_token') || localStorage.getItem('malmalee_token') || sessionStorage.getItem('dsoftpack_token') || sessionStorage.getItem('malmalee_token') || null);
+  const [token, setToken] = useState(() =>
+    localStorage.getItem('dsoftpack_token') ||
+    localStorage.getItem('malmalee_token') ||
+    localStorage.getItem('dsoft_token') ||
+    sessionStorage.getItem('dsoftpack_token') ||
+    sessionStorage.getItem('malmalee_token') ||
+    sessionStorage.getItem('dsoft_token') ||
+    null
+  );
+
   const [loading, setLoading] = useState(true);
   const inactivityTimerRef = useRef(null);
 
-  // Helper to clear both sessionStorage and localStorage on logout
+  // Helper to save token/user to all keys for seamless compatibility
+  function saveAuthData(userData, tokenStr) {
+    setUser(userData);
+    setToken(tokenStr);
+    if (userData) {
+      const uJson = JSON.stringify(userData);
+      localStorage.setItem('dsoftpack_user', uJson);
+      localStorage.setItem('malmalee_user', uJson);
+      localStorage.setItem('dsoft_user', uJson);
+    }
+    if (tokenStr) {
+      localStorage.setItem('dsoftpack_token', tokenStr);
+      localStorage.setItem('malmalee_token', tokenStr);
+      localStorage.setItem('dsoft_token', tokenStr);
+    }
+  }
+
+  // Helper to clear all auth storage keys on logout
   function clearAllAuthStorage() {
     try {
-      sessionStorage.removeItem('dsoftpack_user');
-      sessionStorage.removeItem('dsoftpack_token');
-      sessionStorage.removeItem('malmalee_user');
-      sessionStorage.removeItem('malmalee_token');
-      localStorage.removeItem('dsoftpack_user');
-      localStorage.removeItem('dsoftpack_token');
-      localStorage.removeItem('malmalee_user');
-      localStorage.removeItem('malmalee_token');
+      ['dsoftpack_user', 'dsoftpack_token', 'malmalee_user', 'malmalee_token', 'dsoft_user', 'dsoft_token'].forEach((k) => {
+        sessionStorage.removeItem(k);
+        localStorage.removeItem(k);
+      });
     } catch (e) {
       console.error('Failed to clear auth storage:', e);
     }
@@ -53,7 +81,14 @@ export function AuthProvider({ children }) {
   // Validate token on mount
   useEffect(() => {
     async function verifyToken() {
-      const storedToken = localStorage.getItem('malmalee_token') || sessionStorage.getItem('malmalee_token');
+      const storedToken =
+        localStorage.getItem('dsoftpack_token') ||
+        localStorage.getItem('malmalee_token') ||
+        localStorage.getItem('dsoft_token') ||
+        sessionStorage.getItem('dsoftpack_token') ||
+        sessionStorage.getItem('malmalee_token') ||
+        sessionStorage.getItem('dsoft_token');
+
       if (storedToken) {
         try {
           const res = await fetch(`${API_BASE_URL}/auth/me`, {
@@ -61,12 +96,9 @@ export function AuthProvider({ children }) {
           });
           const data = await res.json();
           if (res.ok && data.user) {
-            setUser(data.user);
-            setToken(storedToken);
-            localStorage.setItem('dsoftpack_user', JSON.stringify(data.user));
-            localStorage.setItem('dsoftpack_token', storedToken);
+            saveAuthData(data.user, storedToken);
           } else {
-            logout();
+            logout(false);
           }
         } catch (err) {
           console.error('Failed to verify token:', err);
@@ -117,10 +149,7 @@ export function AuthProvider({ children }) {
       if (!res.ok) {
         return { success: false, error: data.error || 'Login failed' };
       }
-      setUser(data.user);
-      setToken(data.token);
-      localStorage.setItem('malmalee_user', JSON.stringify(data.user));
-      localStorage.setItem('malmalee_token', data.token);
+      saveAuthData(data.user, data.token);
       return { success: true, user: data.user };
     } catch {
       return { success: false, error: 'Network error. Could not connect to backend server.' };
@@ -138,10 +167,7 @@ export function AuthProvider({ children }) {
       if (!res.ok) {
         return { success: false, error: data.error || 'Registration failed' };
       }
-      setUser(data.user);
-      setToken(data.token);
-      localStorage.setItem('malmalee_user', JSON.stringify(data.user));
-      localStorage.setItem('malmalee_token', data.token);
+      saveAuthData(data.user, data.token);
       return { success: true, user: data.user };
     } catch {
       return { success: false, error: 'Network error. Could not connect to backend server.' };
@@ -163,8 +189,7 @@ export function AuthProvider({ children }) {
       if (!res.ok) {
         return { success: false, error: data.error || 'Failed to update profile' };
       }
-      setUser(data.user);
-      localStorage.setItem('dsoftpack_user', JSON.stringify(data.user));
+      saveAuthData(data.user, token);
       return { success: true, user: data.user };
     } catch (err) {
       return { success: false, error: err.message };

@@ -279,7 +279,7 @@ export default function TrackOrder() {
                     />
                     <div className="flex-grow">
                       <p className="font-title-sm text-sm text-on-surface font-bold">
-                        {item.product?.name || 'Artisan Handcrafted Piece'}
+                        {item.product?.name || 'Software License Key'}
                       </p>
                       <p className="font-body-md text-xs text-on-surface-variant">
                         {item.colorName ? `Variant: ${item.colorName} · ` : ''}Qty: {item.quantity} · Rs. {Number(item.price || 0).toLocaleString()} each
