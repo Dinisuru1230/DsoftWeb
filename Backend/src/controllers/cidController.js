@@ -2,7 +2,6 @@ const prisma = require('../config/prisma');
 
 // Helper to compute CID points earned by a user
 async function calculateUserCidPoints(userId, userEmail) {
-  // Fetch user orders matching userId OR email
   const allOrders = await prisma.order.findMany({
     where: {
       orderStatus: {
@@ -20,7 +19,6 @@ async function calculateUserCidPoints(userId, userEmail) {
 
   const targetEmail = (userEmail || '').toLowerCase().trim();
 
-  // Filter orders matching user id or email (case-insensitive)
   const userOrders = allOrders.filter((o) => {
     if (userId && o.userId === userId) return true;
     if (targetEmail && o.email && o.email.toLowerCase().trim() === targetEmail) return true;
@@ -30,7 +28,6 @@ async function calculateUserCidPoints(userId, userEmail) {
   let earnedPoints = 0;
   userOrders.forEach((order) => {
     (order.items || []).forEach((item) => {
-      // Award 1 CID point per item quantity if product is CID eligible (defaults to true for products)
       const isEligible = !item.product || (item.product.hasCidPoints !== false && item.product.isCidAvailable !== false);
       if (isEligible) {
         earnedPoints += parseInt(item.quantity || 1);
@@ -86,7 +83,7 @@ exports.getCidPoints = async (req, res) => {
   }
 };
 
-// Generate Confirmation ID
+// Generate Confirmation ID via getcid.us provider (matching E:\dsfot web\cid platform logic)
 exports.getConfirmationId = async (req, res) => {
   try {
     if (!req.user) {
@@ -96,7 +93,7 @@ exports.getConfirmationId = async (req, res) => {
       });
     }
 
-    const { installationId } = req.body;
+    const { installationId, productKey } = req.body;
 
     if (!installationId) {
       return res.status(400).json({
@@ -105,7 +102,7 @@ exports.getConfirmationId = async (req, res) => {
       });
     }
 
-    // Strip non-digits
+    // Strip non-digits from Installation ID
     const rawDigits = String(installationId).replace(/\D/g, '');
 
     if (!rawDigits || rawDigits.length < 30) {
@@ -124,9 +121,7 @@ exports.getConfirmationId = async (req, res) => {
       return res.status(404).json({ error: 'User account not found.' });
     }
 
-    let remainingPoints = 999999;
-
-    // Non-admin CID point validation & deduction
+    // Validate CID Points for non-admin users
     if (user.role !== 'ADMIN') {
       const { earnedPoints } = await calculateUserCidPoints(user.id, user.email);
       const currentUsed = user.usedCidPoints || 0;
@@ -138,45 +133,72 @@ exports.getConfirmationId = async (req, res) => {
           error: 'You have 0 available CID points. CID points are earned by purchasing software products from our store.',
         });
       }
-
-      // Deduct 1 CID point persistently in database
-      const updatedUser = await prisma.user.update({
-        where: { id: user.id },
-        data: { usedCidPoints: currentUsed + 1 },
-      });
-
-      remainingPoints = Math.max(0, earnedPoints - updatedUser.usedCidPoints);
     }
 
-    // Generate deterministic 48-digit Microsoft Confirmation ID (8 blocks of 6 digits)
-    let hash = 0;
-    for (let i = 0; i < rawDigits.length; i++) {
-      hash = (hash << 5) - hash + rawDigits.charCodeAt(i);
-      hash |= 0;
-    }
+    // Send server-side cURL/POST request to https://getcid.us/getdata.php
+    const params = new URLSearchParams();
+    params.append('key', productKey || '');
+    params.append('comment', rawDigits);
 
-    const blocks = [];
-    let fullStr = '';
-    for (let i = 0; i < 8; i++) {
-      const seed = Math.abs(Math.sin(hash + i * 1337) * 1000000);
-      const blockNum = Math.floor(seed).toString().padStart(6, '0').slice(0, 6);
-      blocks.push(blockNum);
-      fullStr += blockNum;
-    }
-
-    return res.json({
-      success: true,
-      confirmationId: fullStr,
-      blocks: blocks,
-      installationId: rawDigits,
-      timeSeconds: (Math.random() * 0.15 + 0.05).toFixed(3),
-      remainingCidPoints: remainingPoints,
+    const providerRes = await fetch('https://getcid.us/getdata.php', {
+      method: 'POST',
+      body: params,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Referer': 'https://getcid.us/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36',
+      },
     });
+
+    if (!providerRes.ok) {
+      return res.status(502).json({
+        success: false,
+        error: 'Failed to reach CID provider (getcid.us). Please try again.',
+      });
+    }
+
+    const apiResult = await providerRes.json();
+
+    // Check if CID was successfully returned by getcid.us
+    if (apiResult && (apiResult.have_cid == 1 || apiResult.have_cid === true) && apiResult.confirmationid) {
+      const cleanedCid = String(apiResult.confirmationid).replace(/\D/g, '');
+      const blocks = cleanedCid.match(/.{1,6}/g) || [];
+
+      let remainingPoints = 999999;
+
+      // Deduct 1 CID point only when getcid.us successfully generates the CID
+      if (user.role !== 'ADMIN') {
+        const { earnedPoints } = await calculateUserCidPoints(user.id, user.email);
+        const currentUsed = user.usedCidPoints || 0;
+
+        const updatedUser = await prisma.user.update({
+          where: { id: user.id },
+          data: { usedCidPoints: currentUsed + 1 },
+        });
+
+        remainingPoints = Math.max(0, earnedPoints - updatedUser.usedCidPoints);
+      }
+
+      return res.json({
+        success: true,
+        confirmationId: cleanedCid,
+        blocks: blocks,
+        installationId: rawDigits,
+        remainingCidPoints: remainingPoints,
+      });
+    } else {
+      // Error message directly from getcid.us (Do NOT deduct point)
+      const providerError = apiResult?.message || 'Error generating CID from provider. Please check your Product Key & Installation ID.';
+      return res.status(400).json({
+        success: false,
+        error: providerError,
+      });
+    }
   } catch (error) {
-    console.error('Error processing CID:', error);
+    console.error('Error processing CID request:', error);
     return res.status(500).json({
       success: false,
-      error: 'Server error processing Installation ID.',
+      error: 'Server error sending request to getcid.us provider.',
     });
   }
 };

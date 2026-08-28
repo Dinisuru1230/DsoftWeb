@@ -26,8 +26,20 @@ export default function ProductCard({ product }) {
     setTimeout(() => setAdded(false), 1800);
   }
 
+  function handleBuyNow(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isOutOfStock) return;
+    if (!user) {
+      navigate('/login', { state: { from: '/checkout' } });
+      return;
+    }
+    addToCart(product);
+    navigate('/checkout');
+  }
+
   return (
-    <div className="group relative flex flex-col h-full bg-surface-container-lowest rounded-xl product-card-hover transition-all duration-300 border border-outline-variant/20 overflow-hidden shadow-xs hover:shadow-ambient">
+    <div className="group relative flex flex-col h-full bg-surface-container-lowest rounded-2xl product-card-hover transition-all duration-300 border border-outline-variant/20 overflow-hidden shadow-xs hover:shadow-ambient">
       <Link to={`/product/${id}`} className="flex-grow flex flex-col">
         {/* Image Container */}
         <div className="relative w-full aspect-square overflow-hidden bg-surface-container">
@@ -44,18 +56,16 @@ export default function ProductCard({ product }) {
           <img
             src={image || ''}
             alt={name}
-            className={`absolute inset-0 w-full h-full object-contain p-2 transition-transform duration-500 ${
-              hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-105'
-            } ${isOutOfStock ? 'opacity-80 grayscale-[20%]' : ''}`}
+            className={`absolute inset-0 w-full h-full object-contain p-2 transition-transform duration-500 ${hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-105'
+              } ${isOutOfStock ? 'opacity-80 grayscale-[20%]' : ''}`}
           />
           {/* Hover image (if provided) */}
           {hoverImage && (
             <img
               src={hoverImage}
               alt={`${name} - alternate view`}
-              className={`absolute inset-0 w-full h-full object-contain p-2 opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${
-                isOutOfStock ? 'grayscale-[20%]' : ''
-              }`}
+              className={`absolute inset-0 w-full h-full object-contain p-2 opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${isOutOfStock ? 'grayscale-[20%]' : ''
+                }`}
             />
           )}
           {/* Badges */}
@@ -80,7 +90,7 @@ export default function ProductCard({ product }) {
         {/* Product info */}
         <div className="p-3 sm:p-4 flex-grow flex flex-col justify-between items-center text-center">
           {category ? (
-            <span className="bg-primary-container/50 text-on-surface-variant px-2.5 py-0.5 rounded-full font-label-sm text-[10px] sm:text-xs mb-1.5 line-clamp-1 max-w-[90%]">
+            <span className="bg-primary-container/50 text-on-surface-variant px-2.5 py-0.5 rounded-full font-label-sm text-[10px] sm:text-xs mb-1.5 line-clamp-1 max-w-[90%] font-semibold">
               {category}
             </span>
           ) : (
@@ -94,41 +104,52 @@ export default function ProductCard({ product }) {
             </h3>
           </div>
 
-          <p className="font-body-md text-xs sm:text-sm md:text-base text-on-surface font-bold">
+          <p className="font-body-md text-xs sm:text-sm md:text-base text-on-surface font-black">
             Rs. {Number(price || 0).toLocaleString()}
           </p>
         </div>
       </Link>
 
-      {/* Add to Cart */}
-      <div className="px-2.5 sm:px-4 pb-3 sm:pb-4 mt-auto">
-        <button
-          onClick={handleAddToCart}
-          disabled={isOutOfStock}
-          className={`w-full py-2 sm:py-2.5 font-label-md text-xs sm:text-sm rounded-full transition-all duration-300 shadow-sm font-bold ${
-            isOutOfStock
-              ? 'bg-surface-container text-on-surface-variant/60 cursor-not-allowed border border-outline-variant/30'
-              : added
-              ? 'bg-primary text-white cursor-pointer'
-              : 'bg-primary-container text-on-background hover:bg-primary hover:text-white cursor-pointer'
-          }`}
-        >
-          {isOutOfStock ? (
-            'Out of Stock'
-          ) : added ? (
-            <span className="flex items-center justify-center gap-1">
-              <span className="material-symbols-outlined text-[15px] sm:text-[18px]">check</span>
-              Added!
-            </span>
-          ) : user ? (
-            'Add to Cart'
-          ) : (
-            <span className="flex items-center justify-center gap-1">
-              <span className="material-symbols-outlined text-[14px] sm:text-[16px]">lock</span>
-              Login to Add
-            </span>
-          )}
-        </button>
+      {/* Action Buttons: Add to Cart & Buy Now */}
+      <div className="px-2.5 sm:px-3 pb-3 sm:pb-4 mt-auto">
+        {isOutOfStock ? (
+          <button
+            disabled
+            className="w-full py-2 font-label-md text-xs rounded-full bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 font-bold"
+          >
+            Out of Stock
+          </button>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            {/* Add to Cart Button (Restored Original Primary-Container Theme Color) */}
+            <button
+              onClick={handleAddToCart}
+              className={`flex-1 py-1.5 sm:py-2 text-[11px] sm:text-xs rounded-full transition-all duration-300 font-bold shadow-2xs flex items-center justify-center gap-1 ${added
+                  ? 'bg-primary text-white cursor-pointer'
+                  : 'bg-primary-container text-on-background hover:bg-primary hover:text-white cursor-pointer'
+                }`}
+            >
+              {added ? (
+                <>
+                  <span className="material-symbols-outlined text-[13px] sm:text-[14px]">check</span>
+                  Added
+                </>
+              ) : (
+                'Add to Cart'
+              )}
+            </button>
+
+            {/* Buy Now Button (Sleek Orange Action Accent) */}
+            <button
+              onClick={handleBuyNow}
+              className="py-1.5 sm:py-2 px-3 sm:px-3.5 text-[11px] sm:text-xs rounded-full bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-extrabold transition-all duration-300 shadow-xs flex items-center justify-center gap-1 shrink-0 whitespace-nowrap cursor-pointer"
+              title="Buy Now - Direct Checkout"
+            >
+              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">bolt</span>
+              Buy Now
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
