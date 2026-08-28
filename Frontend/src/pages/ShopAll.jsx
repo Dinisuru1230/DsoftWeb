@@ -44,18 +44,20 @@ function SidebarFilters({
   setSortBy,
 }) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Live Search Input Box */}
       <div>
-        <h3 className="font-label-md text-label-md text-primary mb-2 font-bold">Search Catalog</h3>
+        <h3 className="font-label-md text-label-md text-primary mb-2 font-bold flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-[18px]">search</span>
+          Search Catalog
+        </h3>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Type to filter..."
-            className="w-full bg-surface-container-low border border-outline-variant/50 focus:border-primary rounded-lg pl-9 pr-8 py-2 font-body-md text-sm outline-none transition-colors"
+            placeholder="Type product name..."
+            className="w-full bg-surface-container-low border border-outline-variant/50 focus:border-primary rounded-lg pl-3 pr-8 py-2 font-body-md text-sm outline-none transition-colors"
           />
           {searchQuery && (
             <button
@@ -68,9 +70,14 @@ function SidebarFilters({
         </div>
       </div>
 
+
+
       {/* Categories from DB */}
-      <div>
-        <h3 className="font-label-md text-label-md text-primary mb-3 font-bold">Category</h3>
+      <div className="pt-2 border-t border-outline-variant/40">
+        <h3 className="font-label-md text-label-md text-primary mb-3 font-bold flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-[18px]">category</span>
+          Categories
+        </h3>
         <div className="flex flex-col gap-1">
           {/* All Products */}
           <button
@@ -120,9 +127,12 @@ function SidebarFilters({
       </div>
 
       {/* Price Range */}
-      <div className="pt-4 border-t border-outline-variant/40">
+      <div className="pt-2 border-t border-outline-variant/40">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="font-label-md text-label-md text-primary font-bold">Price Range</h3>
+          <h3 className="font-label-md text-label-md text-primary font-bold flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[18px]">payments</span>
+            Price Range
+          </h3>
           <span className="font-label-sm text-label-sm text-on-surface-variant font-bold">
             Rs. {priceRange.toLocaleString()}
           </span>
@@ -141,33 +151,10 @@ function SidebarFilters({
           className="w-full accent-primary cursor-pointer"
         />
       </div>
-
-      {/* Sort By */}
-      <div className="pt-4 border-t border-outline-variant/40">
-        <h3 className="font-label-md text-label-md text-primary font-bold mb-3">Sort By</h3>
-        <div className="flex flex-col gap-1">
-          {[
-            { value: 'newest', label: 'Newest First' },
-            { value: 'price-asc', label: 'Price: Low to High' },
-            { value: 'price-desc', label: 'Price: High to Low' },
-          ].map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setSortBy(opt.value)}
-              className={`p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${
-                sortBy === opt.value
-                  ? 'text-primary font-bold bg-primary-container/40'
-                  : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
+
 
 export default function ShopAll() {
   const [searchParams] = useSearchParams();
@@ -314,10 +301,34 @@ export default function ShopAll() {
             </div>
           ) : (
             <>
-              <p className="font-label-md text-label-md text-on-surface-variant mb-6">
-                Showing <span className="text-primary font-bold">{products.length}</span> product{products.length !== 1 ? 's' : ''}
-                {selectedCategory !== 'All Products' && ` in ${selectedCategory}`}
-              </p>
+              <div className="flex flex-row items-center justify-between gap-4 mb-5 pb-3 border-b border-outline-variant/30">
+                <p className="text-xs sm:text-sm font-semibold text-on-surface-variant">
+                  Showing <span className="text-primary font-extrabold">{products.length}</span> product{products.length !== 1 ? 's' : ''}
+                  {selectedCategory !== 'All Products' && (
+                    <span className="hidden sm:inline"> in <span className="text-on-surface font-bold">{selectedCategory}</span></span>
+                  )}
+                </p>
+
+                {/* Top Right Corner Sort Dropdown Over Product Grid */}
+                <div className="flex items-center gap-2 shrink-0 ml-auto">
+                  <span className="text-xs font-bold text-on-surface-variant flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[18px] text-primary">swap_vert</span>
+                    <span className="hidden sm:inline">Sort By:</span>
+                  </span>
+                  <select
+                    id="top-sort-select"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-surface-container-lowest border border-neutral-300 dark:border-outline-variant/60 rounded-lg px-3 py-1.5 text-xs font-bold text-on-surface outline-none focus:border-primary cursor-pointer shadow-xs transition-colors"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                  </select>
+                </div>
+              </div>
+
+
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {products.map((product) => (
                   <ProductCard

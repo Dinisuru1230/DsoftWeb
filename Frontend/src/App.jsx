@@ -19,6 +19,7 @@ import PaymentUnsuccessful from './pages/PaymentUnsuccessful';
 import AboutUs from './pages/AboutUs';
 import OurStory from './pages/OurStory';
 import ContactUs from './pages/ContactUs';
+import DeliveryInfo from './pages/DeliveryInfo';
 import GetCid from './pages/GetCid';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -224,6 +225,8 @@ export default function App() {
             <Route path="/about-us" element={<CustomerLayout><AboutUs /></CustomerLayout>} />
             <Route path="/our-story" element={<CustomerLayout><AboutUs /></CustomerLayout>} />
             <Route path="/contact" element={<CustomerLayout><ContactUs /></CustomerLayout>} />
+            <Route path="/delivery-info" element={<CustomerLayout><DeliveryInfo /></CustomerLayout>} />
+            <Route path="/delivery" element={<CustomerLayout><DeliveryInfo /></CustomerLayout>} />
             <Route path="/get-cid" element={<CustomerLayout><GetCid /></CustomerLayout>} />
             <Route path="/terms" element={<CustomerLayout><Terms /></CustomerLayout>} />
 

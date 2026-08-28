@@ -56,8 +56,14 @@ export default function Footer() {
         {/* Help Links */}
         <div className="flex flex-col gap-3">
           <h3 className="font-label-md text-label-md text-primary font-bold uppercase tracking-wider mb-1">
-            Help
+            Help &amp; Support
           </h3>
+          <Link
+            to="/delivery-info"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+          >
+            Delivery Information
+          </Link>
           <Link
             to="/get-cid"
             className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
@@ -68,7 +74,7 @@ export default function Footer() {
             to="/terms"
             className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
           >
-            Terms & Conditions
+            Terms &amp; Conditions
           </Link>
         </div>
       </div>

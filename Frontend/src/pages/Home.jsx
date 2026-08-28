@@ -11,12 +11,49 @@ function imgUrl(path) {
   return path;
 }
 
-const CATEGORIES = [
-  { label: 'Software Suites', image: '/14_blush_silk_ribbon_bow.jpg', filter: 'software' },
-  { label: 'SaaS Platforms', image: '/18_silk_scrunchie.jpg', filter: 'saas' },
-  { label: 'Digital Tools', image: '/17_woven_floral_headband.jpg', filter: 'digital-tools' },
-  { label: 'Cloud Services', image: '/08_flat_lay_fabrics_ribbon.jpg', filter: 'cloud' },
+const SOLUTIONS_SERVICES = [
+  {
+    label: 'Windows OS Suites',
+    subtext: 'Windows 10 / 11 Pro & Home',
+    icon: 'window',
+    gradient: 'from-blue-600 via-sky-500 to-indigo-600',
+    shadow: 'shadow-blue-500/25 hover:shadow-blue-500/40',
+    border: 'border-blue-200 dark:border-blue-900',
+    link: '/shop?cat=windows',
+    badge: 'Retail Keys',
+  },
+  {
+    label: 'Office Suites',
+    subtext: 'Office 2021 / 2024 Pro Plus',
+    icon: 'apps',
+    gradient: 'from-orange-500 via-red-500 to-amber-600',
+    shadow: 'shadow-orange-500/25 hover:shadow-orange-500/40',
+    border: 'border-orange-200 dark:border-orange-900',
+    link: '/shop?cat=office',
+    badge: 'Pro Plus',
+  },
+  {
+    label: 'GetCID Free Service',
+    subtext: 'Automated Phone Activation',
+    icon: 'confirmation_number',
+    gradient: 'from-emerald-500 via-teal-600 to-cyan-600',
+    shadow: 'shadow-emerald-500/25 hover:shadow-emerald-500/40',
+    border: 'border-emerald-200 dark:border-emerald-900',
+    link: '/get-cid',
+    badge: 'Free Tool',
+  },
+  {
+    label: 'Security & Utilities',
+    subtext: 'Antivirus & Developer Tools',
+    icon: 'shield',
+    gradient: 'from-purple-600 via-indigo-600 to-blue-700',
+    shadow: 'shadow-purple-500/25 hover:shadow-purple-500/40',
+    border: 'border-purple-200 dark:border-purple-900',
+    link: '/shop?cat=security',
+    badge: '2026 Ready',
+  },
 ];
+
 
 export default function Home() {
   const [newArrivals, setNewArrivals] = useState([]);
@@ -57,7 +94,7 @@ export default function Home() {
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-slate-200/90 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs sm:text-sm font-bold tracking-wide text-slate-700">
-                  Trusted Digital Software & CID Service Platform
+                  Trusted Digital Software & License Platform
                 </span>
               </div>
 
@@ -71,7 +108,7 @@ export default function Home() {
 
               {/* Sub-headline Description */}
               <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
-                Discover genuine software suites, authentic license keys, and free automated Microsoft Confirmation ID (CID) activation service — engineered for seamless performance.
+                Discover genuine software suites, authentic license keys, and premium digital solutions — engineered for seamless performance and instant delivery.
               </p>
 
               {/* Action Buttons */}
@@ -85,11 +122,11 @@ export default function Home() {
                 </Link>
 
                 <Link
-                  to="/get-cid"
+                  to="/shop?cat=windows"
                   className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-xs hover:shadow-md"
                 >
-                  <span className="material-symbols-outlined text-orange-500 text-[18px]">confirmation_number</span>
-                  Get CID Free
+                  <span className="material-symbols-outlined text-sky-600 text-[18px]">window</span>
+                  Windows Keys
                 </Link>
               </div>
 
@@ -104,8 +141,8 @@ export default function Home() {
                   <div className="text-[11px] text-slate-500 font-semibold">Digital Delivery</div>
                 </div>
                 <div>
-                  <div className="text-lg sm:text-xl font-black text-orange-500">Free</div>
-                  <div className="text-[11px] text-slate-500 font-semibold">Microsoft CID Tool</div>
+                  <div className="text-lg sm:text-xl font-black text-primary">24/7</div>
+                  <div className="text-[11px] text-slate-500 font-semibold">Live Support</div>
                 </div>
               </div>
 
@@ -156,16 +193,16 @@ export default function Home() {
                   {/* Item 2 */}
                   <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between gap-3 hover:border-slate-300 transition-colors">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-lg">confirmation_number</span>
+                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-lg">window</span>
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900">GetCID Free Service</div>
-                        <div className="text-[10px] text-slate-500">Automated Microsoft Phone Activation</div>
+                        <div className="text-xs font-bold text-slate-900">OS & Office Suites</div>
+                        <div className="text-[10px] text-slate-500">Windows 10/11 & MS Office 2021/2024</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">
-                      Free
+                    <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+                      Original
                     </span>
                   </div>
 
@@ -189,14 +226,15 @@ export default function Home() {
 
                 {/* Quick Link Banner inside Card */}
                 <Link
-                  to="/get-cid"
-                  className="block p-2.5 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl text-center hover:bg-orange-100/60 transition-colors"
+                  to="/shop"
+                  className="block p-2.5 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-xl text-center hover:bg-sky-100/60 transition-colors"
                 >
-                  <span className="text-xs font-extrabold text-orange-800 flex items-center justify-center gap-1.5">
-                    <span className="material-symbols-outlined text-xs text-orange-600">bolt</span>
-                    Try Get CID Service Now &rarr;
+                  <span className="text-xs font-extrabold text-sky-800 flex items-center justify-center gap-1.5">
+                    <span className="material-symbols-outlined text-xs text-sky-600">shopping_bag</span>
+                    Browse Software Catalog &rarr;
                   </span>
                 </Link>
+
 
               </div>
             </div>
@@ -205,29 +243,63 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Featured Categories ── */}
-      <section className="py-10 sm:py-12 px-4 sm:px-6 md:px-16 bg-surface-container-lowest border-b border-outline-variant/30">
-        <div className="max-w-[1200px] mx-auto text-center">
-          <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-primary mb-6">
+      {/* ── Featured Solutions & Services ── */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 md:px-16 bg-gradient-to-b from-white via-slate-50/50 to-white dark:from-surface-container-lowest dark:to-surface-container-lowest border-b border-outline-variant/30 relative overflow-hidden">
+        {/* Soft Background Orbs */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="relative z-10 max-w-[1200px] mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary tracking-tight mb-2">
             Explore Solutions & Services
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 justify-items-center">
-            {CATEGORIES.map((cat) => (
-              <Link key={cat.label} to={`/shop?cat=${cat.filter}`} className="group flex flex-col items-center">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-surface-container overflow-hidden shadow-ambient group-hover:shadow-ambient-lg transition-all duration-300 mb-2 p-1 border-2 border-outline-variant/40 group-hover:border-primary">
+          <p className="text-xs sm:text-sm text-on-surface-variant max-w-xl mx-auto mb-10 font-medium leading-relaxed">
+            Discover genuine software licenses, operating systems, antivirus security, and automated Microsoft CID activation tools.
+          </p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 justify-items-center">
+            {SOLUTIONS_SERVICES.map((cat) => (
+              <Link
+                key={cat.label}
+                to={cat.link}
+                className="group flex flex-col items-center w-full max-w-[220px] transition-all duration-300"
+              >
+                {/* Circle Container with Gradient & Icon */}
+                <div className="relative mb-4">
+                  {/* Glowing Ring Underneath */}
                   <div
-                    className="w-full h-full rounded-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                    style={{ backgroundImage: `url('${cat.image}')` }}
+                    className={`absolute -inset-1.5 rounded-full bg-gradient-to-r ${cat.gradient} opacity-0 group-hover:opacity-75 blur-md transition-all duration-500`}
                   />
+
+                  {/* Main Circular Bubble */}
+                  <div
+                    className={`relative w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-br ${cat.gradient} ${cat.shadow} border-4 border-white dark:border-slate-800 flex flex-col items-center justify-center text-white transition-all duration-500 transform group-hover:scale-105 group-hover:-translate-y-1 shadow-lg`}
+                  >
+                    <span className="material-symbols-outlined text-3xl sm:text-4xl md:text-5xl text-white drop-shadow-md group-hover:scale-110 transition-transform duration-300">
+                      {cat.icon}
+                    </span>
+                    <span className="mt-1 text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-full text-white border border-white/30">
+                      {cat.badge}
+                    </span>
+                  </div>
                 </div>
-                <span className="font-label-md text-xs sm:text-sm text-on-surface-variant group-hover:text-primary transition-colors font-bold">
+
+                {/* Label & Subtext */}
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-primary transition-colors text-center">
                   {cat.label}
+                </h3>
+                <span className="text-[11px] sm:text-xs text-on-surface-variant font-medium text-center mt-1 leading-snug">
+                  {cat.subtext}
+                </span>
+
+                <span className="mt-2 text-[11px] font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-0.5">
+                  Explore Now &rarr;
                 </span>
               </Link>
             ))}
           </div>
         </div>
       </section>
+
 
       {/* ── New Arrivals ── */}
       <section className="py-10 sm:py-12 px-4 sm:px-6 md:px-16 bg-background" id="new-arrivals">
