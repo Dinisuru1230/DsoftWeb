@@ -21,7 +21,7 @@ export default function Register() {
   const { user, register } = useAuth();
   const navigate = useNavigate();
 
-  // If already logged in, redirect automatically
+  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       if (user.role === 'ADMIN') {
@@ -127,187 +127,246 @@ export default function Register() {
   }
 
   return (
-    <main className="w-full min-h-screen flex flex-col lg:flex-row bg-background">
-      {/* Left Side: Dreamy Image Canvas (Hidden on mobile) */}
-      <section className="hidden lg:flex lg:w-1/2 min-h-screen relative overflow-hidden bg-surface-container">
+    <main className="w-full min-h-screen flex flex-col lg:flex-row bg-surface-container-lowest text-on-surface">
+      {/* ── Left Side: Dreamy Image Canvas ── */}
+      <section className="hidden lg:flex lg:w-5/12 min-h-screen relative overflow-hidden bg-slate-950">
         <img
-          src="/10_airy_artisanal_studio.jpg"
-          alt="Airy artisanal studio"
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-[10s] ease-in-out hover:scale-105"
+          src="/dsoft_register_hero.png"
+          alt="Digital License Delivery Showcase"
+          className="absolute inset-0 w-full h-full object-cover opacity-85 transition-transform duration-[12s] ease-out hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/20" />
-        <div className="absolute inset-0 bg-primary/10 backdrop-blur-[2px] flex items-center justify-center p-12">
-          <div className="text-center space-y-3">
-            <h2 className="font-display-lg text-white text-headline-md drop-shadow-md">
-              DSoft Pack Software Store
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+
+        {/* Feature Overlay Badges */}
+        <div className="absolute inset-0 p-12 flex flex-col justify-between text-white z-10">
+          <div>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-xs font-bold text-white/90 hover:text-white transition-colors bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-xs"
+            >
+              <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+              Back to Store
+            </Link>
+          </div>
+
+          <div className="space-y-6 max-w-md">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-500/20 backdrop-blur-md border border-purple-400/30 text-xs font-bold text-purple-200">
+              <span className="material-symbols-outlined text-[16px] text-purple-300">auto_awesome</span>
+              Join DSoft Pack Community
+            </div>
+            <h2 className="text-3xl font-extrabold text-white tracking-tight leading-tight drop-shadow-md">
+              Create Your Digital License Account
             </h2>
-            <p className="font-body-md text-white text-body-md drop-shadow-sm">
-              Genuine software licenses delivered instantly.
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
+              Enjoy seamless license management, instant email dispatch upon payment confirmation, and dedicated technical assistance.
             </p>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/15">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <div className="text-2xl font-black text-white">5,000+</div>
+                <div className="text-xs text-slate-300 font-medium">Active Sri Lanka Users</div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <div className="text-2xl font-black text-white">99.9%</div>
+                <div className="text-xs text-slate-300 font-medium">License Delivery Rate</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Right Side: Registration Form */}
-      <section className="w-full lg:w-1/2 min-h-screen flex items-center justify-center p-6 md:p-12 bg-surface-container-lowest overflow-y-auto">
-        <div className="w-full max-w-md flex flex-col gap-6 py-8">
+      {/* ── Right Side: Registration Form ── */}
+      <section className="w-full lg:w-7/12 min-h-screen flex flex-col justify-between p-6 sm:p-10 md:p-14 relative overflow-y-auto">
+        {/* Mobile Header Link */}
+        <div className="flex lg:hidden items-center justify-between z-10 mb-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-xs font-bold text-on-surface-variant hover:text-primary transition-colors bg-surface-container-low px-3.5 py-2 rounded-full border border-outline-variant/40 shadow-xs"
+          >
+            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+            Back to Store
+          </Link>
+        </div>
+
+        <div className="w-full max-w-xl mx-auto my-auto py-6 space-y-6 z-10">
           {/* Header */}
-          <div className="text-center md:text-left flex flex-col gap-1">
-            <Link to="/" className="inline-block mb-1">
-              <span className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white shadow-md shadow-primary/30">
+                <span className="material-symbols-outlined text-2xl">person_add</span>
+              </div>
+              <span className="text-xl font-black text-primary tracking-tight font-display">
                 DSoft Pack
               </span>
-            </Link>
-            <h1 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-on-background">
-              Create a Customer Account
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-on-background tracking-tight">
+              Create Customer Account
             </h1>
-            <p className="font-body-md text-xs sm:text-sm text-on-surface-variant">
-              Get instant access to genuine software licenses and digital delivery.
+            <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              Register now to unlock digital license tracking, instant key delivery, and order management.
             </p>
           </div>
 
           {error && (
-            <div className="p-3.5 bg-error-container text-on-error-container rounded-lg border border-error/30 text-sm font-label-md flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">error</span>
+            <div className="p-4 bg-error/10 text-error rounded-2xl border border-error/20 text-xs font-semibold flex items-center gap-3 animate-shake">
+              <span className="material-symbols-outlined text-xl shrink-0">error</span>
               <span>{error}</span>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Full Name */}
-            <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-                Full Name *
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Amara Perera"
-                required
-                className="w-full bg-surface-container-low border-b-2 border-outline-variant text-on-background focus:outline-none focus:border-primary py-2.5 font-body-md transition-colors placeholder:text-outline/50 bg-transparent"
-              />
-            </div>
-
-            {/* Email */}
-            <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-                Email Address *
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="amara@example.com"
-                required
-                className="w-full bg-surface-container-low border-b-2 border-outline-variant text-on-background focus:outline-none focus:border-primary py-2.5 font-body-md transition-colors placeholder:text-outline/50 bg-transparent"
-              />
-            </div>
-
-            {/* Contact Number with Sri Lanka +94 Prefix & 9-digit restriction */}
-            <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-                Contact Number (Sri Lanka)
-              </label>
-              <div className="flex items-center gap-2 bg-surface-container-low border-b-2 border-outline-variant focus-within:border-primary transition-colors py-1.5">
-                <div className="flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded text-on-surface font-mono font-bold text-xs border border-outline-variant/40 select-none">
-                  <span>+94</span>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Grid Layout for Form Inputs */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Full Name */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">
+                  Full Name <span className="text-error">*</span>
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                    person
+                  </span>
+                  <input
+                    type="text"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="e.g. Kasun Perera"
+                    required
+                    className="w-full bg-surface-container-low border border-outline-variant/60 rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold text-on-surface placeholder:text-outline/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
                 </div>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={form.phone}
-                  onChange={handlePhoneChange}
-                  placeholder="77 123 4567"
-                  maxLength={9}
-                  className="w-full bg-transparent text-on-background focus:outline-none py-1 font-body-md placeholder:text-outline/50 tracking-wider font-mono"
-                />
               </div>
-              <p className="text-[11px] text-on-surface-variant/70">
-                Enter your 9-digit mobile number. {form.phone ? `Full: +94 ${form.phone}` : '(e.g. 771234567)'}
-              </p>
-            </div>
 
-
-
-            {/* Password */}
-            <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-                Password *
-              </label>
-              <div className="relative">
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                  className="w-full bg-surface-container-low border-b-2 border-outline-variant text-on-background focus:outline-none focus:border-primary py-2.5 pr-10 font-body-md transition-colors placeholder:text-outline/50 bg-transparent"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 text-primary hover:text-on-primary-container p-1 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showPass ? 'visibility' : 'visibility_off'}
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">
+                  Email Address <span className="text-error">*</span>
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                    email
                   </span>
-                </button>
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="kasun@example.com"
+                    required
+                    className="w-full bg-surface-container-low border border-outline-variant/60 rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold text-on-surface placeholder:text-outline/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                </div>
               </div>
-              <p className={`text-[11px] ${form.password && form.password.length < 6 ? 'text-error' : 'text-on-surface-variant/70'}`}>
-                Must be at least 6 characters. {form.password ? `(${form.password.length}/6)` : ''}
-              </p>
-            </div>
 
-            {/* Confirm Password */}
-            <div className="flex flex-col gap-1">
-              <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-                Confirm Password *
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  name="confirm"
-                  value={form.confirm}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                  className="w-full bg-surface-container-low border-b-2 border-outline-variant text-on-background focus:outline-none focus:border-primary py-2.5 pr-8 font-body-md transition-colors placeholder:text-outline/50 bg-transparent"
-                />
-                {form.confirm && (
-                  <span className="absolute right-0 top-1/2 -translate-y-1/2 p-1">
-                    {form.password === form.confirm ? (
-                      <span className="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
-                    ) : (
-                      <span className="material-symbols-outlined text-error text-[20px]">cancel</span>
-                    )}
+              {/* Sri Lanka Phone Number */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">
+                  Mobile Number (Sri Lanka)
+                </label>
+                <div className="relative flex items-center">
+                  <div className="absolute left-2.5 z-10 flex items-center gap-1 bg-surface-container px-2 py-1 rounded-xl text-on-surface font-mono font-bold text-xs border border-outline-variant/40 select-none">
+                    <span>+94</span>
+                  </div>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={form.phone}
+                    onChange={handlePhoneChange}
+                    placeholder="77 123 4567"
+                    maxLength={9}
+                    className="w-full bg-surface-container-low border border-outline-variant/60 rounded-2xl pl-16 pr-4 py-3 text-sm font-semibold font-mono text-on-surface placeholder:text-outline/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                </div>
+                <p className="text-[11px] text-outline">
+                  {form.phone ? `Full: +94 ${form.phone}` : 'Enter 9 digits after +94'}
+                </p>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">
+                  Password <span className="text-error">*</span>
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                    lock
                   </span>
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                    className="w-full bg-surface-container-low border border-outline-variant/60 rounded-2xl pl-11 pr-11 py-3 text-sm font-semibold text-on-surface placeholder:text-outline/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline hover:text-primary p-1 cursor-pointer transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      {showPass ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+                <p className={`text-[11px] ${form.password && form.password.length < 6 ? 'text-error font-medium' : 'text-outline'}`}>
+                  At least 6 characters. {form.password ? `(${form.password.length}/6)` : ''}
+                </p>
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">
+                  Confirm Password <span className="text-error">*</span>
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                    lock_reset
+                  </span>
+                  <input
+                    type="password"
+                    name="confirm"
+                    value={form.confirm}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    required
+                    className="w-full bg-surface-container-low border border-outline-variant/60 rounded-2xl pl-11 pr-11 py-3 text-sm font-semibold text-on-surface placeholder:text-outline/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                  {form.confirm && (
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                      {form.password === form.confirm ? (
+                        <span className="material-symbols-outlined text-emerald-500 text-[20px]">check_circle</span>
+                      ) : (
+                        <span className="material-symbols-outlined text-error text-[20px]">cancel</span>
+                      )}
+                    </span>
+                  )}
+                </div>
+                {form.confirm && form.password !== form.confirm && (
+                  <p className="text-[11px] text-error font-medium">Passwords do not match</p>
                 )}
               </div>
-              {form.confirm && form.password !== form.confirm && (
-                <p className="text-[11px] text-error font-medium">Passwords do not match</p>
-              )}
             </div>
 
-            {/* Submit CTA */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 px-8 bg-primary-container text-on-background font-label-md text-label-md rounded-full shadow-ambient hover:bg-primary hover:text-white transition-all duration-300 flex justify-center items-center gap-2 mt-2 font-bold cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 px-6 bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-50 mt-4"
             >
               {isSubmitting ? (
                 <>
                   <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
-                  Creating Account...
+                  <span>Creating Your Account...</span>
                 </>
               ) : (
                 <>
-                  Create Account
+                  <span>Create Account</span>
                   <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </>
               )}
@@ -315,18 +374,27 @@ export default function Register() {
           </form>
 
           {/* Footer Text */}
-          <div className="text-center pt-3 border-t border-outline-variant/30">
-            <p className="font-body-md text-body-md text-on-surface-variant text-sm">
+          <div className="text-center pt-4 border-t border-outline-variant/30">
+            <p className="text-xs sm:text-sm text-on-surface-variant">
               Already have an account?{' '}
               <Link
                 to="/login"
-                className="font-label-md text-label-md text-primary font-bold hover:underline transition-colors"
+                className="text-primary font-extrabold hover:underline inline-flex items-center gap-1 ml-1"
               >
-                Sign In
+                Sign In Instead <span className="material-symbols-outlined text-xs">chevron_right</span>
               </Link>
             </p>
           </div>
         </div>
+
+        {/* Page Footer */}
+        <div className="text-center text-[11px] text-outline z-10 pt-4">
+          By registering, you agree to DSoft Pack terms of service &amp; privacy policy.
+        </div>
+
+        {/* Background Ambient Effects */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
       </section>
     </main>
   );

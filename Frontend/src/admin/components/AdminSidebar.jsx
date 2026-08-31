@@ -16,6 +16,7 @@ export const navItems = [
   { to: '/admin/our-story', label: 'About Us', icon: 'info' },
   { to: '/admin/bank-details', label: 'Bank Details', icon: 'account_balance' },
   { to: '/admin/invoice-settings', label: 'Invoice Settings', icon: 'receipt_long' },
+  { to: '/admin/email-settings', label: 'Email Settings', icon: 'mail' },
   { to: '/admin/admins', label: 'Admin Team', icon: 'admin_panel_settings' },
   { to: '/admin/profile', label: 'Admin Profile', icon: 'account_circle' },
 ];

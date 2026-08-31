@@ -44,6 +44,7 @@ import AdminProfile from './admin/pages/AdminProfile';
 import ContactManagement from './admin/pages/ContactManagement';
 import BankDetailsSettings from './admin/pages/BankDetailsSettings';
 import InvoiceSettings from './admin/pages/InvoiceSettings';
+import EmailSettings from './admin/pages/EmailSettings';
 import OurStoryManagement from './admin/pages/OurStoryManagement';
 import ReviewManagement from './admin/pages/ReviewManagement';
 
@@ -251,6 +252,7 @@ export default function App() {
             <Route path="/admin/our-story" element={<AdminRoute><OurStoryManagement /></AdminRoute>} />
             <Route path="/admin/bank-details" element={<AdminRoute><BankDetailsSettings /></AdminRoute>} />
             <Route path="/admin/invoice-settings" element={<AdminRoute><InvoiceSettings /></AdminRoute>} />
+            <Route path="/admin/email-settings" element={<AdminRoute><EmailSettings /></AdminRoute>} />
 
             {/* ── 404 Not Found ── */}
             <Route path="*" element={<CustomerLayout><NotFound /></CustomerLayout>} />

@@ -201,6 +201,13 @@ model Setting {
   companyEmail        String   @default("contact@dsoftpack.com")
   companyWebsite      String   @default("https://dsoftpack.com")
   invoiceFooterNote   String   @default("Thank you for choosing DSoft Pack. For support queries, email us at contact@dsoftpack.com")
+  smtpHost                  String   @default("smtp.gmail.com")
+  smtpPort                  Int      @default(587)
+  smtpUser                  String   @default("dsoftpack@gmail.com")
+  smtpPass                  String   @default("")
+  smtpFromEmail             String   @default("dsoftpack@gmail.com")
+  smtpFromName              String   @default("DSoft Pack")
+  emailNotificationsEnabled Boolean  @default(true)
   updatedAt           DateTime @updatedAt
 }
 

@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const { sendLicenseDeliveryEmail } = require('../services/emailService');
 
 // Helper to deduct stock for order items (variant level if applicable)
 async function deductStock(items) {
@@ -412,7 +413,38 @@ async function updateOrderStatus(req, res) {
       });
     }
 
+    // Automatically send license key email if status turns DELIVERED or CONFIRMED
+    if (newStatus === 'DELIVERED' || newStatus === 'CONFIRMED') {
+      sendLicenseDeliveryEmail(updatedOrder).catch((err) =>
+        console.error('Non-blocking license email dispatch error:', err)
+      );
+    }
+
     res.json({ message: 'Order status updated successfully', order: updatedOrder });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// POST /api/orders/:id/resend-email (Admin manual resend)
+async function resendOrderEmail(req, res) {
+  try {
+    const { id } = req.params;
+    const order = await prisma.order.findFirst({
+      where: { OR: [{ id }, { orderNumber: id }] },
+      include: { items: { include: { product: true } } },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const sent = await sendLicenseDeliveryEmail(order);
+    if (!sent) {
+      return res.status(400).json({ error: 'Failed to send email. Please check your SMTP settings in Admin Settings.' });
+    }
+
+    res.json({ message: `License email successfully sent to ${order.email}` });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -603,6 +635,7 @@ module.exports = {
   getOrderById,
   updateOrderStatus,
   updateOrderItemLicenseKey,
+  resendOrderEmail,
   trackOrder,
   getDashboardStats,
   autoFulfillAllPendingOrders,

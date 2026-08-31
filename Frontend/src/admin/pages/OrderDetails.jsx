@@ -69,11 +69,35 @@ export default function OrderDetails() {
   }
 
   const [updating, setUpdating] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchOrder();
   }, [id, token]);
+
+  async function handleResendEmail() {
+    if (!token || !order) return;
+    setResending(true);
+    const toastId = toast.loading(`Sending license email to ${order.email}...`);
+
+    try {
+      const res = await fetch(`${API_BASE}/orders/${order.id}/resend-email`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send license email');
+
+      toast.success(data.message || `License email sent successfully to ${order.email}`, { id: toastId });
+    } catch (err) {
+      toast.error(err.message || 'Failed to send email', { id: toastId });
+    } finally {
+      setResending(false);
+    }
+  }
 
   async function fetchOrder() {
     if (!token) return;
@@ -180,9 +204,19 @@ export default function OrderDetails() {
           <h1 className="font-headline-md text-headline-md text-primary">Order {order.orderNumber}</h1>
           <p className="font-body-md text-body-md text-on-surface-variant">{createdDate}</p>
         </div>
-        <span className={`px-4 py-2 rounded-full font-label-md text-label-md ${STATUS_COLORS[order.orderStatus] || ''}`}>
-          {STATUS_LABELS[order.orderStatus] || order.orderStatus}
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleResendEmail}
+            disabled={resending}
+            className="bg-surface-container-high border border-outline-variant text-on-surface hover:text-primary font-bold text-xs sm:text-sm px-4 py-2 rounded-full transition-all shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[18px] text-primary">mail</span>
+            {resending ? 'Sending...' : 'Resend License Email'}
+          </button>
+          <span className={`px-4 py-2 rounded-full font-label-md text-label-md ${STATUS_COLORS[order.orderStatus] || ''}`}>
+            {STATUS_LABELS[order.orderStatus] || order.orderStatus}
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

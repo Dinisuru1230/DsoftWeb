@@ -60,6 +60,13 @@ async function updateSettings(req, res) {
       companyEmail,
       companyWebsite,
       invoiceFooterNote,
+      smtpHost,
+      smtpPort,
+      smtpUser,
+      smtpPass,
+      smtpFromEmail,
+      smtpFromName,
+      emailNotificationsEnabled,
     } = req.body;
 
     const data = {};
@@ -82,6 +89,14 @@ async function updateSettings(req, res) {
     if (companyWebsite !== undefined) data.companyWebsite = String(companyWebsite).trim();
     if (invoiceFooterNote !== undefined) data.invoiceFooterNote = String(invoiceFooterNote).trim();
 
+    if (smtpHost !== undefined) data.smtpHost = String(smtpHost).trim();
+    if (smtpPort !== undefined) data.smtpPort = parseInt(smtpPort, 10);
+    if (smtpUser !== undefined) data.smtpUser = String(smtpUser).trim();
+    if (smtpPass !== undefined) data.smtpPass = String(smtpPass).trim();
+    if (smtpFromEmail !== undefined) data.smtpFromEmail = String(smtpFromEmail).trim();
+    if (smtpFromName !== undefined) data.smtpFromName = String(smtpFromName).trim();
+    if (emailNotificationsEnabled !== undefined) data.emailNotificationsEnabled = Boolean(emailNotificationsEnabled);
+
     if (Object.keys(data).length === 0) {
       return res.status(400).json({ error: 'Please provide at least one valid setting field to update.' });
     }
@@ -91,23 +106,7 @@ async function updateSettings(req, res) {
       update: data,
       create: {
         id: 'global',
-        standardShipping: data.standardShipping ?? 450,
-        expressShipping: data.expressShipping ?? 1200,
-        freeShippingOver: data.freeShippingOver ?? 15000,
-        bankName: data.bankName ?? 'Commercial Bank of Ceylon',
-        accountName: data.accountName ?? 'DSoft Pack (Pvt) Ltd',
-        accountNumber: data.accountNumber ?? '8009 123 456',
-        branchName: data.branchName ?? 'Colombo Main Branch',
-        swiftCode: data.swiftCode ?? 'CCEYLKLX',
-        bankNotes: data.bankNotes ?? 'Please include your contact number or order ID as the deposit reference.',
-        companyName: data.companyName ?? 'DSoft Pack',
-        companyLegalName: data.companyLegalName ?? 'DSoft Technologies LLC',
-        companyAddressLine1: data.companyAddressLine1 ?? '5931 Greenville Ave #1169',
-        companyAddressLine2: data.companyAddressLine2 ?? 'Dallas, TX 75206 US',
-        companyTaxId: data.companyTaxId ?? 'EIN: 98-1860068',
-        companyEmail: data.companyEmail ?? 'contact@dsoftpack.com',
-        companyWebsite: data.companyWebsite ?? 'https://dsoftpack.com',
-        invoiceFooterNote: data.invoiceFooterNote ?? 'Thank you for choosing DSoft Pack. For support queries, email us at contact@dsoftpack.com',
+        ...data,
       },
     });
 
@@ -118,4 +117,21 @@ async function updateSettings(req, res) {
   }
 }
 
-module.exports = { getSettings, updateSettings };
+// POST /api/settings/test-email (Admin only)
+async function testSmtpEmail(req, res) {
+  try {
+    const { targetEmail } = req.body;
+    if (!targetEmail || !targetEmail.includes('@')) {
+      return res.status(400).json({ error: 'Valid target email address is required' });
+    }
+
+    const { sendTestEmail } = require('../services/emailService');
+    const result = await sendTestEmail(targetEmail);
+    res.json({ message: `Test email successfully sent to ${targetEmail}`, result });
+  } catch (error) {
+    console.error('testSmtpEmail error:', error);
+    res.status(500).json({ error: error.message || 'Failed to send test email. Check your SMTP settings.' });
+  }
+}
+
+module.exports = { getSettings, updateSettings, testSmtpEmail };

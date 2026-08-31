@@ -8,6 +8,7 @@ const {
   getOrderById,
   updateOrderStatus,
   updateOrderItemLicenseKey,
+  resendOrderEmail,
   trackOrder,
   getDashboardStats,
 } = require('../controllers/orderController');
@@ -23,5 +24,6 @@ router.get('/', authenticateToken, requireAdmin, getAllOrders);
 router.get('/:id', authenticateToken, requireAdmin, getOrderById);
 router.put('/:id/status', authenticateToken, requireAdmin, updateOrderStatus);
 router.put('/:orderId/items/:itemId/license-key', authenticateToken, requireAdmin, updateOrderItemLicenseKey);
+router.post('/:id/resend-email', authenticateToken, requireAdmin, resendOrderEmail);
 
 module.exports = router;
