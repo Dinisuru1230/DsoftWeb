@@ -360,49 +360,20 @@ export default function MyAccount() {
 
             {/* 4. YOUR PRODUCTS (KEYS) */}
             <div className="space-y-3 pt-2">
-              <div className="flex justify-between items-center border-b border-outline-variant/30 pb-2">
+              <div className="border-b border-outline-variant/30 pb-2">
                 <h3 className="text-xl font-bold text-on-background relative inline-block">
                   Your Products
                   <span className="block h-1 bg-primary rounded-full mt-1 w-16" />
                 </h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      const keysText = (selectedOrder.items || [])
-                        .map((i) => {
-                          const keys = (i.licenseKey || i.product?.licenseKey || '').split(',').map((k) => k.trim()).filter(Boolean);
-                          return keys.length ? keys.join('\n') : null;
-                        })
-                        .filter(Boolean)
-                        .join('\n');
-                      if (keysText) {
-                        navigator.clipboard.writeText(keysText);
-                        toast.success('All product keys copied to clipboard!');
-                      } else {
-                        toast.error('No keys assigned yet.');
-                      }
-                    }}
-                    className="bg-primary text-white hover:bg-primary/90 px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">content_copy</span> COPY
-                  </button>
-                  {selectedOrder.items && selectedOrder.items.some((i) => i.product?.downloadUrl) && (
-                    <a
-                      href={selectedOrder.items.find((i) => i.product?.downloadUrl)?.product?.downloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-primary text-white hover:bg-primary/90 px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">download</span> DOWNLOAD
-                    </a>
-                  )}
-                </div>
               </div>
 
               <div className="border border-neutral-300 dark:border-neutral-700 rounded-lg overflow-hidden text-sm space-y-4 p-4 bg-neutral-50 dark:bg-neutral-900/50">
                 {(selectedOrder.items || []).map((item, idx) => {
                   const rawKeyStr = item.licenseKey || item.product?.licenseKey || '';
                   const keysList = rawKeyStr ? rawKeyStr.split(',').map((k) => k.trim()) : [];
+                  const installGuide = item.product?.installationGuide ? item.product.installationGuide.trim() : null;
+                  const downloadUrl = item.product?.downloadUrl ? item.product.downloadUrl.trim() : null;
+
                   return (
                     <div key={item.id || idx} className="space-y-2">
                       <div className="bg-neutral-200 dark:bg-neutral-800 px-3 py-1.5 text-xs font-bold text-neutral-700 dark:text-neutral-200 uppercase tracking-wider rounded border border-neutral-300/50 dark:border-neutral-700/50">
@@ -434,6 +405,35 @@ export default function MyAccount() {
                               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                               Pending
                             </span>
+                          </div>
+                        )}
+
+                        {installGuide && (
+                          <div className="bg-surface p-3.5 rounded-xl border border-outline-variant/40 space-y-1.5 mt-2">
+                            <div className="text-xs font-bold text-primary flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-base">description</span>
+                              Installation &amp; Setup Guide:
+                            </div>
+                            <div className="text-xs text-on-surface-variant leading-relaxed whitespace-pre-line">
+                              {installGuide}
+                            </div>
+                          </div>
+                        )}
+
+                        {downloadUrl && (
+                          <div className="mt-2.5 pt-2 flex items-center justify-between bg-blue-50/50 dark:bg-blue-950/30 p-3 rounded-xl border border-blue-100 dark:border-blue-900/50">
+                            <span className="text-xs font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-base text-primary">download_for_offline</span>
+                              Software Installer File:
+                            </span>
+                            <a
+                              href={downloadUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bg-primary text-white hover:bg-primary/90 px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">download</span> Download Software
+                            </a>
                           </div>
                         )}
                       </div>

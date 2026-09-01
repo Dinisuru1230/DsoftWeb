@@ -14,6 +14,10 @@ export default function InvoiceSettings() {
     companyAddressLine2: '',
     companyTaxId: '',
     companyEmail: '',
+    companyPhone: '',
+    whatsappNumber: '',
+    workingHours: '',
+    facebookUrl: '',
     companyWebsite: '',
     invoiceFooterNote: '',
   });
@@ -32,9 +36,13 @@ export default function InvoiceSettings() {
           companyAddressLine1: data.companyAddressLine1 || '5931 Greenville Ave #1169',
           companyAddressLine2: data.companyAddressLine2 || 'Dallas, TX 75206 US',
           companyTaxId: data.companyTaxId || 'EIN: 98-1860068',
-          companyEmail: data.companyEmail || 'contact@dsoftpack.com',
+          companyEmail: data.companyEmail || 'dsoftpack@gmail.com',
+          companyPhone: data.companyPhone || '+94 78 681 7659',
+          whatsappNumber: data.whatsappNumber || '+94 78 681 7659',
+          workingHours: data.workingHours || '5:00 AM – 11:00 PM',
+          facebookUrl: data.facebookUrl || 'https://www.facebook.com/share/19BFB5mDyC/',
           companyWebsite: data.companyWebsite || 'https://dsoftpack.com',
-          invoiceFooterNote: data.invoiceFooterNote || 'Thank you for choosing DSoft Pack. For support queries, email us at contact@dsoftpack.com',
+          invoiceFooterNote: data.invoiceFooterNote || 'Thank you for choosing DSoft Pack. For support queries, email us at dsoftpack@gmail.com',
         });
         setLoading(false);
       })

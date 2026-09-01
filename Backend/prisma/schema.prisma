@@ -40,6 +40,8 @@ model User {
   postalCode String?
   role          Role     @default(CUSTOMER)
   usedCidPoints Int      @default(0)
+  resetToken       String?
+  resetTokenExpiry DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   orders        Order[]
@@ -67,6 +69,7 @@ model Product {
   details          String?
   downloadUrl      String?
   licenseKey       String?
+  installationGuide String?
   image            String
   hoverImage       String?
   galleryImages    String?
@@ -198,7 +201,11 @@ model Setting {
   companyAddressLine1 String   @default("5931 Greenville Ave #1169")
   companyAddressLine2 String   @default("Dallas, TX 75206 US")
   companyTaxId        String   @default("EIN: 98-1860068")
-  companyEmail        String   @default("contact@dsoftpack.com")
+  companyEmail        String   @default("dsoftpack@gmail.com")
+  companyPhone        String   @default("+94 78 681 7659")
+  whatsappNumber      String   @default("+94 78 681 7659")
+  workingHours        String   @default("5:00 AM – 11:00 PM")
+  facebookUrl         String   @default("https://www.facebook.com/share/19BFB5mDyC/")
   companyWebsite      String   @default("https://dsoftpack.com")
   invoiceFooterNote   String   @default("Thank you for choosing DSoft Pack. For support queries, email us at contact@dsoftpack.com")
   smtpHost                  String   @default("smtp.gmail.com")

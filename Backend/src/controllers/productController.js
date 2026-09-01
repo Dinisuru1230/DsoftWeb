@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const prisma = require('../config/prisma');
+const { sendLicenseDeliveryEmail } = require('../services/emailService');
 
 function deleteFileIfLocal(imagePath) {
   if (!imagePath || typeof imagePath !== 'string') return;
@@ -51,6 +52,43 @@ async function getAllProducts(req, res) {
     // Exclude a specific product ID (for related products section)
     if (exclude) {
       where.id = { not: exclude };
+    }
+
+    // Special sorting for Most Selling / Best Selling products
+    if (sort === 'best-selling' || sort === 'most-selling') {
+      const products = await prisma.product.findMany({
+        where,
+        include: {
+          colors: true,
+          keys: true,
+          orderItems: {
+            select: { quantity: true },
+          },
+        },
+      });
+
+      // Sort products by total quantity sold descending
+      products.sort((a, b) => {
+        const totalSalesA = (a.orderItems || []).reduce((sum, item) => sum + (item.quantity || 1), 0);
+        const totalSalesB = (b.orderItems || []).reduce((sum, item) => sum + (item.quantity || 1), 0);
+        if (totalSalesB !== totalSalesA) return totalSalesB - totalSalesA;
+
+        // Tie-breaker: prioritize products with 'HOT' or 'Popular' badges or featured flag
+        const badgeA = (a.badge || '').toUpperCase();
+        const badgeB = (b.badge || '').toUpperCase();
+        const isHotA = badgeA.includes('HOT') || badgeA.includes('POPULAR') || a.featured;
+        const isHotB = badgeB.includes('HOT') || badgeB.includes('POPULAR') || b.featured;
+        if (isHotB && !isHotA) return 1;
+        if (isHotA && !isHotB) return -1;
+
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      const cleanProducts = products.map(({ orderItems, ...p }) => p);
+      if (limit) {
+        return res.json(cleanProducts.slice(0, parseInt(limit)));
+      }
+      return res.json(cleanProducts);
     }
 
     let orderBy = { createdAt: 'desc' };
@@ -116,14 +154,14 @@ async function getProductKeys(req, res) {
   }
 }
 
-// Helper to automatically assign newly added keys to pending orders for a product
+// Helper to auto-fulfill pending orders for a product when keys or stock are added by admin
 async function autoFulfillPendingOrdersForProduct(productId) {
   try {
     const pendingItems = await prisma.orderItem.findMany({
       where: {
         productId,
         order: {
-          orderStatus: { in: ['PENDING', 'PROCESSING', 'CONFIRMED'] },
+          orderStatus: { in: ['PENDING', 'PROCESSING', 'CONFIRMED', 'BANK_SLIP_PENDING'] },
         },
       },
       include: {
@@ -143,6 +181,7 @@ async function autoFulfillPendingOrdersForProduct(productId) {
       if (item.order.orderStatus === 'DELIVERED') continue;
 
       const qty = parseInt(item.quantity || 1);
+      let keyString = null;
 
       // Check available unused keys in key pool
       const availableKeys = await prisma.productKey.findMany({
@@ -152,7 +191,7 @@ async function autoFulfillPendingOrdersForProduct(productId) {
       });
 
       if (availableKeys.length >= qty) {
-        const keyString = availableKeys.map((k) => k.key).join(', ');
+        keyString = availableKeys.map((k) => k.key).join(', ');
         const keyIds = availableKeys.map((k) => k.id);
 
         // Mark pool keys as used and tag with orderId
@@ -164,7 +203,15 @@ async function autoFulfillPendingOrdersForProduct(productId) {
             orderId: item.order.id,
           },
         });
+      } else {
+        // Fallback to static licenseKey on product
+        const prod = await prisma.product.findUnique({ where: { id: productId } });
+        if (prod && prod.licenseKey && prod.licenseKey.trim()) {
+          keyString = prod.licenseKey.trim();
+        }
+      }
 
+      if (keyString) {
         // Update the order item with allocated keys
         await prisma.orderItem.update({
           where: { id: item.id },
@@ -181,11 +228,17 @@ async function autoFulfillPendingOrdersForProduct(productId) {
         );
 
         if (allItemsHaveKey) {
-          await prisma.order.update({
+          const completedOrder = await prisma.order.update({
             where: { id: item.order.id },
             data: { orderStatus: 'DELIVERED' },
+            include: { items: { include: { product: true } } },
           });
           fulfilledOrdersCount++;
+
+          // Send automated email notification to customer now that order is complete & keys allocated
+          sendLicenseDeliveryEmail(completedOrder).catch((err) =>
+            console.error('Non-blocking license email dispatch error in autoFulfillForProduct:', err)
+          );
         }
       }
     }
@@ -268,7 +321,7 @@ async function deleteProductKey(req, res) {
 
 async function createProduct(req, res) {
   try {
-    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping, hasCidPoints, isCidAvailable, cidPoints, cidAvailable } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, installationGuide, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping, hasCidPoints, isCidAvailable, cidPoints, cidAvailable } = req.body;
 
     if (!name || !price || !categoryName || !description || !image) {
       return res.status(400).json({ error: 'Missing required product fields' });
@@ -298,6 +351,7 @@ async function createProduct(req, res) {
         details: Array.isArray(details) ? JSON.stringify(details) : details,
         downloadUrl: downloadUrl || null,
         licenseKey: licenseKey || null,
+        installationGuide: installationGuide || null,
         image,
         hoverImage,
         galleryImages: Array.isArray(galleryImages) ? JSON.stringify(galleryImages.filter(Boolean)) : null,
@@ -332,7 +386,7 @@ async function createProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping, hasCidPoints, isCidAvailable, cidPoints, cidAvailable } = req.body;
+    const { name, price, stock, categoryName, badge, description, details, downloadUrl, licenseKey, installationGuide, image, hoverImage, galleryImages, featured, colors, standardShipping, expressShipping, hasCidPoints, isCidAvailable, cidPoints, cidAvailable } = req.body;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -356,6 +410,7 @@ async function updateProduct(req, res) {
         }),
         ...(downloadUrl !== undefined && { downloadUrl: downloadUrl || null }),
         ...(licenseKey !== undefined && { licenseKey: licenseKey || null }),
+        ...(installationGuide !== undefined && { installationGuide: installationGuide || null }),
         ...(image && { image }),
         ...(hoverImage !== undefined && { hoverImage }),
         ...(galleryImages !== undefined && {
@@ -453,4 +508,5 @@ module.exports = {
   getProductKeys,
   addProductKeys,
   deleteProductKey,
+  autoFulfillPendingOrdersForProduct,
 };

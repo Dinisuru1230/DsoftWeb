@@ -79,7 +79,7 @@ export default function BankSlipUpload() {
       const orderPayload = {
         customerName: location.state?.customerDetails?.customerName || 'Customer',
         email: location.state?.customerDetails?.email || 'customer@example.com',
-        phone: location.state?.customerDetails?.phone || '+94 77 123 4567',
+        phone: location.state?.customerDetails?.phone || '',
         address: location.state?.customerDetails?.address || '42 Flower Lane, Colombo 03, Sri Lanka',
         totalAmount: totalAmount,
         shippingCost: location.state?.shippingCost || 0,

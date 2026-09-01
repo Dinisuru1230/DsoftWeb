@@ -58,6 +58,10 @@ async function updateSettings(req, res) {
       companyAddressLine2,
       companyTaxId,
       companyEmail,
+      companyPhone,
+      whatsappNumber,
+      workingHours,
+      facebookUrl,
       companyWebsite,
       invoiceFooterNote,
       smtpHost,
@@ -86,6 +90,10 @@ async function updateSettings(req, res) {
     if (companyAddressLine2 !== undefined) data.companyAddressLine2 = String(companyAddressLine2).trim();
     if (companyTaxId !== undefined) data.companyTaxId = String(companyTaxId).trim();
     if (companyEmail !== undefined) data.companyEmail = String(companyEmail).trim();
+    if (companyPhone !== undefined) data.companyPhone = String(companyPhone).trim();
+    if (whatsappNumber !== undefined) data.whatsappNumber = String(whatsappNumber).trim();
+    if (workingHours !== undefined) data.workingHours = String(workingHours).trim();
+    if (facebookUrl !== undefined) data.facebookUrl = String(facebookUrl).trim();
     if (companyWebsite !== undefined) data.companyWebsite = String(companyWebsite).trim();
     if (invoiceFooterNote !== undefined) data.invoiceFooterNote = String(invoiceFooterNote).trim();
 

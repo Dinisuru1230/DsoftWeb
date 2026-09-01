@@ -24,7 +24,7 @@ import GetCid from './pages/GetCid';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
-import NewPassword from './pages/NewPassword';
+import ResetPassword from './pages/ResetPassword';
 import MyAccount from './pages/MyAccount';
 import MyProfile from './pages/MyProfile';
 import Terms from './pages/Terms';
@@ -45,6 +45,7 @@ import ContactManagement from './admin/pages/ContactManagement';
 import BankDetailsSettings from './admin/pages/BankDetailsSettings';
 import InvoiceSettings from './admin/pages/InvoiceSettings';
 import EmailSettings from './admin/pages/EmailSettings';
+import ContactDetailsSettings from './admin/pages/ContactDetailsSettings';
 import OurStoryManagement from './admin/pages/OurStoryManagement';
 import ReviewManagement from './admin/pages/ReviewManagement';
 
@@ -209,7 +210,8 @@ export default function App() {
             <Route path="/login" element={<div className="flex flex-col min-h-screen"><Login /></div>} />
             <Route path="/register" element={<div className="flex flex-col min-h-screen"><Register /></div>} />
             <Route path="/forgot-password" element={<CustomerLayout><ForgotPassword /></CustomerLayout>} />
-            <Route path="/new-password" element={<CustomerLayout><NewPassword /></CustomerLayout>} />
+            <Route path="/reset-password" element={<CustomerLayout><ResetPassword /></CustomerLayout>} />
+            <Route path="/new-password" element={<CustomerLayout><ResetPassword /></CustomerLayout>} />
 
             {/* ── Customer Shop Pages ── */}
             <Route path="/" element={<CustomerLayout><Home /></CustomerLayout>} />
@@ -251,6 +253,7 @@ export default function App() {
             <Route path="/admin/messages" element={<AdminRoute><ContactManagement /></AdminRoute>} />
             <Route path="/admin/our-story" element={<AdminRoute><OurStoryManagement /></AdminRoute>} />
             <Route path="/admin/bank-details" element={<AdminRoute><BankDetailsSettings /></AdminRoute>} />
+            <Route path="/admin/contact-details" element={<AdminRoute><ContactDetailsSettings /></AdminRoute>} />
             <Route path="/admin/invoice-settings" element={<AdminRoute><InvoiceSettings /></AdminRoute>} />
             <Route path="/admin/email-settings" element={<AdminRoute><EmailSettings /></AdminRoute>} />
 

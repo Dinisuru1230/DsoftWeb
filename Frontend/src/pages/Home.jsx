@@ -56,17 +56,17 @@ const SOLUTIONS_SERVICES = [
 
 
 export default function Home() {
-  const [newArrivals, setNewArrivals] = useState([]);
+  const [mostSellingProducts, setMostSellingProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch latest 4 real products from DB (1 row of 4 items)
-    fetch(`${API_BASE}/products?limit=4`)
+    // Fetch top 4 most selling products from DB
+    fetch(`${API_BASE}/products?sort=most-selling&limit=4`)
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setNewArrivals(data);
+        if (Array.isArray(data)) setMostSellingProducts(data);
       })
-      .catch((err) => console.error('Failed to load new arrivals:', err))
+      .catch((err) => console.error('Failed to load most selling products:', err))
       .finally(() => setProductsLoading(false));
   }, []);
 
@@ -301,16 +301,16 @@ export default function Home() {
       </section>
 
 
-      {/* ── New Arrivals ── */}
-      <section className="py-10 sm:py-12 px-4 sm:px-6 md:px-16 bg-background" id="new-arrivals">
+      {/* ── Most Selling Products ── */}
+      <section className="py-10 sm:py-12 px-4 sm:px-6 md:px-16 bg-background" id="most-selling-products">
         <div className="max-w-[1200px] mx-auto">
           <div className="flex justify-between items-end mb-6">
             <div>
               <h2 className="font-headline-md-mobile md:font-headline-md text-headline-md-mobile md:text-headline-md text-primary">
-                New Arrivals
+                Most Selling Products
               </h2>
               <p className="text-xs text-on-surface-variant font-medium mt-0.5">
-                Explore our latest software releases and digital license additions
+                Explore our top selling software releases and most popular digital licenses
               </p>
             </div>
             <Link
@@ -332,16 +332,16 @@ export default function Home() {
                   </div>
                 </div>
               ))
-            ) : newArrivals.length === 0 ? (
+            ) : mostSellingProducts.length === 0 ? (
               <div className="col-span-full py-10 text-center text-on-surface-variant space-y-2">
                 <span className="material-symbols-outlined text-3xl text-outline">inventory_2</span>
-                <p className="font-title-sm text-on-surface text-xs sm:text-sm font-semibold">New software products arriving soon!</p>
+                <p className="font-title-sm text-on-surface text-xs sm:text-sm font-semibold">Top software products loading soon!</p>
                 <Link to="/shop" className="inline-block text-xs text-primary font-bold hover:underline">
                   Browse All Collections &rarr;
                 </Link>
               </div>
             ) : (
-              newArrivals.map((product) => (
+              mostSellingProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={{
@@ -359,7 +359,7 @@ export default function Home() {
               to="/shop"
               className="font-label-md text-xs text-primary underline underline-offset-4"
             >
-              View All Arrivals
+              View All Products
             </Link>
           </div>
         </div>

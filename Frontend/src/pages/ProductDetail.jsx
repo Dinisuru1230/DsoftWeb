@@ -375,10 +375,10 @@ export default function ProductDetail() {
         {/* Right Column: Description Tabs, Details, Stats & Purchase Buttons */}
         <div className="lg:col-span-6 flex flex-col space-y-6">
           {/* Tabs: DESCRIPTION | REVIEWS */}
-          <div className="flex border-b border-outline-variant">
+          <div className="flex border-b border-outline-variant overflow-x-auto">
             <button
               onClick={() => setActiveTab('description')}
-              className={`py-2 px-4 font-bold text-sm uppercase tracking-wider transition-colors border-b-2 ${
+              className={`py-2 px-4 font-bold text-sm uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${
                 activeTab === 'description'
                   ? 'border-primary text-primary font-extrabold'
                   : 'border-transparent text-on-surface-variant hover:text-on-surface'
@@ -388,7 +388,7 @@ export default function ProductDetail() {
             </button>
             <button
               onClick={() => setActiveTab('reviews')}
-              className={`py-2 px-4 font-bold text-sm uppercase tracking-wider transition-colors border-b-2 ${
+              className={`py-2 px-4 font-bold text-sm uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${
                 activeTab === 'reviews'
                   ? 'border-primary text-primary font-extrabold'
                   : 'border-transparent text-on-surface-variant hover:text-on-surface'

@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Validate token on mount
+  // Validate token on mount (Only logout if server explicitly returns 401/403 Invalid Token)
   useEffect(() => {
     async function verifyToken() {
       const storedToken =
@@ -97,46 +97,18 @@ export function AuthProvider({ children }) {
           const data = await res.json();
           if (res.ok && data.user) {
             saveAuthData(data.user, storedToken);
-          } else {
+          } else if (res.status === 401 || res.status === 403) {
+            // Only log out if token is explicitly expired or invalid
             logout(false);
           }
         } catch (err) {
-          console.error('Failed to verify token:', err);
+          console.warn('Network issue during token verification. Session maintained locally.', err);
         }
-      } else {
-        clearAllAuthStorage();
       }
       setLoading(false);
     }
     verifyToken();
   }, []);
-
-  // 10-Minute Inactivity Auto-Logout Hook
-  useEffect(() => {
-    if (!user) return;
-
-    function resetInactivityTimer() {
-      if (inactivityTimerRef.current) {
-        clearTimeout(inactivityTimerRef.current);
-      }
-      inactivityTimerRef.current = setTimeout(() => {
-        console.warn('User inactive for 10 minutes. Logging out automatically.');
-        logout();
-      }, INACTIVITY_LIMIT_MS);
-    }
-
-    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-    events.forEach((evt) => window.addEventListener(evt, resetInactivityTimer));
-
-    resetInactivityTimer();
-
-    return () => {
-      if (inactivityTimerRef.current) {
-        clearTimeout(inactivityTimerRef.current);
-      }
-      events.forEach((evt) => window.removeEventListener(evt, resetInactivityTimer));
-    };
-  }, [user]);
 
   async function login(email, password) {
     try {

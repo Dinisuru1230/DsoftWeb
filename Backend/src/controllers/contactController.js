@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const { sendContactReplyEmail } = require('../services/emailService');
 
 // POST /api/contact — Customer submits a message (public)
 async function submitMessage(req, res) {
@@ -137,7 +138,20 @@ async function replyToMessage(req, res) {
       data: { status: 'REPLIED' },
     });
 
-    res.status(201).json({ success: true, reply });
+    // Send email to customer via SMTP
+    const emailResult = await sendContactReplyEmail({
+      toEmail: msg.email,
+      customerName: msg.name,
+      originalSubject: msg.subject,
+      replyBody: body.trim(),
+    });
+
+    res.status(201).json({
+      success: true,
+      reply,
+      emailSent: emailResult.success,
+      emailReason: emailResult.reason || null,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

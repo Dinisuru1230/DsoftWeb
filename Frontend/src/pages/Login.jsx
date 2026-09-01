@@ -126,6 +126,12 @@ export default function Login() {
                 <label className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider" htmlFor="password">
                   Password
                 </label>
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-bold text-primary hover:underline hover:text-primary/80 transition-colors"
+                >
+                  Forgot password?
+                </Link>
               </div>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">

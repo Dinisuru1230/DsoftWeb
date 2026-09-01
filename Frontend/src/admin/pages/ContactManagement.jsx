@@ -141,9 +141,21 @@ export default function ContactManagement() {
         fetchStats();
         // Re-fetch to get fresh replies list from server
         await refreshSelected(selected.id);
-        // Store email info for mailto prompt
-        setLastRepliedEmail({ email: sentEmail, name: sentName, subject: sentSubject, body: sentBody });
-        toast.success(`Reply saved for ${sentName}!`, { id: toastId });
+        // Store email info for feedback banner
+        const isSent = Boolean(data.emailSent);
+        setLastRepliedEmail({
+          email: sentEmail,
+          name: sentName,
+          subject: sentSubject,
+          body: sentBody,
+          sentViaSmtp: isSent,
+          reason: data.emailReason,
+        });
+        if (isSent) {
+          toast.success(`Reply saved & email sent to ${sentEmail}!`, { id: toastId });
+        } else {
+          toast.success(`Reply saved! (${data.emailReason || 'Email dispatch skipped'})`, { id: toastId });
+        }
       } else {
         const msg = data.error || 'Failed to send reply';
         setReplyError(msg);
@@ -445,30 +457,54 @@ export default function ContactManagement() {
                   </div>
                 ) : null}
 
-                {/* Email sent prompt — appears after reply is saved */}
+                {/* Email sent banner / fallback prompt */}
                 {lastRepliedEmail && (
-                  <div className="bg-secondary-container/30 border border-secondary/40 rounded-xl p-4 flex flex-col gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-secondary text-[18px]">check_circle</span>
-                      <p className="font-label-md text-sm font-bold text-secondary">Reply saved! Now email the customer.</p>
-                    </div>
-                    <p className="text-xs text-on-surface-variant font-body-md">
-                      Your reply is saved in the system. Click below to send it to <strong>{lastRepliedEmail.email}</strong> via your email client:
-                    </p>
-                    <a
-                      href={`mailto:${lastRepliedEmail.email}?subject=Re: ${encodeURIComponent(lastRepliedEmail.subject)}&body=${encodeURIComponent('Dear ' + lastRepliedEmail.name + ',\n\n' + lastRepliedEmail.body + '\n\nBest regards,\nMalmalee Creations Team\nhello@malmalee.lk')}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-full text-xs font-bold hover:bg-secondary/80 transition-colors w-fit cursor-pointer"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">send</span>
-                      Open Email Client to Send
-                    </a>
+                  <div
+                    className={`rounded-xl p-4 flex flex-col gap-3 border ${
+                      lastRepliedEmail.sentViaSmtp
+                        ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800'
+                        : 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800'
+                    }`}
+                  >
+                    {lastRepliedEmail.sentViaSmtp ? (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
+                          <p className="font-label-md text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                            Email Sent Successfully!
+                          </p>
+                        </div>
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-body-md">
+                          Your reply has been automatically sent directly to <strong>{lastRepliedEmail.email}</strong> via your SMTP email server.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-amber-600 text-[20px]">warning</span>
+                          <p className="font-label-md text-sm font-bold text-amber-700 dark:text-amber-300">
+                            Reply Saved to Database!
+                          </p>
+                        </div>
+                        <p className="text-xs text-amber-700 dark:text-amber-300 font-body-md">
+                          Automatic email was not sent ({lastRepliedEmail.reason || 'Check SMTP settings under Email Settings'}). You can send it directly via your mail client:
+                        </p>
+                        <a
+                          href={`mailto:${lastRepliedEmail.email}?subject=Re: ${encodeURIComponent(lastRepliedEmail.subject)}&body=${encodeURIComponent('Dear ' + lastRepliedEmail.name + ',\n\n' + lastRepliedEmail.body + '\n\nBest regards,\nDSoft Pack Support Team\ndsoftpack@gmail.com')}`}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-full text-xs font-bold hover:bg-amber-700 transition-colors w-fit cursor-pointer"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">send</span>
+                          Open Email Client to Send
+                        </a>
+                      </>
+                    )}
                     <button
                       onClick={() => setLastRepliedEmail(null)}
-                      className="text-xs text-outline underline underline-offset-2 hover:text-primary w-fit cursor-pointer"
+                      className="text-xs text-outline underline underline-offset-2 hover:text-primary w-fit cursor-pointer mt-1"
                     >
-                      Dismiss
+                      Dismiss Banner
                     </button>
                   </div>
                 )}

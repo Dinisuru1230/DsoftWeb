@@ -14,6 +14,7 @@ export const navItems = [
   { to: '/admin/customers', label: 'Customers', icon: 'group' },
   { to: '/admin/messages', label: 'Messages', icon: 'inbox', badgeKey: 'unread' },
   { to: '/admin/our-story', label: 'About Us', icon: 'info' },
+  { to: '/admin/contact-details', label: 'Contact Details', icon: 'contact_support' },
   { to: '/admin/bank-details', label: 'Bank Details', icon: 'account_balance' },
   { to: '/admin/invoice-settings', label: 'Invoice Settings', icon: 'receipt_long' },
   { to: '/admin/email-settings', label: 'Email Settings', icon: 'mail' },
@@ -59,7 +60,7 @@ export default function AdminSidebar({ onClose }) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="font-display-lg text-primary tracking-tight font-bold" style={{ fontSize: '26px' }}>
-            Malmalee
+            DSoft Pack
           </h2>
           <p className="font-label-sm text-label-sm text-on-surface-variant">Admin Panel</p>
         </div>

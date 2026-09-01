@@ -11,8 +11,28 @@ export default function ContactUs() {
 
   const [currentTime, setCurrentTime] = useState('');
   const [isOnline, setIsOnline] = useState(true);
+  const [contactDetails, setContactDetails] = useState({
+    companyEmail: 'dsoftpack@gmail.com',
+    companyPhone: '+94 78 681 7659',
+    whatsappNumber: '+94 78 681 7659',
+    workingHours: '5:00 AM – 11:00 PM',
+    facebookUrl: 'https://www.facebook.com/share/19BFB5mDyC/',
+  });
 
   useEffect(() => {
+    fetch(`${API_BASE}/settings`)
+      .then((r) => r.json())
+      .then((data) => {
+        setContactDetails({
+          companyEmail: data.companyEmail || 'dsoftpack@gmail.com',
+          companyPhone: data.companyPhone || '+94 78 681 7659',
+          whatsappNumber: data.whatsappNumber || '+94 78 681 7659',
+          workingHours: data.workingHours || '5:00 AM – 11:00 PM',
+          facebookUrl: data.facebookUrl || 'https://www.facebook.com/share/19BFB5mDyC/',
+        });
+      })
+      .catch(() => {});
+
     const updateTime = () => {
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-US', {
@@ -97,10 +117,10 @@ export default function ContactUs() {
             </div>
           </div>
           <a
-            href="mailto:dsoftpack@gmail.com"
+            href={`mailto:${contactDetails.companyEmail}`}
             className="text-xs sm:text-sm font-bold text-primary hover:underline break-all"
           >
-            dsoftpack@gmail.com
+            {contactDetails.companyEmail}
           </a>
         </div>
 
@@ -116,10 +136,10 @@ export default function ContactUs() {
             </div>
           </div>
           <a
-            href="tel:+94786817659"
+            href={`tel:${contactDetails.companyPhone.replace(/\s+/g, '')}`}
             className="text-xs sm:text-sm font-bold text-emerald-600 hover:underline"
           >
-            +94 78 681 7659
+            {contactDetails.companyPhone}
           </a>
         </div>
 
@@ -131,7 +151,7 @@ export default function ContactUs() {
             </div>
             <div>
               <h3 className="font-bold text-sm text-on-surface">Working Hours</h3>
-              <p className="text-[11px] text-on-surface-variant">5:00 AM – 11:00 PM</p>
+              <p className="text-[11px] text-on-surface-variant">{contactDetails.workingHours}</p>
             </div>
           </div>
           <div className="flex items-center justify-between text-xs">
@@ -156,7 +176,7 @@ export default function ContactUs() {
             </div>
           </div>
           <a
-            href="https://www.facebook.com/share/19BFB5mDyC/"
+            href={contactDetails.facebookUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs sm:text-sm font-bold text-blue-600 hover:underline"

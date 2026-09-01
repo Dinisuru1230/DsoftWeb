@@ -170,6 +170,7 @@ export default function AddProduct() {
     description: '',
     downloadUrl: '',
     licenseKey: '',
+    installationGuide: '',
     multipleKeys: '',
     badge: '',
     featured: false,
@@ -250,6 +251,7 @@ export default function AddProduct() {
           description: p.description || '',
           downloadUrl: p.downloadUrl || '',
           licenseKey: p.licenseKey || '',
+          installationGuide: p.installationGuide || '',
           badge: p.badge || '',
           featured: Boolean(p.featured),
           standardShipping: p.standardShipping != null ? String(p.standardShipping) : '',
@@ -588,6 +590,7 @@ export default function AddProduct() {
         details: detailsArray.length > 0 ? detailsArray : null,
         downloadUrl: form.downloadUrl.trim() || null,
         licenseKey: form.licenseKey.trim() || null,
+        installationGuide: form.installationGuide.trim() || null,
         categoryName: form.category,
         price: colors.length > 0 ? parseFloat(colors[0].price) : parseFloat(form.price),
         stock: form.stock === '0' ? 0 : 10,
@@ -966,6 +969,26 @@ export default function AddProduct() {
               />
               <p className="text-xs text-on-surface-variant mt-1">
                 Direct ISO/Software download URL. If provided, customers can click &quot;Click Here to Download&quot; on the product page.
+              </p>
+            </div>
+
+            {/* Product Installation & Setup Guide */}
+            <div>
+              <label className="block font-label-md text-label-md text-on-surface mb-1 flex items-center gap-2" htmlFor="installationGuide">
+                <span className="material-symbols-outlined text-primary text-[18px]">description</span>
+                Product Installation &amp; Setup Guide <span className="text-on-surface-variant font-normal text-xs">(sent with order delivery email)</span>
+              </label>
+              <textarea
+                id="installationGuide"
+                name="installationGuide"
+                rows={4}
+                value={form.installationGuide}
+                onChange={handleChange}
+                placeholder={`1. Download the official installer from the link above.\n2. Open setup.exe and follow the on-screen instructions.\n3. When prompted for activation, enter your key or select 'Activate by Phone'.`}
+                className="w-full bg-surface-container-low border border-outline-variant/60 focus:border-primary rounded-lg p-3 font-body-md text-on-surface focus:outline-none transition-colors text-sm leading-relaxed"
+              />
+              <p className="text-xs text-on-surface-variant mt-1">
+                Step-by-step setup instructions to assist the customer. These instructions will be included in the order delivery email alongside the product key!
               </p>
             </div>
 

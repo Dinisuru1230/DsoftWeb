@@ -16,7 +16,7 @@ const DEFAULT_CHECKOUT_ITEMS = [
 const API_BASE = 'http://localhost:5050/api';
 
 export default function Checkout() {
-  const { cartItems, cartSubtotal, clearCart } = useCart();
+  const { cartItems, cartSubtotal, clearCart, updateQuantity, removeFromCart, cartKey } = useCart();
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -79,7 +79,7 @@ export default function Checkout() {
     firstName: user?.name ? user.name.split(' ')[0] : 'Amara',
     lastName: user?.name ? user.name.split(' ').slice(1).join(' ') : 'Perera',
     email: user?.email || 'amara@example.com',
-    phone: user?.phone || '+94 77 123 4567',
+    phone: user?.phone || '',
     address: user?.address || 'Sri Lanka',
     city: user?.city || 'Colombo 03',
     district: user?.district || 'Western Province',
@@ -167,7 +167,7 @@ export default function Checkout() {
 
   const customerPhone = !isCustomAddress && user?.phone
     ? user.phone
-    : form.phone || '+94 77 123 4567';
+    : form.phone || user?.phone || '';
 
   const customerAddress = isCustomAddress
     ? `${form.address}, ${form.city}, ${form.district} ${form.postalCode}`
@@ -431,14 +431,13 @@ export default function Checkout() {
                         />
                       </div>
                       <div>
-                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Contact Number *</label>
+                        <label className="font-label-md text-label-md text-on-surface-variant block mb-1">Contact Number (Optional)</label>
                         <input
                           type="tel"
                           name="phone"
                           value={form.phone}
                           onChange={handleChange}
-                          required
-                          placeholder="+94 77 123 4567"
+                          placeholder="e.g. +94 77 123 4567"
                           className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
                         />
                       </div>
@@ -529,24 +528,74 @@ export default function Checkout() {
               Order Summary
             </h2>
 
-            {/* Cart Items List */}
+            {/* Cart Items List with Quantity Controls */}
             <ul className="divide-y divide-outline-variant/20 space-y-3">
-              {items.map((item, i) => (
-                <li key={i} className="pt-3 first:pt-0 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-lg bg-surface-container overflow-hidden flex-shrink-0 border border-outline-variant/30">
-                      <img src={item.image || '/14_blush_silk_ribbon_bow.jpg'} alt={item.name} className="w-full h-full object-cover" />
+              {items.map((item, i) => {
+                const key = item.cartKey || (cartKey ? cartKey(item) : `${item.id}::${item.name}`);
+                const q = item.quantity || 1;
+
+                return (
+                  <li key={i} className="pt-3 first:pt-0 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-14 h-14 rounded-lg bg-surface-container overflow-hidden flex-shrink-0 border border-outline-variant/30">
+                        <img src={item.image || '/14_blush_silk_ribbon_bow.jpg'} alt={item.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-label-md text-label-md text-on-background truncate max-w-[150px] sm:max-w-[190px]" title={item.name}>
+                          {item.name}
+                        </h3>
+
+                        {/* Interactive Quantity Controls */}
+                        {cartItems && cartItems.length > 0 ? (
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center border border-outline-variant/40 rounded-lg overflow-hidden bg-surface-container-low">
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(key, q - 1)}
+                                className="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:bg-surface-container font-bold transition-colors cursor-pointer text-xs"
+                                title="Decrease quantity"
+                              >
+                                -
+                              </button>
+                              <span className="px-2 text-xs font-bold text-on-background select-none min-w-[20px] text-center">
+                                {q}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(key, q + 1)}
+                                className="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:bg-surface-container font-bold transition-colors cursor-pointer text-xs"
+                                title="Increase quantity"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeFromCart(key)}
+                              className="text-red-500 hover:text-red-700 p-0.5 rounded transition-colors cursor-pointer flex items-center"
+                              title="Remove item"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="font-body-md text-body-md text-on-surface-variant text-sm">Qty: {q}</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-label-md text-label-md text-on-background">{item.name}</h3>
-                      <p className="font-body-md text-body-md text-on-surface-variant text-sm">Qty: {item.quantity || 1}</p>
+                    <div className="text-right flex-shrink-0">
+                      <span className="font-label-md text-label-md text-on-background font-bold block">
+                        Rs. {((item.price || 0) * q).toLocaleString()}
+                      </span>
+                      {q > 1 && (
+                        <span className="text-[10px] text-on-surface-variant font-medium block">
+                          (Rs. {Number(item.price || 0).toLocaleString()} ea)
+                        </span>
+                      )}
                     </div>
-                  </div>
-                  <span className="font-label-md text-label-md text-on-background font-bold">
-                    Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
-                  </span>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
 
             {/* Totals Breakdown */}
