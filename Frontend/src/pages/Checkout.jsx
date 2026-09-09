@@ -437,7 +437,7 @@ export default function Checkout() {
                           name="phone"
                           value={form.phone}
                           onChange={handleChange}
-                          placeholder="e.g. +94 77 123 4567"
+                          placeholder="XXXXXXXXX"
                           className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-body-md text-on-surface transition-colors"
                         />
                       </div>

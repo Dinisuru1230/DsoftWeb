@@ -75,7 +75,7 @@ export default function Register() {
     // 3. Sri Lankan Contact number validation (must be exactly 9 digits if provided)
     if (form.phone && form.phone.length !== 9) {
       toast.error('Contact number must contain exactly 9 digits after +94.');
-      setError('Contact number must contain exactly 9 digits after +94 (e.g. +94 77 123 4567).');
+      setError('Contact number must contain exactly 9 digits after +94 (e.g. XXXXXXXXX).');
       return;
     }
 
@@ -275,13 +275,13 @@ export default function Register() {
                     name="phone"
                     value={form.phone}
                     onChange={handlePhoneChange}
-                    placeholder="77 123 4567"
+                    placeholder="XXXXXXXXX"
                     maxLength={9}
                     className="w-full bg-surface-container-low border border-outline-variant/60 rounded-2xl pl-16 pr-4 py-3 text-sm font-semibold font-mono text-on-surface placeholder:text-outline/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   />
                 </div>
                 <p className="text-[11px] text-outline">
-                  {form.phone ? `Full: +94 ${form.phone}` : 'Enter 9 digits after +94'}
+                  {form.phone ? `Full: +94 ${form.phone}` : 'Enter 9 digits after +94 (e.g. XXXXXXXXX)'}
                 </p>
               </div>
 

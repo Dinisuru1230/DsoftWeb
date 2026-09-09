@@ -28,7 +28,7 @@ async function getAllProducts(req, res) {
 
     const where = {};
 
-    if (category && category !== 'All Products') {
+    if (category && category !== 'All Products' && !search) {
       where.categoryName = category;
     }
 
@@ -36,20 +36,10 @@ async function getAllProducts(req, res) {
       where.price = { lte: parseFloat(maxPrice) };
     }
 
-    if (search) {
-      where.OR = [
-        { name: { contains: search } },
-        { categoryName: { contains: search } },
-        { description: { contains: search } },
-      ];
-    }
-
-    // Filter by featured flag (for Home page "New Arrivals" section)
     if (featured === 'true') {
       where.featured = true;
     }
 
-    // Exclude a specific product ID (for related products section)
     if (exclude) {
       where.id = { not: exclude };
     }
@@ -84,7 +74,17 @@ async function getAllProducts(req, res) {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
 
-      const cleanProducts = products.map(({ orderItems, ...p }) => p);
+      let cleanProducts = products.map(({ orderItems, ...p }) => p);
+
+      if (search && search.trim()) {
+        const q = search.trim().toLowerCase();
+        const terms = q.split(/\s+/);
+        cleanProducts = cleanProducts.filter((p) => {
+          const text = `${p.name || ''} ${p.categoryName || ''} ${p.description || ''} ${p.badge || ''}`.toLowerCase();
+          return terms.every((term) => text.includes(term));
+        });
+      }
+
       if (limit) {
         return res.json(cleanProducts.slice(0, parseInt(limit)));
       }
@@ -109,9 +109,18 @@ async function getAllProducts(req, res) {
       queryOptions.take = parseInt(limit);
     }
 
-    const products = await prisma.product.findMany(queryOptions);
+    let products = await prisma.product.findMany(queryOptions);
 
-    res.json(products);
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      const terms = q.split(/\s+/);
+      products = products.filter((p) => {
+        const text = `${p.name || ''} ${p.categoryName || ''} ${p.description || ''} ${p.badge || ''}`.toLowerCase();
+        return terms.every((term) => text.includes(term));
+      });
+    }
+
+    return res.json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

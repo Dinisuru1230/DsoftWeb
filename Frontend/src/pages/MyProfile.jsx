@@ -115,7 +115,7 @@ export default function MyProfile() {
       newErrors.email = 'Valid email address is required.';
     }
     if (form.phone && form.phone.length !== 9) {
-      newErrors.phone = 'Phone number must be exactly 9 digits (e.g. 77 123 4567).';
+      newErrors.phone = 'Phone number must be exactly 9 digits (e.g. XXXXXXXXX).';
     }
     if (form.postalCode && form.postalCode.length !== 5) {
       newErrors.postalCode = 'Postal code must be exactly 5 digits (e.g. 10350).';
@@ -299,7 +299,7 @@ export default function MyProfile() {
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
-                    placeholder="77 123 4567"
+                    placeholder="XXXXXXXXX"
                     maxLength={9}
                     className="w-full font-body-md text-body-md text-on-surface bg-transparent outline-none"
                   />

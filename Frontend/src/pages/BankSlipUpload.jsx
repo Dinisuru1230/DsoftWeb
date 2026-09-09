@@ -182,12 +182,6 @@ export default function BankSlipUpload() {
               <span className="text-on-surface-variant font-medium">Branch</span>
               <span className="font-bold text-on-surface">{bankInfo.branchName}</span>
             </div>
-            {bankInfo.swiftCode && (
-              <div className="flex justify-between py-2 border-b border-outline-variant/20">
-                <span className="text-on-surface-variant font-medium">SWIFT Code</span>
-                <span className="font-bold text-on-surface">{bankInfo.swiftCode}</span>
-              </div>
-            )}
 
             {bankInfo.bankNotes && (
               <div className="p-3 bg-primary-container/20 border border-primary/20 rounded-xl flex items-start gap-2 text-xs text-on-surface-variant mt-2">

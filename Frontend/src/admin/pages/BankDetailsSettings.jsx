@@ -165,36 +165,20 @@ export default function BankDetailsSettings() {
               />
             </div>
 
-            {/* Branch & SWIFT in 2 Columns */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label className="font-label-md text-label-md text-on-surface-variant block mb-1">
-                  Branch Name *
-                </label>
-                <input
-                  type="text"
-                  name="branchName"
-                  value={form.branchName}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g. Colombo Main Branch"
-                  className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="font-label-md text-label-md text-on-surface-variant block mb-1">
-                  SWIFT / BIC Code
-                </label>
-                <input
-                  type="text"
-                  name="swiftCode"
-                  value={form.swiftCode}
-                  onChange={handleChange}
-                  placeholder="e.g. CCEYLKLX"
-                  className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface transition-colors"
-                />
-              </div>
+            {/* Branch Name */}
+            <div>
+              <label className="font-label-md text-label-md text-on-surface-variant block mb-1">
+                Branch Name *
+              </label>
+              <input
+                type="text"
+                name="branchName"
+                value={form.branchName}
+                onChange={handleChange}
+                required
+                placeholder="e.g. Colombo Main Branch"
+                className="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary outline-none py-2 font-body-md text-on-surface transition-colors"
+              />
             </div>
 
             {/* Deposit Instructions / Notes */}
@@ -276,12 +260,6 @@ export default function BankDetailsSettings() {
                 <span className="text-on-surface-variant font-medium">Branch</span>
                 <span className="font-bold text-on-surface">{form.branchName || '—'}</span>
               </div>
-              {form.swiftCode && (
-                <div className="flex justify-between py-2 border-b border-outline-variant/20">
-                  <span className="text-on-surface-variant font-medium">SWIFT Code</span>
-                  <span className="font-bold text-on-surface">{form.swiftCode}</span>
-                </div>
-              )}
             </div>
 
             {form.bankNotes && (

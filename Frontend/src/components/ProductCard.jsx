@@ -3,6 +3,21 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 
+function getBadgeStyle(badgeText) {
+  if (!badgeText) return 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md border border-white/20';
+  const b = String(badgeText).toUpperCase();
+  if (b.includes('HOT') || b.includes('SALE') || b.includes('OFF') || b.includes('DEAL')) {
+    return 'bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-md border border-white/20';
+  }
+  if (b.includes('NEW')) {
+    return 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md border border-white/20';
+  }
+  if (b.includes('MOST') || b.includes('BEST') || b.includes('TOP') || b.includes('POPULAR')) {
+    return 'bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black shadow-md border border-amber-300/40';
+  }
+  return 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md border border-white/20';
+}
+
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const { user } = useAuth();
@@ -68,15 +83,12 @@ export default function ProductCard({ product }) {
                 }`}
             />
           )}
-          {/* Badges */}
-          {isNew && (
-            <div className={`absolute top-2 ${isOutOfStock ? 'right-2' : 'left-2'} z-10 bg-primary-container text-on-background font-label-sm text-[10px] sm:text-xs py-0.5 px-2 sm:py-1 sm:px-2.5 rounded-full shadow-sm font-bold`}>
-              New
-            </div>
-          )}
-          {badge && !isNew && (
-            <div className={`absolute top-2 ${isOutOfStock ? 'right-2' : 'left-2'} z-10 bg-tertiary-container text-on-background font-label-sm text-[10px] sm:text-xs py-0.5 px-2 sm:py-1 sm:px-2.5 rounded-full shadow-sm font-bold`}>
-              {badge}
+          {/* High-Impact Badges */}
+          {(badge || isNew) && (
+            <div className={`absolute top-2.5 ${isOutOfStock ? 'right-2.5' : 'left-2.5'} z-10 flex items-center gap-1`}>
+              <span className={`px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider ${getBadgeStyle(badge || (isNew ? 'NEW' : ''))}`}>
+                {badge || 'NEW'}
+              </span>
             </div>
           )}
           {/* Quick View (Desktop Only) */}
@@ -90,7 +102,7 @@ export default function ProductCard({ product }) {
         {/* Product info */}
         <div className="p-3 sm:p-4 flex-grow flex flex-col justify-between items-center text-center">
           {category ? (
-            <span className="bg-primary-container/50 text-on-surface-variant px-2.5 py-0.5 rounded-full font-label-sm text-[10px] sm:text-xs mb-1.5 line-clamp-1 max-w-[90%] font-semibold">
+            <span className="bg-slate-100 text-slate-700 border border-slate-200/80 px-2.5 py-0.5 rounded-full font-bold text-[10px] sm:text-[11px] uppercase tracking-wider mb-1.5 line-clamp-1 max-w-[90%] shadow-2xs">
               {category}
             </span>
           ) : (
@@ -99,12 +111,12 @@ export default function ProductCard({ product }) {
 
           {/* Title with uniform line-clamp */}
           <div className="min-h-[36px] sm:min-h-[44px] flex items-center justify-center mb-1">
-            <h3 className="font-title-sm text-xs sm:text-sm text-primary group-hover:text-on-primary-container transition-colors text-center line-clamp-2 leading-tight">
+            <h3 className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-primary transition-colors text-center line-clamp-2 leading-tight">
               {name}
             </h3>
           </div>
 
-          <p className="font-body-md text-xs sm:text-sm md:text-base text-on-surface font-black">
+          <p className="font-black text-xs sm:text-sm md:text-base text-slate-950">
             Rs. {Number(price || 0).toLocaleString()}
           </p>
         </div>
@@ -121,13 +133,14 @@ export default function ProductCard({ product }) {
           </button>
         ) : (
           <div className="flex items-center gap-1.5">
-            {/* Add to Cart Button (Restored Original Primary-Container Theme Color) */}
+            {/* Add to Cart Button (Solid Primary Blue) */}
             <button
               onClick={handleAddToCart}
-              className={`flex-1 py-1.5 sm:py-2 text-[11px] sm:text-xs rounded-full transition-all duration-300 font-bold shadow-2xs flex items-center justify-center gap-1 ${added
-                  ? 'bg-primary text-white cursor-pointer'
-                  : 'bg-primary-container text-on-background hover:bg-primary hover:text-white cursor-pointer'
-                }`}
+              className={`flex-1 py-1.5 sm:py-2 text-[11px] sm:text-xs rounded-full transition-all duration-300 font-extrabold shadow-xs flex items-center justify-center gap-1 ${
+                added
+                  ? 'bg-emerald-600 border-emerald-600 text-white cursor-pointer'
+                  : 'bg-primary text-white hover:bg-blue-700 active:bg-blue-800 cursor-pointer'
+              }`}
             >
               {added ? (
                 <>
@@ -135,14 +148,17 @@ export default function ProductCard({ product }) {
                   Added
                 </>
               ) : (
-                'Add to Cart'
+                <>
+                  <span className="material-symbols-outlined text-[13px] sm:text-[14px]">shopping_cart</span>
+                  Add to Cart
+                </>
               )}
             </button>
 
-            {/* Buy Now Button (Sleek Orange Action Accent) */}
+            {/* Buy Now Button (Outlined Primary Blue) */}
             <button
               onClick={handleBuyNow}
-              className="py-1.5 sm:py-2 px-3 sm:px-3.5 text-[11px] sm:text-xs rounded-full bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-extrabold transition-all duration-300 shadow-xs flex items-center justify-center gap-1 shrink-0 whitespace-nowrap cursor-pointer"
+              className="py-1.5 sm:py-2 px-3 sm:px-3.5 text-[11px] sm:text-xs rounded-full border border-primary text-primary hover:bg-primary hover:text-white font-bold transition-all duration-300 flex items-center justify-center gap-1 shrink-0 whitespace-nowrap cursor-pointer"
               title="Buy Now - Direct Checkout"
             >
               <span className="material-symbols-outlined text-[13px] sm:text-[14px]">bolt</span>

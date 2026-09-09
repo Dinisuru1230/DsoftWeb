@@ -150,7 +150,7 @@ export default function Navbar() {
             aria-label="Cart"
             title="Shopping Cart"
           >
-            <span className="material-symbols-outlined text-[22px]">shopping_bag</span>
+            <span className="material-symbols-outlined text-[22px]">shopping_cart</span>
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-primary text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-xs">
                 {cartCount}

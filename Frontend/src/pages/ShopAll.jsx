@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 
@@ -10,6 +10,102 @@ function imgUrl(path) {
   if (path.startsWith('http')) return path;
   if (path.startsWith('/uploads')) return `http://localhost:5050${path}`;
   return path;
+}
+
+function getCategoryIcon(catName, dbCategories) {
+  const found = dbCategories.find(
+    (c) => c.name.toLowerCase() === (catName || '').toLowerCase()
+  );
+  let displayIcon = found?.icon;
+  if (!displayIcon || displayIcon === 'category' || displayIcon === 'auto_awesome' || displayIcon === 'style') {
+    const lower = (catName || '').toLowerCase();
+    if (lower.includes('microsoft') || lower.includes('windows')) displayIcon = 'window';
+    else if (lower.includes('office')) displayIcon = 'grid_view';
+    else if (lower.includes('security') || lower.includes('antivirus')) displayIcon = 'shield';
+    else if (lower.includes('key') || lower.includes('license')) displayIcon = 'vpn_key';
+    else displayIcon = 'folder_open';
+  }
+  return displayIcon;
+}
+
+// ── Category Row Slider Component for "All Products" view ──
+function CategoryRowSlider({ catName, catProducts, getCategoryIcon, dbCategories, setSelectedCategory, imgUrl }) {
+  const rowRef = useRef(null);
+
+  const handleScroll = (direction) => {
+    if (rowRef.current) {
+      const scrollAmount = direction === 'left' ? -360 : 360;
+      rowRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <section className="space-y-4">
+      {/* Category Header Row with Slider Navigation Buttons */}
+      <div className="flex items-center justify-between pb-3 border-b-2 border-primary/20 gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0">
+            <span className="material-symbols-outlined text-[20px]">
+              {getCategoryIcon(catName, dbCategories)}
+            </span>
+          </div>
+          <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 tracking-tight truncate">
+            {catName}
+          </h2>
+          <span className="bg-primary/10 text-primary border border-primary/20 text-xs font-extrabold px-2.5 py-0.5 rounded-full shrink-0">
+            {catProducts.length} product{catProducts.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <button
+            onClick={() => setSelectedCategory(catName)}
+            className="text-xs font-bold text-primary hover:text-blue-700 hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+          >
+            View All <span className="hidden sm:inline">{catName}</span> <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </button>
+
+          {/* Left & Right Slider Controls */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleScroll('left')}
+              className="w-8 h-8 rounded-full border border-slate-300 hover:bg-primary hover:border-primary hover:text-white text-slate-700 transition-colors flex items-center justify-center shadow-2xs cursor-pointer active:scale-95"
+              title="Scroll left"
+            >
+              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
+            <button
+              onClick={() => handleScroll('right')}
+              className="w-8 h-8 rounded-full border border-slate-300 hover:bg-primary hover:border-primary hover:text-white text-slate-700 transition-colors flex items-center justify-center shadow-2xs cursor-pointer active:scale-95"
+              title="Scroll right"
+            >
+              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Horizontal Slider Track (One Row) */}
+      <div
+        ref={rowRef}
+        className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 pt-1 [&::-webkit-scrollbar]:hidden select-none"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {catProducts.map((product) => (
+          <div key={product.id} className="w-[230px] sm:w-[260px] md:w-[280px] shrink-0">
+            <ProductCard
+              product={{
+                ...product,
+                image: imgUrl(product.image),
+                hoverImage: imgUrl(product.hoverImage),
+                category: product.categoryName,
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 // ── Product Grid Skeleton ─────────────────────────────────────────
@@ -30,45 +126,17 @@ function GridSkeleton() {
   );
 }
 
-// ── Standalone Sidebar Filters Component (Defined outside so input never loses focus) ──
+// ── Standalone Sidebar Filters Component ──
 function SidebarFilters({
-  searchQuery,
-  setSearchQuery,
   selectedCategory,
   setSelectedCategory,
   dbCategories,
   catLoading,
   priceRange,
   setPriceRange,
-  sortBy,
-  setSortBy,
 }) {
   return (
-    <div className="space-y-6">
-      {/* Live Search Input Box */}
-      <div>
-        <h3 className="font-label-md text-label-md text-primary mb-2 font-bold flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[18px]">search</span>
-          Search Catalog
-        </h3>
-        <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Type product name..."
-            className="w-full bg-surface-container-low border border-outline-variant/50 focus:border-primary rounded-lg pl-3 pr-8 py-2 font-body-md text-sm outline-none transition-colors"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-primary cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[16px]">cancel</span>
-            </button>
-          )}
-        </div>
-      </div>
+    <div className="space-y-5 pb-4">
 
 
 
@@ -82,11 +150,10 @@ function SidebarFilters({
           {/* All Products */}
           <button
             onClick={() => setSelectedCategory('All Products')}
-            className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${
-              selectedCategory === 'All Products'
+            className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${selectedCategory === 'All Products'
                 ? 'text-primary font-bold bg-primary-container/40'
                 : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-[18px]">grid_view</span>
             All Products
@@ -111,11 +178,10 @@ function SidebarFilters({
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.name)}
-                  className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${
-                    selectedCategory === cat.name
+                  className={`flex items-center gap-3 p-2.5 font-label-md text-label-md rounded-lg text-left transition-colors cursor-pointer ${selectedCategory === cat.name
                       ? 'text-primary font-bold bg-primary-container/40'
                       : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
-                  }`}
+                    }`}
                 >
                   <span className="material-symbols-outlined text-[18px]">{displayIcon}</span>
                   {cat.name}
@@ -182,7 +248,7 @@ export default function ShopAll() {
       .then((data) => {
         if (data.categories) setDbCategories(data.categories);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setCatLoading(false));
   }, []);
 
@@ -208,7 +274,9 @@ export default function ShopAll() {
     setProductsError(null);
 
     const params = new URLSearchParams();
-    if (selectedCategory !== 'All Products') params.set('category', selectedCategory);
+    if (selectedCategory !== 'All Products' && !searchQuery.trim()) {
+      params.set('category', selectedCategory);
+    }
     if (searchQuery.trim()) params.set('search', searchQuery.trim());
     if (priceRange < 20000) params.set('maxPrice', priceRange);
     if (sortBy !== 'newest') params.set('sort', sortBy);
@@ -237,6 +305,17 @@ export default function ShopAll() {
     const timer = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timer);
   }, [fetchProducts]);
+
+  // ── Group products by Category for Line-by-Line Section Layout ──
+  const groupedProducts = useMemo(() => {
+    const map = {};
+    products.forEach((prod) => {
+      const cat = prod.categoryName || prod.category || 'General';
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(prod);
+    });
+    return map;
+  }, [products]);
 
   const filterProps = {
     searchQuery,
@@ -273,12 +352,68 @@ export default function ShopAll() {
 
       <div className="flex gap-8 lg:gap-12">
         {/* ── Desktop Sidebar ── */}
-        <aside className="hidden md:block w-64 flex-shrink-0 sticky top-[100px] self-start max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
+        <aside
+          className="hidden md:block w-64 flex-shrink-0 sticky top-[100px] self-start max-h-[calc(100vh-120px)] overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden select-none"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           <SidebarFilters {...filterProps} />
         </aside>
 
         {/* ── Product Grid ── */}
         <section className="flex-grow min-w-0">
+          {/* Top Bar Header Controls (Always mounted so Search Input NEVER loses focus while typing) */}
+          <div className="flex flex-row items-center justify-between gap-4 mb-8 pb-3 border-b border-outline-variant/30">
+            <p className="text-xs sm:text-sm font-semibold text-on-surface-variant">
+              Showing <span className="text-primary font-extrabold">{products.length}</span> product{products.length !== 1 ? 's' : ''} across <span className="text-on-surface font-bold">{Object.keys(groupedProducts).length}</span> categor{Object.keys(groupedProducts).length !== 1 ? 'ies' : 'y'}
+              {selectedCategory !== 'All Products' && (
+                <span className="hidden sm:inline"> in <span className="text-on-surface font-bold">{selectedCategory}</span></span>
+              )}
+            </p>
+
+            {/* Top Right Corner Controls: Search Box + Sort Dropdown */}
+            <div className="flex flex-wrap items-center gap-3 shrink-0 ml-auto">
+              {/* Top Right Search Input Box */}
+              <div className="relative w-44 sm:w-64">
+                <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-primary text-[18px]">
+                  search
+                </span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products..."
+                  className="w-full bg-surface-container-lowest border border-neutral-300 dark:border-outline-variant/60 rounded-lg pl-8 pr-7 py-1.5 text-xs font-semibold text-on-surface outline-none focus:border-primary transition-colors shadow-2xs"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-primary cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">cancel</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Sort By Dropdown */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-on-surface-variant flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[18px] text-primary">swap_vert</span>
+                  <span className="hidden sm:inline">Sort:</span>
+                </span>
+                <select
+                  id="top-sort-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-surface-container-lowest border border-neutral-300 dark:border-outline-variant/60 rounded-lg px-3 py-1.5 text-xs font-bold text-on-surface outline-none focus:border-primary cursor-pointer shadow-xs transition-colors"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           {productsLoading ? (
             <GridSkeleton />
           ) : productsError ? (
@@ -301,47 +436,37 @@ export default function ShopAll() {
             </div>
           ) : (
             <>
-              <div className="flex flex-row items-center justify-between gap-4 mb-5 pb-3 border-b border-outline-variant/30">
-                <p className="text-xs sm:text-sm font-semibold text-on-surface-variant">
-                  Showing <span className="text-primary font-extrabold">{products.length}</span> product{products.length !== 1 ? 's' : ''}
-                  {selectedCategory !== 'All Products' && (
-                    <span className="hidden sm:inline"> in <span className="text-on-surface font-bold">{selectedCategory}</span></span>
-                  )}
-                </p>
-
-                {/* Top Right Corner Sort Dropdown Over Product Grid */}
-                <div className="flex items-center gap-2 shrink-0 ml-auto">
-                  <span className="text-xs font-bold text-on-surface-variant flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[18px] text-primary">swap_vert</span>
-                    <span className="hidden sm:inline">Sort By:</span>
-                  </span>
-                  <select
-                    id="top-sort-select"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="bg-surface-container-lowest border border-neutral-300 dark:border-outline-variant/60 rounded-lg px-3 py-1.5 text-xs font-bold text-on-surface outline-none focus:border-primary cursor-pointer shadow-xs transition-colors"
-                  >
-                    <option value="newest">Newest First</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                  </select>
+              {selectedCategory === 'All Products' && !searchQuery.trim() ? (
+                /* ── All Products View (Default): Category-by-Category Line Slider ── */
+                <div className="space-y-12">
+                  {Object.entries(groupedProducts).map(([catName, catProducts]) => (
+                    <CategoryRowSlider
+                      key={catName}
+                      catName={catName}
+                      catProducts={catProducts}
+                      getCategoryIcon={getCategoryIcon}
+                      dbCategories={dbCategories}
+                      setSelectedCategory={setSelectedCategory}
+                      imgUrl={imgUrl}
+                    />
+                  ))}
                 </div>
-              </div>
-
-
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={{
-                      ...product,
-                      image: imgUrl(product.image),
-                      hoverImage: imgUrl(product.hoverImage),
-                      category: product.categoryName,
-                    }}
-                  />
-                ))}
-              </div>
+              ) : (
+                /* ── Specific Category Selected: Display without slider in multi-row grid ── */
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                  {products.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={{
+                        ...product,
+                        image: imgUrl(product.image),
+                        hoverImage: imgUrl(product.hoverImage),
+                        category: product.categoryName,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </>
           )}
         </section>
@@ -351,7 +476,10 @@ export default function ShopAll() {
       {mobileFilterOpen && (
         <div className="fixed inset-0 z-50 flex">
           <div className="flex-grow bg-black/40" onClick={() => setMobileFilterOpen(false)} />
-          <div className="w-80 bg-surface-container-lowest shadow-2xl h-full overflow-y-auto p-6 space-y-6">
+          <div
+            className="w-80 bg-surface-container-lowest shadow-2xl h-full overflow-y-auto p-6 space-y-6 [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             <div className="flex items-center justify-between">
               <h2 className="font-title-sm text-title-sm text-primary font-bold">Filters &amp; Sort</h2>
               <button onClick={() => setMobileFilterOpen(false)} className="text-on-surface-variant hover:text-primary cursor-pointer">
